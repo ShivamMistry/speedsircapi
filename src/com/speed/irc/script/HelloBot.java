@@ -43,7 +43,7 @@ public class HelloBot extends Bot {
 		new HelloBot("irc.strictfp.com", 6667);
 	}
 
-	public void onMessage(final PRIVMSG msg) {
+	public void messageReceived(final PRIVMSG msg) {
 		String message = msg.getMessage();
 		String sender = msg.getSender();
 		for (String s : HELLO_PHRASES) {
@@ -66,7 +66,7 @@ public class HelloBot extends Bot {
 
 	}
 
-	public void onRawCommand(final String raw) {
+	public void rawMessageReceived(final String raw) {
 		System.out.println("HelloBot: " + raw);
 		if (raw.contains("JOIN " + CHANNEL) || raw.contains("JOIN :" + CHANNEL)) {
 			String sender = raw.split("!")[0].replaceFirst(":", "");
@@ -89,6 +89,7 @@ public class HelloBot extends Bot {
 		return "London";
 	}
 
+	@SuppressWarnings("deprecation")
 	public void onStart() {
 		try {
 			identify("password");
@@ -99,7 +100,7 @@ public class HelloBot extends Bot {
 
 	}
 
-	public void onNotice(final NOTICE notice) {
+	public void noticeReceived(final NOTICE notice) {
 		System.out.println(notice.getMessage());
 	}
 

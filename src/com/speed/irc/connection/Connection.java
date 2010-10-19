@@ -6,7 +6,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.LinkedList;
+import java.util.List;
 
+import com.speed.irc.types.MessageListener;
 import com.speed.irc.types.NOTICE;
 import com.speed.irc.types.PRIVMSG;
 
@@ -33,13 +36,82 @@ import com.speed.irc.types.PRIVMSG;
  * 
  */
 public class Connection {
-	public BufferedWriter write;
-	public BufferedReader read;
+	public final BufferedWriter write;
+	public final BufferedReader read;
+	private final Socket socket;
+	private List<MessageListener> listeners = new LinkedList<MessageListener>();
+	private final Thread thread;
 
 	public Connection(Socket sock) throws IOException {
+		socket = sock;
 		write = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
 		read = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+		thread = new Thread(new Runnable() {
+			public void run() {
+				String s;
+				try {
+					while ((s = read.readLine()) != null) {
+						s = s.substring(1);
+						if (s.contains("PING") && !s.contains("PRIVMSG")) {
+							sendRaw("PONG " + socket.getInetAddress().getHostAddress() + "\n");
+						} else if (s.contains("NOTICE")) {
+							String message = s.substring(s.indexOf(" :")).trim().replaceFirst(":", "");
+							String sender = s.split("!")[0];
+							String channel = null;
+							if (s.contains("NOTICE #"))
+								channel = s.substring(s.indexOf("#")).split(" ")[0].trim();
+							fireNoticeReceived(new NOTICE(message, sender, channel));
+						} else if (s.contains(":") && s.substring(0, s.indexOf(":")).contains("PRIVMSG")) {
+							String message = s.substring(s.indexOf(" :")).trim().replaceFirst(":", "");
+							String sender = s.split("!")[0];
+							String channel = null;
+							if (s.contains("PRIVMSG #"))
+								channel = s.substring(s.indexOf("#")).split(" ")[0].trim();
+							else
+								System.out.println("wat");
 
+							fireMessageReceived(new PRIVMSG(message, sender, channel));
+						} else {
+							fireRawMessageReceived(s);
+						}
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (NullPointerException e) {
+					e.printStackTrace();
+				}
+			}
+
+		});
+		thread.start();
+	}
+
+	private void fireRawMessageReceived(final String s) {
+		for (MessageListener listener : listeners) {
+			listener.rawMessageReceived(s);
+		}
+	}
+
+	private void fireMessageReceived(final PRIVMSG privmsg) {
+		for (MessageListener listener : listeners) {
+			listener.messageReceived(privmsg);
+		}
+	}
+
+	private void fireNoticeReceived(final NOTICE notice) {
+		for (MessageListener listener : listeners) {
+			listener.noticeReceived(notice);
+		}
+	}
+
+	/**
+	 * Adds a listener to handle events.
+	 * 
+	 * @param listener
+	 *            The listener that handles the events.
+	 */
+	public void addListener(final MessageListener listener) {
+		listeners.add(listener);
 	}
 
 	/**
@@ -52,7 +124,7 @@ public class Connection {
 	 * 
 	 */
 	public void sendMessage(final PRIVMSG message) {
-		sendRaw("PRIVMSG " + message.getChannel() + " :" + message.getSender() + "\n");
+		sendRaw("PRIVMSG " + message.getChannel() + " :" + message.getMessage() + "\n");
 	}
 
 	/**

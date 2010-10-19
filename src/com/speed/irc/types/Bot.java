@@ -29,7 +29,7 @@ import com.speed.irc.connection.Connection;
  * @author Speed
  * 
  */
-public abstract class Bot implements Runnable {
+public abstract class Bot implements MessageListener {
 
 	public Connection connection;
 	private final String server;
@@ -45,65 +45,12 @@ public abstract class Bot implements Runnable {
 	}
 
 	/**
-	 * 
+	 * @deprecated is useless at the moment, adding fix soon.
 	 * @param on
 	 *            true if the client should rejoin after being kicked.
 	 */
 	public void setAutoRejoin(final boolean on) {
-		autoJoin = on;
-	}
-
-	public void run() {
-		try {
-			connection.write.write("NICK " + getNick() + "\n");
-			connection.write.write("USER " + getUser() + " team-deathmatch.com TB: Speed Bot\n");
-
-			for (String s : getChannels()) {
-				connection.write.write("JOIN " + s + "\n");
-			}
-			connection.write.flush();
-			onStart();
-			String wat;
-			while ((wat = connection.read.readLine()) != null) {
-				System.out.println(wat);
-				wat = wat.substring(1);
-				if (wat.contains("PING") && !wat.contains("PRIVMSG")) {
-					connection.sendRaw("PONG " + server + "\n");
-				} else if (wat.contains("NOTICE")) {
-					String message = wat.substring(wat.indexOf(" :")).trim().replaceFirst(":", "");
-					String sender = wat.split("!")[0];
-					String channel;
-					if (wat.contains("PRIVMSG #"))
-						channel = wat.substring(wat.indexOf("#")).split(" ")[0];
-					else
-						channel = null;
-					onNotice(new NOTICE(message, sender, channel));
-				} else if (wat.contains(":")) {
-					String raw = wat.substring(0, wat.indexOf(":"));
-					if (raw.contains("KICK") && raw.contains(getNick()) && autoJoin) {
-						Thread.sleep(1000);
-						connection.joinChannel(raw.split(" ")[2]);
-					}
-				} else if (wat.contains(":") && wat.substring(0, wat.indexOf(":")).contains("PRIVMSG")) {
-					String message = wat.substring(wat.indexOf(" :")).trim().replaceFirst(":", "");
-					String sender = wat.split("!")[0];
-					String channel;
-					if (wat.contains("PRIVMSG #"))
-						channel = wat.substring(wat.indexOf("#")).split(" ")[0];
-					else
-						channel = null;
-
-					onMessage(new PRIVMSG(message, sender, channel));
-				} else {
-					onRawCommand(wat);
-				}
-
-			}
-			connection.read.close();
-			connection.write.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		autoJoin = on;//FIXME useless!
 	}
 
 	public abstract void onStart();
@@ -113,7 +60,7 @@ public abstract class Bot implements Runnable {
 		this.port = port;
 		try {
 			connection = new Connection(new Socket(server, port));
-			new Thread(this).start();
+			connection.addListener(this);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -133,10 +80,4 @@ public abstract class Bot implements Runnable {
 	public void identify(String password) throws IOException {
 		connection.write.write("PRIVMSG NickServ :identify " + password + "\n");
 	}
-
-	public abstract void onRawCommand(String raw);
-
-	public abstract void onMessage(final PRIVMSG message);
-
-	public abstract void onNotice(final NOTICE notice);
 }
