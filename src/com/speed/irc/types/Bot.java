@@ -7,7 +7,7 @@ import java.net.UnknownHostException;
 import com.speed.irc.connection.Connection;
 
 /**
- * The abstract class for making bots. To create a bot, you can extend this
+ * The abstract class for making robots. To create a robot, you can extend this
  * class.
  * 
  * This file is part of Speed's IRC API.
@@ -34,7 +34,6 @@ public abstract class Bot implements MessageListener {
 	public Connection connection;
 	private final String server;
 	private final int port;
-	private boolean autoJoin;
 
 	public int getPort() {
 		return port;
@@ -42,15 +41,6 @@ public abstract class Bot implements MessageListener {
 
 	public String getServer() {
 		return server;
-	}
-
-	/**
-	 * @deprecated is useless at the moment, adding fix soon.
-	 * @param on
-	 *            true if the client should rejoin after being kicked.
-	 */
-	public void setAutoRejoin(final boolean on) {
-		autoJoin = on;//FIXME useless!
 	}
 
 	public abstract void onStart();
@@ -61,6 +51,13 @@ public abstract class Bot implements MessageListener {
 		try {
 			connection = new Connection(new Socket(server, port));
 			connection.addListener(this);
+			connection.write.write("NICK " + getNick() + "\n");
+			connection.write.write("USER " + getUser() + " team-deathmatch.com TB: Speed Bot\n");
+			onStart();
+			connection.setNick(getNick());
+			for (String s : getChannels()) {
+				connection.joinChannel(s);
+			}
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -77,6 +74,13 @@ public abstract class Bot implements MessageListener {
 		return "Speed";
 	}
 
+	/**
+	 * Used to identify to NickServ.
+	 * 
+	 * @param password
+	 *            The password assigned to your nick
+	 * @throws IOException
+	 */
 	public void identify(String password) throws IOException {
 		connection.write.write("PRIVMSG NickServ :identify " + password + "\n");
 	}

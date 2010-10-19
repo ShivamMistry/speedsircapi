@@ -14,7 +14,7 @@ import com.speed.irc.types.NOTICE;
 import com.speed.irc.types.PRIVMSG;
 
 /**
- * A class representing a socket connection to an irc server with the
+ * A class representing a socket connection to an IRC server with the
  * functionality of sending raw commands and messages.
  * 
  * This file is part of Speed's IRC API.
@@ -41,6 +41,19 @@ public class Connection {
 	private final Socket socket;
 	private List<MessageListener> listeners = new LinkedList<MessageListener>();
 	private final Thread thread;
+	private boolean autoJoin;
+	private String nick;
+
+	/**
+	 * Used to set whether the client should rejoin a channel after being kicked
+	 * from it.
+	 * 
+	 * @param on
+	 *            true if the client should rejoin after being kicked.
+	 */
+	public void setAutoRejoin(final boolean on) {
+		autoJoin = on;
+	}
 
 	public Connection(Socket sock) throws IOException {
 		socket = sock;
@@ -54,7 +67,12 @@ public class Connection {
 						s = s.substring(1);
 						if (s.contains("PING") && !s.contains("PRIVMSG")) {
 							sendRaw("PONG " + socket.getInetAddress().getHostAddress() + "\n");
+						} else if (s.contains("KICK") && (!s.contains("PRIVMSG") || !s.contains("NOTICE"))
+								&& s.contains(nick) && autoJoin) {
+							Thread.sleep(700);
+							joinChannel(s.substring(s.indexOf("KICK")).split(" ")[1]);
 						} else if (s.contains("NOTICE")) {
+
 							String message = s.substring(s.indexOf(" :")).trim().replaceFirst(":", "");
 							String sender = s.split("!")[0];
 							String channel = null;
@@ -79,6 +97,8 @@ public class Connection {
 					e.printStackTrace();
 				} catch (NullPointerException e) {
 					e.printStackTrace();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
 			}
 
@@ -102,6 +122,10 @@ public class Connection {
 		for (MessageListener listener : listeners) {
 			listener.noticeReceived(notice);
 		}
+	}
+
+	public void setNick(final String nick) {
+		this.nick = nick;
 	}
 
 	/**

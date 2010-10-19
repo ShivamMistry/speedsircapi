@@ -89,11 +89,10 @@ public class HelloBot extends Bot {
 		return "London";
 	}
 
-	@SuppressWarnings("deprecation")
 	public void onStart() {
 		try {
-			identify("password");
-			setAutoRejoin(true);
+			//identify("password");
+			connection.setAutoRejoin(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
