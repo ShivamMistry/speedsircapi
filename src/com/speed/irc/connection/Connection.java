@@ -92,7 +92,6 @@ public class Connection implements ConnectionHandler, Runnable {
 							eventManager.fireEvent(new NoticeEvent(new NOTICE(msg, sender, channel), this));
 
 						} else if (message.getCommand().equals(Numerics.SERVER_SUPPORT)) {
-							System.out.println(s);
 							if (s.indexOf("PREFIX") > -1) {
 								String temp = s.substring(s.indexOf("PREFIX"));
 								temp = temp.substring(0, temp.indexOf(" ")).replace("PREFIX=", "");
