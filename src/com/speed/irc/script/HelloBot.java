@@ -49,7 +49,7 @@ public class HelloBot extends Bot implements RawMessageListener, PrivateMessageL
 
 	public void rawMessageReceived(final RawMessageEvent e) {
 		String raw = e.getMessage().getRaw();
-		String code = e.getMessage().getCode();
+		String code = e.getMessage().getCommand();
 		if (code.equals("JOIN")) {
 			String sender = raw.split("!")[0].replaceFirst(":", "");
 			CHANNEL.sendMessage(HELLO_PHRASES[random.nextInt(HELLO_PHRASES.length - 1)] + " " + sender);
@@ -59,7 +59,7 @@ public class HelloBot extends Bot implements RawMessageListener, PrivateMessageL
 	}
 
 	public Channel[] getChannels() {
-		CHANNEL = new Channel("#rsbuddy", connection, getNick());
+		CHANNEL = new Channel("#rscode", connection, getNick());
 		return new Channel[] { CHANNEL };
 	}
 

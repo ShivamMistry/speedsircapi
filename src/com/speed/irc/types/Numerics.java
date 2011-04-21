@@ -1,7 +1,8 @@
 package com.speed.irc.types;
 
 /**
- * Represents a raw message.
+ * Stores IRC numerics used by the API internal classes. Numerics are stored as
+ * strings to allow easy comparison. (numerics are parsed as strings)
  * 
  * This file is part of Speed's IRC API.
  * 
@@ -18,38 +19,11 @@ package com.speed.irc.types;
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  * 
+ * 
  * @author Speed
  * 
  */
-public class RawMessage {
-
-	private String raw;
-	private String code;
-	private String sender;
-	private String target;
-
-	public RawMessage(String raw) {
-		this.raw = raw;
-		String[] strings = raw.split(" ");
-		code = strings[1];
-		sender = strings[0];
-		target = strings[2];
-
-	}
-
-	public String getRaw() {
-		return raw;
-	}
-
-	public String getCommand() {
-		return code;
-	}
-
-	public String getTarget() {
-		return target;
-	}
-
-	public String getSender() {
-		return sender;
-	}
+public interface Numerics {
+	public static final String WHO_RESPONSE = "352", WHO_END = "315";
+	public static final String SERVER_SUPPORT = "005";
 }

@@ -16,7 +16,9 @@ import com.speed.irc.event.NoticeEvent;
 import com.speed.irc.event.PrivateMessageEvent;
 import com.speed.irc.event.RawMessageEvent;
 import com.speed.irc.types.Channel;
+import com.speed.irc.types.Mode;
 import com.speed.irc.types.NOTICE;
+import com.speed.irc.types.Numerics;
 import com.speed.irc.types.PRIVMSG;
 import com.speed.irc.types.RawMessage;
 
@@ -48,22 +50,9 @@ public class Connection implements ConnectionHandler, Runnable {
 	private final Socket socket;
 	public EventManager eventManager = new EventManager();
 	private final Thread thread;
-	private boolean autoJoin;
-	private String nick;
 	private Thread eventThread;
 	private BlockingQueue<String> messageQueue = new LinkedBlockingQueue<String>();
 	public Map<String, Channel> channels = new HashMap<String, Channel>();
-
-	/**
-	 * Used to set whether the client should rejoin a channel after being kicked
-	 * from it.
-	 * 
-	 * @param on
-	 *            true if the client should rejoin after being kicked.
-	 */
-	public void setAutoRejoin(final boolean on) {
-		autoJoin = on;
-	}
 
 	public Connection(Socket sock) throws IOException {
 		socket = sock;
@@ -78,35 +67,44 @@ public class Connection implements ConnectionHandler, Runnable {
 				try {
 					while ((s = read.readLine()) != null) {
 						s = s.substring(1);
-						if (s.contains("VERSION")) {
-							String sender = s.split("!")[0];
-							sendRaw("NOTICE " + sender + " :\u0001VERSION Speed's IRC API\u0001\n");
-						}
-						if (s.contains("PING") && !s.contains("PRIVMSG")) {
-							sendRaw("PONG " + socket.getInetAddress().getHostAddress() + "\n");
-						} else if (s.contains("KICK") && (!s.contains("PRIVMSG") || !s.contains("NOTICE"))
-								&& s.contains(nick) && autoJoin) {
-							Thread.sleep(700);
-							joinChannel(s.substring(s.indexOf("KICK")).split(" ")[1]);
-						} else if (s.contains("NOTICE")) {
+						RawMessage message = new RawMessage(s);
+						if (s.startsWith("PING")) {
+							sendRaw("PONG" + s.replaceFirst("PING", "") + "\n");
+						} else if (message.getCommand().equals("PRIVMSG")) {
+							String msg = s.substring(s.indexOf(" :")).trim().replaceFirst(":", "");
+							String sender = message.getSender().split("!")[0];
 
-							String message = s.substring(s.indexOf(" :")).trim().replaceFirst(":", "");
+							if (msg.equals("\u0001VERSION\u0001")) {
+								sendRaw("NOTICE " + sender + " :\u0001VERSION Speed's IRC API\u0001\n");
+							}
+							String channel = null;
+							if (s.contains("PRIVMSG #")) {
+								channel = s.substring(s.indexOf("#")).split(" ")[0].trim();
+							}
+							eventManager.fireEvent(new PrivateMessageEvent(new PRIVMSG(msg, sender, channels
+									.get(channel)), this));
+						} else if (message.getCommand().equals("NOTICE")) {
+							String msg = s.substring(s.indexOf(" :")).trim().replaceFirst(":", "");
 							String sender = s.split("!")[0];
 							String channel = null;
 							if (s.contains("NOTICE #"))
 								channel = s.substring(s.indexOf("#")).split(" ")[0].trim();
-							eventManager.fireEvent(new NoticeEvent(new NOTICE(message, sender, channel), this));
-						} else if (s.contains(":") && s.substring(0, s.indexOf(":")).contains("PRIVMSG")) {
-							String message = s.substring(s.indexOf(" :")).trim().replaceFirst(":", "");
-							String sender = s.split("!")[0];
-							String channel = null;
-							if (s.contains("PRIVMSG #"))
-								channel = s.substring(s.indexOf("#")).split(" ")[0].trim();
-							eventManager.fireEvent(new PrivateMessageEvent(new PRIVMSG(message, sender, channels
-									.get(channel)), this));
-						} else {
-							eventManager.fireEvent(new RawMessageEvent(new RawMessage(s), this));
+							eventManager.fireEvent(new NoticeEvent(new NOTICE(msg, sender, channel), this));
+
+						} else if (message.getCommand().equals(Numerics.SERVER_SUPPORT)) {
+							System.out.println(s);
+							if (s.indexOf("PREFIX") > -1) {
+								String temp = s.substring(s.indexOf("PREFIX"));
+								temp = temp.substring(0, temp.indexOf(" ")).replace("PREFIX=", "");
+								String letters = temp.substring(temp.indexOf("(") + 1, temp.indexOf(")"));
+								String symbols = temp.substring(temp.indexOf(")") + 1);
+								if (letters.length() == symbols.length()) {
+									Mode.letters = letters.toCharArray();
+									Mode.symbols = symbols.toCharArray();
+								}
+							}
 						}
+						eventManager.fireEvent(new RawMessageEvent(message, this));
 					}
 
 					socket.close();
@@ -115,17 +113,11 @@ public class Connection implements ConnectionHandler, Runnable {
 					e.printStackTrace();
 				} catch (NullPointerException e) {
 					e.printStackTrace();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
 				}
 			}
 
 		});
 		thread.start();
-	}
-
-	public void setNick(final String nick) {
-		this.nick = nick;
 	}
 
 	/**

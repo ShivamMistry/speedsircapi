@@ -53,44 +53,22 @@ public class ChannelUser {
 
 	public void sync(String modes) {
 		channelModes.clear();
-		String s = "+";
-		if (modes.contains("@")) {
-			s += "o";
-		} else if (modes.contains("+")) {
-			s += "v";
-		} else if (modes.contains("&")) {
-			s += "a";
-		} else if (modes.contains("~")) {
-			s += "q";
-		} else if (modes.contains("%")) {
-			s += "h";
+		StringBuilder builder = new StringBuilder("+");
+		for (char c : modes.toCharArray()) {
+			builder.append(Mode.symbolToLetter(c));
 		}
-		channelModes.parse(modes);
+		channelModes.parse(builder.toString());
 	}
 
 	public void addMode(char mode) {
-		mode = chanModeToSymbol(mode);
+		mode = Mode.letterToSymbol(mode);
 
 		modes = modes + mode;
 		sync(modes);
 	}
 
-	public char chanModeToSymbol(char mode) {
-		if (mode == 'v')
-			return '+';
-		if (mode == 'o')
-			return '@';
-		if (mode == 'a')
-			return '&';
-		if (mode == 'q')
-			return '~';
-		if (mode == 'h')
-			return '%';
-		return '0';
-	}
-
 	public void removeMode(char mode) {
-		mode = chanModeToSymbol(mode);
+		mode = Mode.letterToSymbol(mode);
 		StringBuilder builder = new StringBuilder();
 		for (char c : modes.toCharArray()) {
 			if (c != mode) {
@@ -118,23 +96,23 @@ public class ChannelUser {
 	}
 
 	public boolean isOperator() {
-		return modes.contains("@");
+		return modes.indexOf(Mode.symbols[2]) != -1;
 	}
 
 	public boolean isHalfOperator() {
-		return modes.contains("%");
+		return modes.indexOf(Mode.symbols[3]) != -1;
 	}
 
 	public boolean isVoiced() {
-		return modes.contains("+");
+		return modes.indexOf(Mode.symbols[4]) != -1;
 	}
 
 	public boolean isOwner() {
-		return modes.contains("~");
+		return modes.indexOf(Mode.symbols[0]) != -1;
 	}
 
 	public boolean isProtected() {
-		return modes.contains("&");
+		return modes.indexOf(Mode.symbols[1]) != -1;
 	}
 
 	public int getRights() {

@@ -57,7 +57,6 @@ public abstract class Bot {
 			if (this instanceof IRCEventListener) {
 				connection.eventManager.addListener((IRCEventListener) this);
 			}
-			connection.setNick(getNick());
 			for (Channel s : getChannels()) {
 				s.join();
 			}
