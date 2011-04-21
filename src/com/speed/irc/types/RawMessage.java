@@ -1,7 +1,7 @@
 package com.speed.irc.types;
 
 /**
- * A wrapper class for PRIVMSGs.
+ * Represents a raw message.
  * 
  * This file is part of Speed's IRC API.
  * 
@@ -21,44 +21,28 @@ package com.speed.irc.types;
  * @author Speed
  * 
  */
-public class PRIVMSG {
+public class RawMessage {
 
-	private final String message, sender;
-	private Channel channel;
+	private String raw;
+	private String code;
+	private String sender;
 
-	/**
-	 * 
-	 * @param message
-	 *            The actual message.
-	 * @param sender
-	 *            The nick of the person who the message was sent to/from.
-	 * @param channel
-	 *            The channel the message was sent to/from.
-	 */
-	public PRIVMSG(final String message, final String sender, final Channel channel) {
-		this.message = message;
-		this.channel = channel;
-		this.sender = sender;
+	public RawMessage(String raw) {
+		this.raw = raw;
+		String[] strings = raw.split(" ");
+		code = strings[1];
+		sender = strings[0];
 	}
 
-	public String getMessage() {
-		return message;
+	public String getRaw() {
+		return raw;
+	}
+
+	public String getCode() {
+		return code;
 	}
 
 	public String getSender() {
 		return sender;
 	}
-
-	public Channel getChannel() {
-		return channel;
-	}
-
-	public boolean isPrivateMessage() {
-		return channel == null;
-	}
-
-	public boolean isChannelMessage() {
-		return channel != null;
-	}
-
 }

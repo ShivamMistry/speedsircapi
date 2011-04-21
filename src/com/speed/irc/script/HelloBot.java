@@ -2,9 +2,13 @@ package com.speed.irc.script;
 
 import java.util.Random;
 
+import com.speed.irc.event.PrivateMessageEvent;
+import com.speed.irc.event.PrivateMessageListener;
+import com.speed.irc.event.RawMessageEvent;
+import com.speed.irc.event.RawMessageListener;
 import com.speed.irc.types.Bot;
-import com.speed.irc.types.NOTICE;
-import com.speed.irc.types.PRIVMSG;
+import com.speed.irc.types.Channel;
+import com.speed.irc.types.ChannelUser;
 
 /**
  * Greets people as they join the channel or speak a greeting.
@@ -27,12 +31,12 @@ import com.speed.irc.types.PRIVMSG;
  * @author Speed
  * 
  */
-public class HelloBot extends Bot {
+public class HelloBot extends Bot implements RawMessageListener, PrivateMessageListener {
 
 	public static final String[] HELLO_PHRASES = new String[] { "Hello", "Hi", "Hey", "Yo", "Wassup", "helo", "herro",
 			"hiya", "hai", "heya" };
 	public static final Random random = new Random();
-	public static final String CHANNEL = "#IRC";
+	public Channel CHANNEL;
 	public long lastMessage = System.currentTimeMillis();
 
 	public HelloBot(final String server, final int port) {
@@ -43,46 +47,20 @@ public class HelloBot extends Bot {
 		new HelloBot("irc.strictfp.com", 6667);
 	}
 
-	public void messageReceived(final PRIVMSG msg) {
-		String message = msg.getMessage();
-		String sender = msg.getSender();
-		for (String s : HELLO_PHRASES) {
-			if (message.toLowerCase().equals(s.toLowerCase())
-					|| (message.contains("London") && message.toLowerCase().contains(s.toLowerCase()))) {
-				connection.sendMessage(new PRIVMSG(HELLO_PHRASES[random.nextInt(HELLO_PHRASES.length - 1)] + " "
-						+ sender, null, CHANNEL));
-				try {
-					Thread.sleep(1500);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				lastMessage = System.currentTimeMillis();
-			}
-		}
-
-		if (message.contains("!raw") && sender.equals("Speed")) {
-			connection.sendRaw(message.replaceFirst("!raw", "").trim() + "\n");
-		}
-
-	}
-
-	public void rawMessageReceived(final String raw) {
-		System.out.println("HelloBot: " + raw);
-		if (raw.contains("JOIN " + CHANNEL) || raw.contains("JOIN :" + CHANNEL)) {
+	public void rawMessageReceived(final RawMessageEvent e) {
+		String raw = e.getMessage().getRaw();
+		String code = e.getMessage().getCode();
+		if (code.equals("JOIN")) {
 			String sender = raw.split("!")[0].replaceFirst(":", "");
-			connection.sendMessage(new PRIVMSG(HELLO_PHRASES[random.nextInt(HELLO_PHRASES.length - 1)] + " " + sender,
-					null, CHANNEL));
-			try {
-				Thread.sleep(1500);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			CHANNEL.sendMessage(HELLO_PHRASES[random.nextInt(HELLO_PHRASES.length - 1)] + " " + sender);
+
 		}
 
 	}
 
-	public String[] getChannels() {
-		return new String[] { CHANNEL };
+	public Channel[] getChannels() {
+		CHANNEL = new Channel("#rsbuddy", connection, getNick());
+		return new Channel[] { CHANNEL };
 	}
 
 	public String getNick() {
@@ -91,16 +69,41 @@ public class HelloBot extends Bot {
 
 	public void onStart() {
 		try {
-			//identify("password");
-			connection.setAutoRejoin(true);
+			// identify("password");
+			CHANNEL.setAutoRejoin(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	public void noticeReceived(final NOTICE notice) {
-		System.out.println(notice.getMessage());
+	public void messageReceived(PrivateMessageEvent e) {
+		String message = e.getMessage().getMessage();
+		String sender = e.getMessage().getSender();
+
+		if (message.contains("!raw") && sender.equals("Speed")) {
+			connection.sendRaw(message.replaceFirst("!raw", "").trim() + "\n");
+		}
+		if (e.getMessage().getChannel() == null) {
+			return;
+		}
+		for (ChannelUser u : e.getMessage().getChannel().getUsers()) {
+			if (u.getNick().equals(sender)) {
+				for (String s : HELLO_PHRASES) {
+					if (message.toLowerCase().equals(s.toLowerCase())
+							|| (message.contains("London") && message.toLowerCase().contains(s.toLowerCase()))) {
+						CHANNEL.sendMessage(HELLO_PHRASES[random.nextInt(HELLO_PHRASES.length - 1)] + " " + sender
+								+ " with rights: " + u.getRights());
+						try {
+							Thread.sleep(1500);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+						lastMessage = System.currentTimeMillis();
+					}
+				}
+			}
+		}
 	}
 
 }

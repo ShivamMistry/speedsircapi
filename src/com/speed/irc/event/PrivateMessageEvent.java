@@ -1,7 +1,9 @@
-package com.speed.irc.types;
+package com.speed.irc.event;
+
+import com.speed.irc.types.PRIVMSG;
 
 /**
- * A wrapper class for PRIVMSGs.
+ * The wrapper class for an PRIVMSG event.
  * 
  * This file is part of Speed's IRC API.
  * 
@@ -18,47 +20,26 @@ package com.speed.irc.types;
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  * 
+ * 
  * @author Speed
  * 
  */
-public class PRIVMSG {
+public class PrivateMessageEvent implements IRCEvent {
 
-	private final String message, sender;
-	private Channel channel;
+	protected Object source;
+	protected PRIVMSG message;
 
-	/**
-	 * 
-	 * @param message
-	 *            The actual message.
-	 * @param sender
-	 *            The nick of the person who the message was sent to/from.
-	 * @param channel
-	 *            The channel the message was sent to/from.
-	 */
-	public PRIVMSG(final String message, final String sender, final Channel channel) {
+	public PrivateMessageEvent(final PRIVMSG message, final Object source) {
+		this.source = source;
 		this.message = message;
-		this.channel = channel;
-		this.sender = sender;
 	}
 
-	public String getMessage() {
+	public Object getSource() {
+		return source;
+	}
+
+	public PRIVMSG getMessage() {
 		return message;
-	}
-
-	public String getSender() {
-		return sender;
-	}
-
-	public Channel getChannel() {
-		return channel;
-	}
-
-	public boolean isPrivateMessage() {
-		return channel == null;
-	}
-
-	public boolean isChannelMessage() {
-		return channel != null;
 	}
 
 }

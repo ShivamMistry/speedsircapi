@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import com.speed.irc.connection.Connection;
+import com.speed.irc.event.IRCEventListener;
 
 /**
  * The abstract class for making robots. To create a robot, you can extend this
@@ -29,7 +30,7 @@ import com.speed.irc.connection.Connection;
  * @author Speed
  * 
  */
-public abstract class Bot implements MessageListener {
+public abstract class Bot {
 
 	public Connection connection;
 	private final String server;
@@ -48,16 +49,20 @@ public abstract class Bot implements MessageListener {
 	public Bot(final String server, final int port) {
 		this.server = server;
 		this.port = port;
+
 		try {
 			connection = new Connection(new Socket(server, port));
-			connection.addListener(this);
-			connection.write.write("NICK " + getNick() + "\n");
-			connection.write.write("USER " + getUser() + " team-deathmatch.com TB: Speed Bot\n");
-			onStart();
-			connection.setNick(getNick());
-			for (String s : getChannels()) {
-				connection.joinChannel(s);
+			connection.sendRaw("NICK " + getNick() + "\n");
+			connection.sendRaw("USER " + getNick() + " team-deathmatch.com TB: Speed Bot\n");
+			if (this instanceof IRCEventListener) {
+				connection.eventManager.addListener((IRCEventListener) this);
 			}
+			connection.setNick(getNick());
+			for (Channel s : getChannels()) {
+				s.join();
+			}
+			onStart();
+
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -66,7 +71,7 @@ public abstract class Bot implements MessageListener {
 
 	}
 
-	public abstract String[] getChannels();
+	public abstract Channel[] getChannels();
 
 	public abstract String getNick();
 

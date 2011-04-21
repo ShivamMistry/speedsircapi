@@ -6,12 +6,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-import com.speed.irc.types.MessageListener;
+import com.speed.irc.event.EventManager;
+import com.speed.irc.event.NoticeEvent;
+import com.speed.irc.event.PrivateMessageEvent;
+import com.speed.irc.event.RawMessageEvent;
+import com.speed.irc.types.Channel;
 import com.speed.irc.types.NOTICE;
 import com.speed.irc.types.PRIVMSG;
+import com.speed.irc.types.RawMessage;
 
 /**
  * A class representing a socket connection to an IRC server with the
@@ -35,14 +42,17 @@ import com.speed.irc.types.PRIVMSG;
  * @author Speed
  * 
  */
-public class Connection {
+public class Connection implements ConnectionHandler, Runnable {
 	public final BufferedWriter write;
 	public final BufferedReader read;
 	private final Socket socket;
-	private List<MessageListener> listeners = new LinkedList<MessageListener>();
+	public EventManager eventManager = new EventManager();
 	private final Thread thread;
 	private boolean autoJoin;
 	private String nick;
+	private Thread eventThread;
+	private BlockingQueue<String> messageQueue = new LinkedBlockingQueue<String>();
+	public Map<String, Channel> channels = new HashMap<String, Channel>();
 
 	/**
 	 * Used to set whether the client should rejoin a channel after being kicked
@@ -59,12 +69,19 @@ public class Connection {
 		socket = sock;
 		write = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
 		read = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+		eventThread = new Thread(eventManager);
+		eventThread.start();
+		new Thread(this).start();
 		thread = new Thread(new Runnable() {
 			public void run() {
 				String s;
 				try {
 					while ((s = read.readLine()) != null) {
 						s = s.substring(1);
+						if (s.contains("VERSION")) {
+							String sender = s.split("!")[0];
+							sendRaw("NOTICE " + sender + " :\u0001VERSION Speed's IRC API\u0001\n");
+						}
 						if (s.contains("PING") && !s.contains("PRIVMSG")) {
 							sendRaw("PONG " + socket.getInetAddress().getHostAddress() + "\n");
 						} else if (s.contains("KICK") && (!s.contains("PRIVMSG") || !s.contains("NOTICE"))
@@ -78,21 +95,22 @@ public class Connection {
 							String channel = null;
 							if (s.contains("NOTICE #"))
 								channel = s.substring(s.indexOf("#")).split(" ")[0].trim();
-							fireNoticeReceived(new NOTICE(message, sender, channel));
+							eventManager.fireEvent(new NoticeEvent(new NOTICE(message, sender, channel), this));
 						} else if (s.contains(":") && s.substring(0, s.indexOf(":")).contains("PRIVMSG")) {
 							String message = s.substring(s.indexOf(" :")).trim().replaceFirst(":", "");
 							String sender = s.split("!")[0];
 							String channel = null;
 							if (s.contains("PRIVMSG #"))
 								channel = s.substring(s.indexOf("#")).split(" ")[0].trim();
-							else
-								System.out.println("wat");
-
-							fireMessageReceived(new PRIVMSG(message, sender, channel));
+							eventManager.fireEvent(new PrivateMessageEvent(new PRIVMSG(message, sender, channels
+									.get(channel)), this));
 						} else {
-							fireRawMessageReceived(s);
+							eventManager.fireEvent(new RawMessageEvent(new RawMessage(s), this));
 						}
 					}
+
+					socket.close();
+					eventManager.setRunning(false);
 				} catch (IOException e) {
 					e.printStackTrace();
 				} catch (NullPointerException e) {
@@ -106,36 +124,8 @@ public class Connection {
 		thread.start();
 	}
 
-	private void fireRawMessageReceived(final String s) {
-		for (MessageListener listener : listeners) {
-			listener.rawMessageReceived(s);
-		}
-	}
-
-	private void fireMessageReceived(final PRIVMSG privmsg) {
-		for (MessageListener listener : listeners) {
-			listener.messageReceived(privmsg);
-		}
-	}
-
-	private void fireNoticeReceived(final NOTICE notice) {
-		for (MessageListener listener : listeners) {
-			listener.noticeReceived(notice);
-		}
-	}
-
 	public void setNick(final String nick) {
 		this.nick = nick;
-	}
-
-	/**
-	 * Adds a listener to handle events.
-	 * 
-	 * @param listener
-	 *            The listener that handles the events.
-	 */
-	public void addListener(final MessageListener listener) {
-		listeners.add(listener);
 	}
 
 	/**
@@ -148,7 +138,7 @@ public class Connection {
 	 * 
 	 */
 	public void sendMessage(final PRIVMSG message) {
-		sendRaw("PRIVMSG " + message.getChannel() + " :" + message.getMessage() + "\n");
+		sendRaw("PRIVMSG " + message.getChannel().getName() + " :" + message.getMessage() + "\n");
 	}
 
 	/**
@@ -159,12 +149,9 @@ public class Connection {
 	 *            The raw command you wish to send to the server.
 	 */
 	public void sendRaw(String raw) {
-		try {
-			write.write(raw);
-			write.flush();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+
+		messageQueue.add(raw);
+
 	}
 
 	/**
@@ -198,7 +185,41 @@ public class Connection {
 	 *            The action you would like to send.
 	 */
 	public void sendAction(String channel, String action) {
-		sendRaw("PRIVMSG " + channel + ": ACTION " + action + "");
+		sendRaw("PRIVMSG " + channel + ": \u0001ACTION " + action + "\u0001\n");
+	}
+
+	public EventManager getEventManager() {
+		return eventManager;
+	}
+
+	public void run() {
+		while (true) {
+
+			String s = null;
+			synchronized (messageQueue) {
+				s = messageQueue.poll();
+			}
+			if (s != null) {
+				if (!s.endsWith("\n")) {
+					s = s + "\n";
+				}
+				try {
+					if (write != null) {
+						write.write(s);
+						write.flush();
+					} else {
+						messageQueue.add(s);
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }
