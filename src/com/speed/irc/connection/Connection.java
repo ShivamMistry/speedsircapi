@@ -16,7 +16,6 @@ import com.speed.irc.event.NoticeEvent;
 import com.speed.irc.event.PrivateMessageEvent;
 import com.speed.irc.event.RawMessageEvent;
 import com.speed.irc.types.Channel;
-import com.speed.irc.types.Mode;
 import com.speed.irc.types.NOTICE;
 import com.speed.irc.types.Numerics;
 import com.speed.irc.types.PRIVMSG;
@@ -53,6 +52,8 @@ public class Connection implements ConnectionHandler, Runnable {
 	private Thread eventThread;
 	private BlockingQueue<String> messageQueue = new LinkedBlockingQueue<String>();
 	public Map<String, Channel> channels = new HashMap<String, Channel>();
+	public static char[] modeSymbols;
+	public static char[] modeLetters;
 
 	public Connection(Socket sock) throws IOException {
 		socket = sock;
@@ -98,8 +99,8 @@ public class Connection implements ConnectionHandler, Runnable {
 								String letters = temp.substring(temp.indexOf("(") + 1, temp.indexOf(")"));
 								String symbols = temp.substring(temp.indexOf(")") + 1);
 								if (letters.length() == symbols.length()) {
-									Mode.letters = letters.toCharArray();
-									Mode.symbols = symbols.toCharArray();
+									modeLetters = letters.toCharArray();
+									modeSymbols = symbols.toCharArray();
 								}
 							}
 						}
@@ -121,6 +122,8 @@ public class Connection implements ConnectionHandler, Runnable {
 
 	/**
 	 * Sends a message to a channel/nick
+	 * 
+	 * @deprecated
 	 * 
 	 * @param CHANNEL
 	 *            Either the channel or nick you wish to send the message to.
@@ -187,9 +190,8 @@ public class Connection implements ConnectionHandler, Runnable {
 		while (true) {
 
 			String s = null;
-			synchronized (messageQueue) {
-				s = messageQueue.poll();
-			}
+			s = messageQueue.poll();
+
 			if (s != null) {
 				if (!s.endsWith("\n")) {
 					s = s + "\n";

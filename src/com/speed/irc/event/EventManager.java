@@ -33,9 +33,8 @@ public class EventManager implements Runnable {
 	private BlockingQueue<IRCEvent> eventQueue = new LinkedBlockingQueue<IRCEvent>();
 
 	public void fireEvent(IRCEvent e) {
-		synchronized (eventQueue) {
-			eventQueue.add(e);
-		}
+		eventQueue.add(e);
+
 	}
 
 	public void addListener(final IRCEventListener e) {
@@ -47,9 +46,9 @@ public class EventManager implements Runnable {
 	public void run() {
 		while (isRunning) {
 			IRCEvent e = null;
-			synchronized (eventQueue) {
-				e = eventQueue.poll();
-			}
+
+			e = eventQueue.poll();
+
 			if (e != null)
 				try {
 					for (IRCEventListener listener : listeners) {
@@ -80,9 +79,8 @@ public class EventManager implements Runnable {
 	}
 
 	public void clearQueue() {
-		synchronized (eventQueue) {
-			eventQueue.clear();
-		}
+		eventQueue.clear();
+
 	}
 
 	public void setRunning(boolean b) {

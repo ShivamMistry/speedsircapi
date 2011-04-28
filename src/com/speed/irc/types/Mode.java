@@ -3,10 +3,31 @@ package com.speed.irc.types;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.speed.irc.connection.Connection;
+
+/**
+ * A class representing user and channel modes.
+ * 
+ * This file is part of Speed's IRC API.
+ * 
+ * Speed's IRC API is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation, either version 3 of the License, or (at your
+ * option) any later version.
+ * 
+ * Speed's IRC API is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @author Speed
+ * 
+ */
 public class Mode {
 	private List<Character> modes = new LinkedList<Character>();
-	public static char[] letters;
-	public static char[] symbols;
 
 	public Mode(String modes) {
 		if (!modes.isEmpty())
@@ -17,19 +38,19 @@ public class Mode {
 		modes.clear();
 	}
 
-	public static char letterToSymbol(char letter) {
-		for (int i = 0; i < letters.length; i++) {
-			if (letters[i] == letter) {
-				return symbols[i];
+	public static char channelModeLetterToSymbol(char letter) {
+		for (int i = 0; i < Connection.modeLetters.length; i++) {
+			if (Connection.modeLetters[i] == letter) {
+				return Connection.modeSymbols[i];
 			}
 		}
 		return '0';
 	}
 
-	public static char symbolToLetter(char symbol) {
-		for (int i = 0; i < symbols.length; i++) {
-			if (symbols[i] == symbol) {
-				return letters[i];
+	public static char channelModeSymbolToLetter(char symbol) {
+		for (int i = 0; i < Connection.modeSymbols.length; i++) {
+			if (Connection.modeSymbols[i] == symbol) {
+				return Connection.modeLetters[i];
 			}
 		}
 		return '0';

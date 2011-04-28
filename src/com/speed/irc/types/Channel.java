@@ -30,18 +30,17 @@ import com.speed.irc.event.RawMessageListener;
  * 
  */
 public class Channel implements RawMessageListener, Runnable {
-	private String name;
-	private Connection connection;
-
-	private List<ChannelUser> users = new LinkedList<ChannelUser>();
-	private List<ChannelUser> tempList = new LinkedList<ChannelUser>();
+	protected String name;
+	protected Connection connection;
+	protected List<ChannelUser> users = new LinkedList<ChannelUser>();
+	protected List<ChannelUser> tempList = new LinkedList<ChannelUser>();
 	public volatile boolean isRunning = true;
 	public static final int WHO_DELAY = 90000;
-	private boolean autoRejoin;
-	private String nick;
-	private Mode chanMode;
-	private List<String> bans = new LinkedList<String>();
-	private String topic;
+	protected boolean autoRejoin;
+	protected String nick;
+	protected Mode chanMode;
+	protected List<String> bans = new LinkedList<String>();
+	protected String topic;
 
 	public Channel(String name, Connection connection, String nick) {
 		this.name = name;
@@ -65,8 +64,14 @@ public class Channel implements RawMessageListener, Runnable {
 		autoRejoin = on;
 	}
 
+	/**
+	 * Sends a message to the channel.
+	 * 
+	 * @param message
+	 *            The message to be sent
+	 */
 	public void sendMessage(String message) {
-		connection.sendMessage(new PRIVMSG(message, null, this));
+		connection.sendRaw(String.format("PRIVMSG %s :%s\n", name, message));
 	}
 
 	public void rawMessageReceived(RawMessageEvent e) {
@@ -85,7 +90,7 @@ public class Channel implements RawMessageListener, Runnable {
 			String nick = raw.split("!")[0];
 			String user = raw.substring(raw.indexOf("!") + 1, raw.indexOf("@"));
 			String host = raw.substring(raw.indexOf("@") + 1, raw.indexOf("J")).trim();
-			users.add(new ChannelUser(nick, "", user, host));
+			users.add(new ChannelUser(nick, "", user, host, this));
 		} else if (code.equals("MODE")) {
 			raw = raw.substring(raw.indexOf(code));
 			if (raw.contains(name)) {
@@ -139,7 +144,7 @@ public class Channel implements RawMessageListener, Runnable {
 				String nick = temp[7];
 				String modes = temp[8];
 				modes = modes.replace("*", "").replace("G", "").replace("H", "");
-				tempList.add(new ChannelUser(nick, modes, user, host));
+				tempList.add(new ChannelUser(nick, modes, user, host, this));
 			}
 		} else if (code.equals(Numerics.WHO_END)) {
 			users.clear();

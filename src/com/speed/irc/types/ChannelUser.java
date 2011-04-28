@@ -1,5 +1,7 @@
 package com.speed.irc.types;
 
+import com.speed.irc.connection.Connection;
+
 /**
  * Represents a user in a channel.
  * 
@@ -25,6 +27,7 @@ public class ChannelUser {
 	private String nick, modes, user;
 	private String host;
 	private Mode channelModes = new Mode("");
+	private final Channel channel;
 
 	public String getNick() {
 		return nick;
@@ -42,33 +45,42 @@ public class ChannelUser {
 		this.modes = modes;
 	}
 
-	public ChannelUser(String nick, String modes, String user, String host) {
+	public void sendMessage(final String message) {
+		channel.connection.sendRaw(String.format("PRIVMSG %s :%s", nick, message));
+	}
+
+	public Channel getChannel() {
+		return channel;
+	}
+
+	public ChannelUser(String nick, String modes, String user, String host, final Channel channel) {
 		this.setModes(modes);
 		this.setNick(nick);
 		this.setHost(host);
 		this.setUser(user);
 		if (!modes.isEmpty())
 			sync(modes);
+		this.channel = channel;
 	}
 
 	public void sync(String modes) {
 		channelModes.clear();
 		StringBuilder builder = new StringBuilder("+");
 		for (char c : modes.toCharArray()) {
-			builder.append(Mode.symbolToLetter(c));
+			builder.append(Mode.channelModeSymbolToLetter(c));
 		}
 		channelModes.parse(builder.toString());
 	}
 
 	public void addMode(char mode) {
-		mode = Mode.letterToSymbol(mode);
+		mode = Mode.channelModeLetterToSymbol(mode);
 
 		modes = modes + mode;
 		sync(modes);
 	}
 
 	public void removeMode(char mode) {
-		mode = Mode.letterToSymbol(mode);
+		mode = Mode.channelModeLetterToSymbol(mode);
 		StringBuilder builder = new StringBuilder();
 		for (char c : modes.toCharArray()) {
 			if (c != mode) {
@@ -96,23 +108,23 @@ public class ChannelUser {
 	}
 
 	public boolean isOperator() {
-		return modes.indexOf(Mode.symbols[2]) != -1;
+		return modes.indexOf(Connection.modeSymbols[2]) != -1;
 	}
 
 	public boolean isHalfOperator() {
-		return modes.indexOf(Mode.symbols[3]) != -1;
+		return modes.indexOf(Connection.modeSymbols[3]) != -1;
 	}
 
 	public boolean isVoiced() {
-		return modes.indexOf(Mode.symbols[4]) != -1;
+		return modes.indexOf(Connection.modeSymbols[4]) != -1;
 	}
 
 	public boolean isOwner() {
-		return modes.indexOf(Mode.symbols[0]) != -1;
+		return modes.indexOf(Connection.modeSymbols[0]) != -1;
 	}
 
 	public boolean isProtected() {
-		return modes.indexOf(Mode.symbols[1]) != -1;
+		return modes.indexOf(Connection.modeSymbols[1]) != -1;
 	}
 
 	public int getRights() {
@@ -122,7 +134,6 @@ public class ChannelUser {
 			return 4;
 		} else if (isOperator()) {
 			return 3;
-
 		} else if (isHalfOperator()) {
 			return 2;
 		} else if (isVoiced()) {
