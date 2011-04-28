@@ -41,27 +41,83 @@ public class Channel implements RawMessageListener, Runnable {
 	protected Mode chanMode;
 	protected List<String> bans = new LinkedList<String>();
 	protected String topic;
+	protected Thread channel;
 
-	public Channel(String name, Connection connection, String nick) {
+	/**
+	 * Constructs a channel.
+	 * 
+	 * @param name
+	 *            the name of the channel.
+	 * @param connection
+	 *            the connection which to register the channel to.
+	 * @param nick
+	 *            the nick of the client.
+	 */
+	public Channel(final String name, final Connection connection, final String nick) {
 		this.name = name;
 		this.connection = connection;
 		this.nick = nick;
 		this.connection.channels.put(name, this);
-
 		this.connection.getEventManager().addListener(this);
-		new Thread(this).start();
 	}
 
+	/**
+	 * Gets the name of the channel.
+	 * 
+	 * @return the name of the channel
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Gets the list of users in the channel.
+	 * 
+	 * @return The list of users in the channel.
+	 */
 	public List<ChannelUser> getUsers() {
 		return users;
 	}
 
-	public void setAutoRejoin(boolean on) {
+	/**
+	 * Gets a user from the channel.
+	 * 
+	 * @param nick
+	 *            The nick of the ChannelUser to get.
+	 * @return The ChannelUser object associated with the nick or
+	 *         <code>null</code>.
+	 */
+	public ChannelUser getUser(final String nick) {
+		for (ChannelUser user : users) {
+			if (user.getNick().equals(nick)) {
+				return user;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Sets whether rejoining is enabled when kicked
+	 * 
+	 * @param on
+	 *            turn auto-rejoin on or not
+	 */
+	public void setAutoRejoin(final boolean on) {
 		autoRejoin = on;
+	}
+
+	/**
+	 * Leaves the channel.
+	 * 
+	 * @param message
+	 *            The part message, can be null for no message.
+	 */
+	public void part(final String message) {
+		isRunning = false;
+		if (message == null)
+			connection.sendRaw(String.format("PART %s :%s\n", name, message));
+		else
+			connection.sendRaw(String.format("PART %s\n", name, message));
 	}
 
 	/**
@@ -70,15 +126,18 @@ public class Channel implements RawMessageListener, Runnable {
 	 * @param message
 	 *            The message to be sent
 	 */
-	public void sendMessage(String message) {
+	public void sendMessage(final String message) {
 		connection.sendRaw(String.format("PRIVMSG %s :%s\n", name, message));
 	}
 
-	public void rawMessageReceived(RawMessageEvent e) {
+	public void rawMessageReceived(final RawMessageEvent e) {
 		String raw = e.getMessage().getRaw();
 		String code = e.getMessage().getCommand();
-		if (autoRejoin && code.equals("KICK") && raw.split(" ")[3].equals(nick)) {
-			join();
+		if (code.equals("KICK") && raw.split(" ")[3].equals(nick)) {
+			if (autoRejoin)
+				join();
+			else
+				isRunning = false;
 		} else if (code.equals("KICK")) {
 			String nick = raw.split(" ")[3];
 			for (ChannelUser user : users) {
@@ -155,6 +214,13 @@ public class Channel implements RawMessageListener, Runnable {
 			if (temp[0].substring(temp[0].indexOf("TOPIC")).contains(name)) {
 				setTopic(temp[1]);
 			}
+		} else if (code.equals(Numerics.BANNED_FROM_CHANNEL) && e.getMessage().getTarget().equals(nick)) {
+			isRunning = false;
+		} else if (code.equals("NICK")) {
+			ChannelUser user = getUser(e.getMessage().getSender().split("!")[0]);
+			if (user != null) {
+				user.setNick(raw.substring(raw.indexOf(": ") + 2).trim());
+			}
 		}
 
 	}
@@ -178,11 +244,25 @@ public class Channel implements RawMessageListener, Runnable {
 		} while (isRunning);
 	}
 
+	/**
+	 * Joins the channel.
+	 */
 	public void join() {
 		connection.joinChannel(name);
+
+		isRunning = true;
+		if (!channel.isAlive()) {
+			channel = new Thread(this);
+			channel.start();
+		}
 	}
 
-	public void setTopic(String topic) {
+	/**
+	 * Doesn't send any topic changes to the server.
+	 * 
+	 * @param topic
+	 */
+	public void setTopic(final String topic) {
 		this.topic = topic;
 	}
 
