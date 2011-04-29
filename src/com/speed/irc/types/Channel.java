@@ -251,21 +251,98 @@ public class Channel implements RawMessageListener, Runnable {
 		connection.joinChannel(name);
 
 		isRunning = true;
-		if (!channel.isAlive()) {
+		if (channel == null || !channel.isAlive()) {
 			channel = new Thread(this);
 			channel.start();
 		}
 	}
 
 	/**
-	 * Doesn't send any topic changes to the server.
+	 * Bans then kicks the channel user with the reason specified.
 	 * 
-	 * @param topic
+	 * @param user
+	 *            the ChannelUser to kick.
+	 * @param reason
+	 *            The reason for kicking the channel user, can be
+	 *            <code>null</code>.
 	 */
-	public void setTopic(final String topic) {
-		this.topic = topic;
+	public void kickBan(final ChannelUser user, final String reason) {
+		ban(user);
+		kick(user, reason);
 	}
 
+	/**
+	 * Attempts to ban the specified ChannelUser.
+	 * 
+	 * @param user
+	 *            the user that should be banned.
+	 */
+	public void ban(final ChannelUser user) {
+		final String banMask = new StringBuffer().append("*!*@").append(user.getHost()).toString();
+		ban(banMask);
+	}
+
+	/**
+	 * Attempts to ban the specified mask.
+	 * 
+	 * @param banMask
+	 *            The ban-mask that should be banned.
+	 */
+	public void ban(final String banMask) {
+		connection.sendRaw(String.format("MODE %s +b %s\n", name, banMask));
+	}
+
+	/**
+	 * Attempts to kick a channel user.
+	 * 
+	 * @param user
+	 *            The ChannelUser that is to be kicked.
+	 * @param reason
+	 *            The reason for kicking the channel user, can be
+	 *            <code>null</code>.
+	 */
+	public void kick(final ChannelUser user, String reason) {
+		if (reason == null) {
+			reason = user.getNick();
+		}
+		connection.sendRaw(String.format("KICK %s %s :%s\n", name, user.getNick(), reason));
+	}
+
+	/**
+	 * Attempts to kick a channel user.
+	 * 
+	 * @param user
+	 *            The nick of the user that is to be kicked.
+	 * @param reason
+	 *            The reason for kicking the channel user, can be
+	 *            <code>null</code>.
+	 */
+	public void kick(final String nick, String reason) {
+		final ChannelUser user = getUser(nick);
+		if (user == null) {
+			return;
+		}
+		if (reason == null) {
+			reason = user.getNick();
+		}
+		connection.sendRaw(String.format("KICK %s %s :%s\n", name, user.getNick(), reason));
+	}
+
+	/**
+	 * Sets the channel's topic. Attempts to send any changes to the server.
+	 * 
+	 * @param topic
+	 *            The new channel topic.
+	 */
+	public void setTopic(final String topic) {
+		connection.sendRaw(String.format("TOPIC %s :%s\n", name, topic));
+	}
+
+	/**
+	 * Gets the topic.
+	 * 
+	 * @return the channel's topic
+	 */
 	public String getTopic() {
 		return topic;
 	}

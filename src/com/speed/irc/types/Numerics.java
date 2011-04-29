@@ -24,7 +24,9 @@ package com.speed.irc.types;
  * 
  */
 public interface Numerics {
-	String WHO_RESPONSE = "352", WHO_END = "315";
+	String WHO_RESPONSE = "352";
+	String WHO_END = "315";
 	String SERVER_SUPPORT = "005";
 	String BANNED_FROM_CHANNEL = "474";
+	String NOT_AN_OPERATOR = "482";
 }
