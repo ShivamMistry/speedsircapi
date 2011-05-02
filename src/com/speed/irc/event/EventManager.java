@@ -64,6 +64,25 @@ public class EventManager implements Runnable {
 							if (listener instanceof RawMessageListener) {
 								((RawMessageListener) listener).rawMessageReceived((RawMessageEvent) e);
 							}
+						} else if (e instanceof ChannelUserEvent) {
+							if (listener instanceof ChannelUserListener) {
+								final ChannelUserListener l = (ChannelUserListener) listener;
+								final ChannelUserEvent event = (ChannelUserEvent) e;
+								switch (((ChannelUserEvent) e).getCode()) {
+								case ChannelUserEvent.USER_JOINED:
+									l.channelUserJoined(event);
+									break;
+								case ChannelUserEvent.USER_KICKED:
+									l.channelUserKicked(event);
+									break;
+								case ChannelUserEvent.USER_MODE_CHANGED:
+									l.channelUserModeChanged(event);
+									break;
+								case ChannelUserEvent.USER_PARTED:
+									l.channelUserParted(event);
+									break;
+								}
+							}
 						}
 					}
 				} catch (Exception ea) {

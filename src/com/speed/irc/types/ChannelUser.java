@@ -141,4 +141,9 @@ public class ChannelUser {
 		}
 		return 0;
 	}
+
+	@Override
+	public String toString() {
+		return (getRights() > 0 ? String.valueOf(Connection.modeSymbols[5 - getRights()]) : "").concat(nick);
+	}
 }

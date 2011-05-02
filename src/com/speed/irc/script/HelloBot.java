@@ -35,8 +35,8 @@ public class HelloBot extends Bot implements RawMessageListener, PrivateMessageL
 
 	public static final String[] HELLO_PHRASES = new String[] { "Hello", "Hi", "Hey", "Yo", "Wassup", "helo", "herro",
 			"hiya", "hai", "heya" };
-	public static final Random random = new Random();
-	public Channel CHANNEL;
+	public static final Random RANDOM_GENERATOR = new Random();
+	public Channel channel;
 	public long lastMessage = System.currentTimeMillis();
 
 	public HelloBot(final String server, final int port) {
@@ -52,15 +52,13 @@ public class HelloBot extends Bot implements RawMessageListener, PrivateMessageL
 		String code = e.getMessage().getCommand();
 		if (code.equals("JOIN")) {
 			String sender = raw.split("!")[0].replaceFirst(":", "");
-			CHANNEL.sendMessage(HELLO_PHRASES[random.nextInt(HELLO_PHRASES.length - 1)] + " " + sender);
-
+			channel.sendMessage(HELLO_PHRASES[RANDOM_GENERATOR.nextInt(HELLO_PHRASES.length - 1)] + " " + sender);
 		}
-
 	}
 
 	public Channel[] getChannels() {
-		CHANNEL = new Channel("#rscode", connection, getNick());
-		return new Channel[] { CHANNEL };
+		channel = new Channel("#rscode", connection, getNick());
+		return new Channel[] { channel };
 	}
 
 	public String getNick() {
@@ -70,7 +68,7 @@ public class HelloBot extends Bot implements RawMessageListener, PrivateMessageL
 	public void onStart() {
 		try {
 			// identify("password");
-			CHANNEL.setAutoRejoin(true);
+			channel.setAutoRejoin(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -92,14 +90,8 @@ public class HelloBot extends Bot implements RawMessageListener, PrivateMessageL
 				for (String s : HELLO_PHRASES) {
 					if (message.toLowerCase().equals(s.toLowerCase())
 							|| (message.contains("London") && message.toLowerCase().contains(s.toLowerCase()))) {
-						CHANNEL.sendMessage(HELLO_PHRASES[random.nextInt(HELLO_PHRASES.length - 1)] + " " + sender
+						channel.sendMessage(HELLO_PHRASES[RANDOM_GENERATOR.nextInt(HELLO_PHRASES.length - 1)] + " " + sender
 								+ " with rights: " + u.getRights());
-						try {
-							Thread.sleep(1500);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
-						lastMessage = System.currentTimeMillis();
 					}
 				}
 			}

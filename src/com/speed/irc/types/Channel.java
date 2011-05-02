@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.speed.irc.connection.Connection;
+import com.speed.irc.event.ChannelUserEvent;
 import com.speed.irc.event.RawMessageEvent;
 import com.speed.irc.event.RawMessageListener;
 
@@ -134,22 +135,39 @@ public class Channel implements RawMessageListener, Runnable {
 		String raw = e.getMessage().getRaw();
 		String code = e.getMessage().getCommand();
 		if (code.equals("KICK") && raw.split(" ")[3].equals(nick)) {
+			final ChannelUser user = getUser(nick);
+			if (user != null) {
+				users.remove(user);
+			}
 			if (autoRejoin)
 				join();
 			else
 				isRunning = false;
+			connection.getEventManager().fireEvent(
+					new ChannelUserEvent(this, this, getUser(raw.split(" ")[3]), ChannelUserEvent.USER_KICKED));
 		} else if (code.equals("KICK")) {
-			String nick = raw.split(" ")[3];
-			for (ChannelUser user : users) {
-				if (user.getNick().equals(nick)) {
-					users.remove(user);
-				}
+			final String nick = raw.split(" ")[3];
+			final ChannelUser user = getUser(nick);
+			if (user != null) {
+				users.remove(user);
 			}
+			connection.getEventManager()
+					.fireEvent(new ChannelUserEvent(this, this, user, ChannelUserEvent.USER_KICKED));
+		} else if (code.equals("PART")) {
+			final String nick = e.getMessage().getSender().split("!")[0];
+			final ChannelUser user = getUser(nick);
+			if (user != null) {
+				users.remove(user);
+			}
+			connection.getEventManager()
+					.fireEvent(new ChannelUserEvent(this, this, user, ChannelUserEvent.USER_PARTED));
 		} else if (code.equals("JOIN")) {
-			String nick = raw.split("!")[0];
-			String user = raw.substring(raw.indexOf("!") + 1, raw.indexOf("@"));
-			String host = raw.substring(raw.indexOf("@") + 1, raw.indexOf("J")).trim();
-			users.add(new ChannelUser(nick, "", user, host, this));
+			final String nick = raw.split("!")[0];
+			final String user = raw.substring(raw.indexOf("!") + 1, raw.indexOf("@"));
+			final String host = raw.substring(raw.indexOf("@") + 1, raw.indexOf("J")).trim();
+			final ChannelUser u = new ChannelUser(nick, "", user, host, this);
+			users.add(u);
+			connection.getEventManager().fireEvent(new ChannelUserEvent(this, this, u, ChannelUserEvent.USER_JOINED));
 		} else if (code.equals("MODE")) {
 			raw = raw.substring(raw.indexOf(code));
 			if (raw.contains(name)) {
@@ -188,6 +206,9 @@ public class Channel implements RawMessageListener, Runnable {
 								} else {
 									user.removeMode(c);
 								}
+								connection.getEventManager().fireEvent(
+										new ChannelUserEvent(this, this, user, ChannelUserEvent.USER_MODE_CHANGED));
+
 							}
 						}
 
@@ -345,6 +366,11 @@ public class Channel implements RawMessageListener, Runnable {
 	 */
 	public String getTopic() {
 		return topic;
+	}
+
+	@Override
+	public String toString() {
+		return name;
 	}
 
 }
