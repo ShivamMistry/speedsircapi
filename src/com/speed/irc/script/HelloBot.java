@@ -2,10 +2,10 @@ package com.speed.irc.script;
 
 import java.util.Random;
 
+import com.speed.irc.event.ChannelUserEvent;
+import com.speed.irc.event.ChannelUserListener;
 import com.speed.irc.event.PrivateMessageEvent;
 import com.speed.irc.event.PrivateMessageListener;
-import com.speed.irc.event.RawMessageEvent;
-import com.speed.irc.event.RawMessageListener;
 import com.speed.irc.types.Bot;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
@@ -31,7 +31,7 @@ import com.speed.irc.types.ChannelUser;
  * @author Speed
  * 
  */
-public class HelloBot extends Bot implements RawMessageListener, PrivateMessageListener {
+public class HelloBot extends Bot implements ChannelUserListener, PrivateMessageListener {
 
 	public static final String[] HELLO_PHRASES = new String[] { "Hello", "Hi", "Hey", "Yo", "Wassup", "helo", "herro",
 			"hiya", "hai", "heya" };
@@ -45,15 +45,6 @@ public class HelloBot extends Bot implements RawMessageListener, PrivateMessageL
 
 	public static void main(String[] args) {
 		new HelloBot("irc.strictfp.com", 6667);
-	}
-
-	public void rawMessageReceived(final RawMessageEvent e) {
-		String raw = e.getMessage().getRaw();
-		String code = e.getMessage().getCommand();
-		if (code.equals("JOIN")) {
-			String sender = raw.split("!")[0].replaceFirst(":", "");
-			channel.sendMessage(HELLO_PHRASES[RANDOM_GENERATOR.nextInt(HELLO_PHRASES.length - 1)] + " " + sender);
-		}
 	}
 
 	public Channel[] getChannels() {
@@ -76,8 +67,8 @@ public class HelloBot extends Bot implements RawMessageListener, PrivateMessageL
 	}
 
 	public void messageReceived(PrivateMessageEvent e) {
-		String message = e.getMessage().getMessage();
-		String sender = e.getMessage().getSender();
+		final String message = e.getMessage().getMessage();
+		final String sender = e.getMessage().getSender();
 
 		if (message.contains("!raw") && sender.equals("Speed")) {
 			connection.sendRaw(message.replaceFirst("!raw", "").trim() + "\n");
@@ -85,17 +76,32 @@ public class HelloBot extends Bot implements RawMessageListener, PrivateMessageL
 		if (e.getMessage().getChannel() == null) {
 			return;
 		}
-		for (ChannelUser u : e.getMessage().getChannel().getUsers()) {
-			if (u.getNick().equals(sender)) {
-				for (String s : HELLO_PHRASES) {
-					if (message.toLowerCase().equals(s.toLowerCase())
-							|| (message.contains("London") && message.toLowerCase().contains(s.toLowerCase()))) {
-						channel.sendMessage(HELLO_PHRASES[RANDOM_GENERATOR.nextInt(HELLO_PHRASES.length - 1)] + " " + sender
-								+ " with rights: " + u.getRights());
-					}
-				}
+		ChannelUser user = channel.getUser(sender);
+		for (String s : HELLO_PHRASES) {
+			if (message.toLowerCase().equals(s.toLowerCase())
+					|| (message.contains("London") && message.toLowerCase().contains(s.toLowerCase()))) {
+				channel.sendMessage(HELLO_PHRASES[RANDOM_GENERATOR.nextInt(HELLO_PHRASES.length - 1)] + " " + sender
+						+ " with rights: " + user.getRights());
 			}
+
 		}
+	}
+
+	public void channelUserJoined(ChannelUserEvent e) {
+		channel.sendMessage(HELLO_PHRASES[RANDOM_GENERATOR.nextInt(HELLO_PHRASES.length - 1)] + " "
+				+ e.getUser().getNick());
+	}
+
+	public void channelUserParted(ChannelUserEvent e) {
+
+	}
+
+	public void channelUserModeChanged(ChannelUserEvent e) {
+
+	}
+
+	public void channelUserKicked(ChannelUserEvent e) {
+
 	}
 
 }
