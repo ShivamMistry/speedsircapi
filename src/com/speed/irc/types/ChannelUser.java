@@ -25,6 +25,11 @@ public class ChannelUser {
     private String host;
     private Mode channelModes;
     private final Channel channel;
+    public static final byte VOICE = 1;
+    public static final byte HALF_OP = 2;
+    public static final byte OP = 3;
+    public static final byte ADMIN = 4;
+    public static final byte OWNER = 5;
 
     public String getNick() {
         return nick;

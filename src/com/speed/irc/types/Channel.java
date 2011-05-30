@@ -180,7 +180,6 @@ public class Channel implements RawMessageListener, Runnable {
                             plus = false;
                             continue;
                         }
-                        index++;
                         if (c == 'b') {
                             if (plus) {
                                 bans.add(u[index]);
@@ -201,6 +200,8 @@ public class Channel implements RawMessageListener, Runnable {
 
                             }
                         }
+                        index++;
+
 
                     }
 
@@ -239,19 +240,12 @@ public class Channel implements RawMessageListener, Runnable {
     public void run() {
         do {
             server.sendRaw("WHO " + name);
-            if (!users.isEmpty())
-                try {
-                    Thread.sleep(Channel.WHO_DELAY);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            else {
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            try {
+                Thread.sleep(users.isEmpty() ? 5000 : Channel.WHO_DELAY);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+
         } while (isRunning);
     }
 

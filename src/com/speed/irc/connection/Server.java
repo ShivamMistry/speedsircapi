@@ -40,6 +40,7 @@ public class Server implements ConnectionHandler, Runnable {
     private final Socket socket;
     private EventManager eventManager = new EventManager();
     private BlockingQueue<String> messageQueue = new LinkedBlockingQueue<String>();
+    private BlockingQueue<String> whoQueue = new LinkedBlockingQueue<String>();
     private Map<String, Channel> channels = new HashMap<String, Channel>();
     private char[] modeSymbols;
     private char[] modeLetters;
@@ -136,6 +137,10 @@ public class Server implements ConnectionHandler, Runnable {
      */
     public Map<String, Channel> getChannels() {
         return channels;
+    }
+
+    public void addToWhoQueue(String s) {
+        whoQueue.add(s);
     }
 
     /**
@@ -256,6 +261,11 @@ public class Server implements ConnectionHandler, Runnable {
                 Thread.sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            }
+
+            String who = whoQueue.poll();
+            if (who != null) {
+
             }
         }
     }
