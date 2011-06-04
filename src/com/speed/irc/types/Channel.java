@@ -270,7 +270,7 @@ public class Channel implements RawMessageListener, Runnable {
      * Joins the channel.
      */
     public void join() {
-        server.joinChannel(name);
+        server.sendRaw("JOIN :" + name);
 
         isRunning = true;
         if (channel == null || !channel.isAlive()) {
