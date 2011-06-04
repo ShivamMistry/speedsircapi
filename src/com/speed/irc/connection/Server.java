@@ -40,11 +40,12 @@ public class Server implements ConnectionHandler, Runnable {
     private final Socket socket;
     private EventManager eventManager = new EventManager();
     private BlockingQueue<String> messageQueue = new LinkedBlockingQueue<String>();
-    private BlockingQueue<String> whoQueue = new LinkedBlockingQueue<String>();
     private Map<String, Channel> channels = new HashMap<String, Channel>();
     private char[] modeSymbols;
     private char[] modeLetters;
     private String serverName;
+    private String nick;
+    private HashMap<String, String> ctcpReplies = new HashMap<String, String>();
 
     public Server(final Socket sock) throws IOException {
         socket = sock;
@@ -54,6 +55,8 @@ public class Server implements ConnectionHandler, Runnable {
         Thread eventThread = new Thread(eventManager);
         eventThread.start();
         new Thread(this).start();
+        ctcpReplies.put("VERSION", "Speed's IRC API");
+        ctcpReplies.put("TIME", "Get a watch!");
         Thread thread = new Thread(new Runnable() {
             public void run() {
                 String s;
@@ -66,9 +69,13 @@ public class Server implements ConnectionHandler, Runnable {
                         } else if (message.getCommand().equals("PRIVMSG")) {
                             final String msg = s.substring(s.indexOf(" :")).trim().replaceFirst(":", "");
                             final String sender = message.getSender().split("!")[0];
-
-                            if (msg.equals("\u0001VERSION\u0001")) {
-                                sendRaw("NOTICE " + sender + " :\u0001VERSION Speed's IRC API\u0001\n");
+                            if (msg.startsWith("\u0001")) {
+                                String request = msg.replace("\u0001", "");
+                                synchronized (ctcpReplies) {
+                                    if (ctcpReplies.containsKey(request)) {
+                                        sendRaw(String.format("NOTICE %s :\u0001%s %s\u0001\n", sender, request, ctcpReplies.get(request)));
+                                    }
+                                }
                             }
                             String channel = null;
                             if (s.contains("PRIVMSG #")) {
@@ -113,6 +120,27 @@ public class Server implements ConnectionHandler, Runnable {
     }
 
     /**
+     * Gets the current nick as captured by the message sending thread.
+     *
+     * @return the current nick for this server connection.
+     */
+    public String getNick() {
+        return nick;
+    }
+
+    /**
+     * Sets a reply to a CTCP request.
+     *
+     * @param request the request to send the reply for
+     * @param reply   the reply to send for the request
+     */
+    public void setCtcpReply(final String request, final String reply) {
+        synchronized (ctcpReplies) {
+            ctcpReplies.put(request, reply);
+        }
+    }
+
+    /**
      * Sends a message to a channel/nick
      *
      * @deprecated See {@link Channel#sendMessage(String)}
@@ -137,10 +165,6 @@ public class Server implements ConnectionHandler, Runnable {
      */
     public Map<String, Channel> getChannels() {
         return channels;
-    }
-
-    public void addToWhoQueue(String s) {
-        whoQueue.add(s);
     }
 
     /**
@@ -188,7 +212,7 @@ public class Server implements ConnectionHandler, Runnable {
         return modeSymbols;
     }
 
-    public void setModeSymbols(final char[] modeSymbols) {
+    protected void setModeSymbols(final char[] modeSymbols) {
         this.modeSymbols = modeSymbols;
     }
 
@@ -201,7 +225,7 @@ public class Server implements ConnectionHandler, Runnable {
         return modeLetters;
     }
 
-    public void setModeLetters(final char[] modeLetters) {
+    protected void setModeLetters(final char[] modeLetters) {
         this.modeLetters = modeLetters;
     }
 
@@ -218,6 +242,7 @@ public class Server implements ConnectionHandler, Runnable {
      * Joins a channel.
      *
      * @param channel The channel you wish to join.
+     * @deprecated See {@link com.speed.irc.types.Channel#join()}
      */
     public void joinChannel(String channel) {
         sendRaw("JOIN " + channel + "\n");
@@ -226,11 +251,11 @@ public class Server implements ConnectionHandler, Runnable {
     /**
      * Sends an action to a channel/nick.
      *
-     * @param channel The specified nick you would like to send the action to.
+     * @param channel The specified channel/nick you would like to send the action to.
      * @param action  The action you would like to send.
      */
     public void sendAction(final String channel, final String action) {
-        sendRaw("PRIVMSG " + channel + ": \u0001ACTION " + action + "\u0001\n");
+        sendRaw("PRIVMSG " + channel + ": \u0001ACTION " + action + "\n");
     }
 
     public EventManager getEventManager() {
@@ -248,6 +273,9 @@ public class Server implements ConnectionHandler, Runnable {
                 }
                 try {
                     if (write != null) {
+                        if (s.startsWith("NICK")) {
+                            nick = s.replace("NICK", "").replace(":", "").trim();
+                        }
                         write.write(s);
                         write.flush();
                     } else {
@@ -261,11 +289,6 @@ public class Server implements ConnectionHandler, Runnable {
                 Thread.sleep(200);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
-
-            String who = whoQueue.poll();
-            if (who != null) {
-
             }
         }
     }

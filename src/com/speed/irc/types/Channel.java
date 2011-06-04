@@ -48,11 +48,28 @@ public class Channel implements RawMessageListener, Runnable {
      * @param name   the name of the channel.
      * @param server the server object this channel is associated with.
      * @param nick   the nick of the client.
+     * @deprecated See {@link #Channel(String, com.speed.irc.connection.Server)}
      */
     public Channel(final String name, final Server server, final String nick) {
         this.name = name;
         this.server = server;
-        this.nick = nick;
+        this.nick = server.getNick();
+        this.server.getChannels().put(name, this);
+        this.server.getEventManager().addListener(this);
+        chanMode = new Mode(server, "");
+    }
+
+
+    /**
+     * Constructs a channel.
+     *
+     * @param name   the name of the channel.
+     * @param server the server object this channel is associated with.
+     */
+    public Channel(final String name, final Server server) {
+        this.name = name;
+        this.server = server;
+        this.nick = server.getNick();
         this.server.getChannels().put(name, this);
         this.server.getEventManager().addListener(this);
         chanMode = new Mode(server, "");

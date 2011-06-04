@@ -46,7 +46,7 @@ public class HelloBot extends Bot implements ChannelUserListener, PrivateMessage
     }
 
     public Channel[] getChannels() {
-        channel = new Channel("#rscode", server, getNick());
+        channel = new Channel("#rscode", server);
         return new Channel[]{channel};
     }
 
