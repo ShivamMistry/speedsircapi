@@ -57,7 +57,7 @@ public class Mode {
         return '0';
     }
 
-    protected void parse(String modes) {
+    public void parse(String modes) {
         boolean plus = false;
         int index = 0;
         for (int i = 0; i < modes.toCharArray().length; i++) {

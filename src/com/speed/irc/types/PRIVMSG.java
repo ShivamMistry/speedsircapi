@@ -23,16 +23,16 @@ package com.speed.irc.types;
 public class PRIVMSG {
 
     private final String message, sender;
-    private Channel channel;
+    private Conversable conversable;
 
     /**
-     * @param message The actual message.
-     * @param sender  The nick of the person who the message was sent to/from.
-     * @param channel The channel the message was sent to/from.
+     * @param message     The actual message.
+     * @param sender      The nick of the person who the message was sent to/from.
+     * @param conversable The channel the message was sent to/from.
      */
-    public PRIVMSG(final String message, final String sender, final Channel channel) {
+    public PRIVMSG(final String message, final String sender, final Conversable conversable) {
         this.message = message;
-        this.channel = channel;
+        this.conversable = conversable;
         this.sender = sender;
     }
 
@@ -44,16 +44,16 @@ public class PRIVMSG {
         return sender;
     }
 
-    public Channel getChannel() {
-        return channel;
+    public Conversable getConversable() {
+        return conversable;
     }
 
     public boolean isPrivateMessage() {
-        return channel == null;
+        return !conversable.getName().contains("#");
     }
 
     public boolean isChannelMessage() {
-        return channel != null;
+        return conversable.getName().contains("#");
     }
 
     public boolean isCtcpMessage() {

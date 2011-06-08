@@ -1,10 +1,8 @@
 package com.speed.irc.connection;
 
 import com.speed.irc.event.EventManager;
-import com.speed.irc.event.NoticeEvent;
-import com.speed.irc.event.PrivateMessageEvent;
-import com.speed.irc.event.RawMessageEvent;
-import com.speed.irc.types.*;
+import com.speed.irc.types.Channel;
+import com.speed.irc.types.NOTICE;
 
 import java.io.*;
 import java.net.Socket;
@@ -37,15 +35,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class Server implements ConnectionHandler, Runnable {
     private BufferedWriter write;
     private BufferedReader read;
-    private final Socket socket;
-    private EventManager eventManager = new EventManager();
+    protected final Socket socket;
+    protected EventManager eventManager = new EventManager();
     private BlockingQueue<String> messageQueue = new LinkedBlockingQueue<String>();
-    private Map<String, Channel> channels = new HashMap<String, Channel>();
+    protected Map<String, Channel> channels = new HashMap<String, Channel>();
     private char[] modeSymbols;
     private char[] modeLetters;
     private String serverName;
     private String nick;
-    private HashMap<String, String> ctcpReplies = new HashMap<String, String>();
+    protected HashMap<String, String> ctcpReplies = new HashMap<String, String>();
 
     public Server(final Socket sock) throws IOException {
         socket = sock;
@@ -57,65 +55,7 @@ public class Server implements ConnectionHandler, Runnable {
         new Thread(this).start();
         ctcpReplies.put("VERSION", "Speed's IRC API");
         ctcpReplies.put("TIME", "Get a watch!");
-        Thread thread = new Thread(new Runnable() {
-            public void run() {
-                String s;
-                try {
-                    while ((s = read.readLine()) != null) {
-                        s = s.substring(1);
-                        final RawMessage message = new RawMessage(s);
-                        if (s.startsWith("PING")) {
-                            sendRaw("PONG" + s.replaceFirst("PING", "") + "\n");
-                        } else if (message.getCommand().equals("PRIVMSG")) {
-                            final String msg = s.substring(s.indexOf(" :")).trim().replaceFirst(":", "");
-                            final String sender = message.getSender().split("!")[0];
-                            if (msg.startsWith("\u0001")) {
-                                String request = msg.replace("\u0001", "");
-                                synchronized (ctcpReplies) {
-                                    if (ctcpReplies.containsKey(request)) {
-                                        sendRaw(String.format("NOTICE %s :\u0001%s %s\u0001\n", sender, request, ctcpReplies.get(request)));
-                                    }
-                                }
-                            }
-                            String channel = null;
-                            if (s.contains("PRIVMSG #")) {
-                                channel = s.substring(s.indexOf("#")).split(" ")[0].trim();
-                            }
-                            eventManager.fireEvent(new PrivateMessageEvent(new PRIVMSG(msg, sender, channels
-                                    .get(channel)), this));
-                        } else if (message.getCommand().equals("NOTICE")) {
-                            String msg = s.substring(s.indexOf(" :")).trim().replaceFirst(":", "");
-                            String sender = s.split("!")[0];
-                            String channel = null;
-                            if (s.contains("NOTICE #"))
-                                channel = s.substring(s.indexOf("#")).split(" ")[0].trim();
-                            eventManager.fireEvent(new NoticeEvent(new NOTICE(msg, sender, channel), this));
-
-                        } else if (message.getCommand().equals(Numerics.SERVER_SUPPORT)) {
-                            if (s.contains("PREFIX")) {
-                                String temp = s.substring(s.indexOf("PREFIX"));
-                                temp = temp.substring(0, temp.indexOf(" ")).replace("PREFIX=", "");
-                                String letters = temp.substring(temp.indexOf("(") + 1, temp.indexOf(")"));
-                                String symbols = temp.substring(temp.indexOf(")") + 1);
-                                if (letters.length() == symbols.length()) {
-                                    modeLetters = letters.toCharArray();
-                                    modeSymbols = symbols.toCharArray();
-                                }
-                            }
-                        }
-                        eventManager.fireEvent(new RawMessageEvent(message, this));
-                    }
-
-                    socket.close();
-                    eventManager.setRunning(false);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        });
+        Thread thread = new Thread(new ServerMessageParser(this));
         thread.start();
     }
 
@@ -138,15 +78,6 @@ public class Server implements ConnectionHandler, Runnable {
         synchronized (ctcpReplies) {
             ctcpReplies.put(request, reply);
         }
-    }
-
-    /**
-     * Sends a message to a channel/nick
-     *
-     * @deprecated See {@link Channel#sendMessage(String)}
-     */
-    public void sendMessage(final PRIVMSG message) {
-        sendRaw("PRIVMSG " + message.getChannel().getName() + " :" + message.getMessage() + "\n");
     }
 
     /**

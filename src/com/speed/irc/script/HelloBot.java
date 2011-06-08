@@ -70,7 +70,7 @@ public class HelloBot extends Bot implements ChannelUserListener, PrivateMessage
         if (message.contains("!raw") && sender.equals("Speed")) {
             server.sendRaw(message.replaceFirst("!raw", "").trim() + "\n");
         }
-        if (e.getMessage().getChannel() == null) {
+        if (e.getMessage().getConversable() == null) {
             return;
         }
         final ChannelUser user = channel.getUser(sender);

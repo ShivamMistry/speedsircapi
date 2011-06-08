@@ -20,7 +20,7 @@ package com.speed.irc.types;
  *
  * @author Speed
  */
-public class ChannelUser {
+public class ChannelUser extends ServerUser {
     private String nick, modes, user;
     private String host;
     private Mode channelModes;
@@ -57,6 +57,7 @@ public class ChannelUser {
 
     public ChannelUser(final String nick, final String modes, final String user, final String host,
                        final Channel channel) {
+        super(nick, host, user, channel.getServer());
         this.channel = channel;
         this.channelModes = new Mode(this.channel.server, "");
         this.setModes(modes);

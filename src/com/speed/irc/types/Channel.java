@@ -2,8 +2,7 @@ package com.speed.irc.types;
 
 import com.speed.irc.connection.Server;
 import com.speed.irc.event.ChannelUserEvent;
-import com.speed.irc.event.RawMessageEvent;
-import com.speed.irc.event.RawMessageListener;
+import com.speed.irc.event.ChannelUserListener;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -28,17 +27,17 @@ import java.util.List;
  *
  * @author Speed
  */
-public class Channel implements RawMessageListener, Runnable {
+public class Channel extends Conversable implements ChannelUserListener, Runnable {
     protected String name;
     protected Server server;
-    protected List<ChannelUser> users = new LinkedList<ChannelUser>();
-    protected List<ChannelUser> tempList = new LinkedList<ChannelUser>();
+    public List<ChannelUser> users = new LinkedList<ChannelUser>();
+    public List<ChannelUser> tempList = new LinkedList<ChannelUser>();
     public volatile boolean isRunning = true;
     public static final int WHO_DELAY = 90000;
     protected boolean autoRejoin;
     protected String nick;
-    protected Mode chanMode;
-    protected List<String> bans = new LinkedList<String>();
+    public Mode chanMode;
+    public List<String> bans = new LinkedList<String>();
     protected String topic;
     protected Thread channel;
 
@@ -109,6 +108,18 @@ public class Channel implements RawMessageListener, Runnable {
         return null;
     }
 
+    public boolean addChannelUser(final ChannelUser user) {
+        return users.add(user);
+    }
+
+    public boolean removeChannelUser(final ChannelUser user) {
+        return users.remove(user);
+    }
+
+    public boolean isAutoRejoinOn() {
+        return autoRejoin;
+    }
+
     /**
      * Sets whether rejoining is enabled when kicked
      *
@@ -140,119 +151,10 @@ public class Channel implements RawMessageListener, Runnable {
         server.sendRaw(String.format("PRIVMSG %s :%s\n", name, message));
     }
 
-    public void rawMessageReceived(final RawMessageEvent e) {
-        String raw = e.getMessage().getRaw();
-        String code = e.getMessage().getCommand();
-        if (code.equals("KICK") && raw.split(" ")[3].equals(nick)) {
-            final ChannelUser user = getUser(nick);
-            if (user != null) {
-                users.remove(user);
-            }
-            if (autoRejoin)
-                join();
-            else
-                isRunning = false;
-            server.getEventManager().fireEvent(
-                    new ChannelUserEvent(this, this, getUser(raw.split(" ")[3]), ChannelUserEvent.USER_KICKED));
-        } else if (code.equals("KICK")) {
-            final String nick = raw.split(" ")[3];
-            final ChannelUser user = getUser(nick);
-            if (user != null) {
-                users.remove(user);
-            }
-            server.getEventManager().fireEvent(new ChannelUserEvent(this, this, user, ChannelUserEvent.USER_KICKED));
-        } else if (code.equals("PART")) {
-            final String nick = e.getMessage().getSender().split("!")[0];
-            final ChannelUser user = getUser(nick);
-            if (user != null) {
-                users.remove(user);
-            }
-            server.getEventManager().fireEvent(new ChannelUserEvent(this, this, user, ChannelUserEvent.USER_PARTED));
-        } else if (code.equals("JOIN")) {
-            final String nick = raw.split("!")[0];
-            final String user = raw.substring(raw.indexOf("!") + 1, raw.indexOf("@"));
-            final String host = raw.substring(raw.indexOf("@") + 1, raw.indexOf("J")).trim();
-            final ChannelUser u = new ChannelUser(nick, "", user, host, this);
-            users.add(u);
-            server.getEventManager().fireEvent(new ChannelUserEvent(this, this, u, ChannelUserEvent.USER_JOINED));
-        } else if (code.equals("MODE")) {
-            raw = raw.substring(raw.indexOf(code));
-            if (raw.contains(name)) {
-                raw = raw.substring(raw.indexOf(name) + name.length()).trim();
-                String[] strings = raw.split(" ");
-                String modes = strings[0];
-                if (strings.length == 1) {
-                    chanMode.parse(modes);
-                } else {
-                    String[] u = new String[strings.length - 1];
-                    System.arraycopy(strings, 1, u, 0, u.length);
-                    boolean plus = false;
-                    int index = 0;
-                    for (int i = 0; i < modes.toCharArray().length; i++) {
-                        char c = modes.toCharArray()[i];
-                        if (c == '+') {
-                            plus = true;
-                            continue;
-                        } else if (c == '-') {
-                            plus = false;
-                            continue;
-                        }
-                        if (c == 'b') {
-                            if (plus) {
-                                bans.add(u[index]);
-                            } else {
-                                bans.remove(u[index]);
-                            }
-                            continue;
-                        }
-                        for (ChannelUser user : users) {
-                            if (user.getNick().equals(u[index])) {
-                                if (plus) {
-                                    user.addMode(c);
-                                } else {
-                                    user.removeMode(c);
-                                }
-                                server.getEventManager().fireEvent(
-                                        new ChannelUserEvent(this, this, user, ChannelUserEvent.USER_MODE_CHANGED));
-
-                            }
-                        }
-                        index++;
-
-
-                    }
-
-                }
-            }
-        } else if (code.equals(Numerics.WHO_RESPONSE)) {
-            if (raw.contains(name)) {
-                String[] temp = raw.split(" ");
-                String user = temp[4];
-                String host = temp[5];
-                String nick = temp[7];
-                String modes = temp[8];
-                modes = modes.replace("*", "").replace("G", "").replace("H", "");
-                tempList.add(new ChannelUser(nick, modes, user, host, this));
-            }
-        } else if (code.equals(Numerics.WHO_END)) {
-            users.clear();
-            users.addAll(tempList);
-            tempList.clear();
-        } else if (code.toLowerCase().equals("topic")) {
-            String[] temp = raw.split(" :", 2);
-            if (temp[0].substring(temp[0].indexOf("TOPIC")).contains(name)) {
-                setTopic(temp[1]);
-            }
-        } else if (code.equals(Numerics.BANNED_FROM_CHANNEL) && e.getMessage().getTarget().equals(nick)) {
-            isRunning = false;
-        } else if (code.equals("NICK")) {
-            final ChannelUser user = getUser(e.getMessage().getSender().split("!")[0]);
-            if (user != null) {
-                user.setNick(raw.substring(raw.indexOf(": ") + 2).trim());
-            }
-        }
-
+    public void sendNotice(String notice) {
+        server.sendRaw(String.format("NOTICE %s :%s\n", name, notice));
     }
+
 
     public void run() {
         do {
@@ -264,6 +166,15 @@ public class Channel implements RawMessageListener, Runnable {
             }
 
         } while (isRunning);
+    }
+
+    /**
+     * Gets the server the channel is on.
+     *
+     * @return the server the channel is on
+     */
+    public Server getServer() {
+        return server;
     }
 
     /**
@@ -370,4 +281,35 @@ public class Channel implements RawMessageListener, Runnable {
         return o instanceof Channel && ((Channel) o).getName().equals(getName());
     }
 
+    public void channelUserJoined(ChannelUserEvent e) {
+        if (e.getChannel().equals(this)) {
+            addChannelUser(e.getUser());
+
+        }
+    }
+
+    public void channelUserParted(ChannelUserEvent e) {
+        if (e.getChannel().equals(this)) {
+
+            ChannelUser user = e.getUser();
+            if (user != null) {
+                removeChannelUser(user);
+            }
+        }
+    }
+
+    public void channelUserModeChanged(ChannelUserEvent e) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public void channelUserKicked(ChannelUserEvent e) {
+        if (e.getChannel().equals(this)) {
+            ChannelUser user = e.getUser();
+            removeChannelUser(user);
+            if (user.getNick().equals(nick) && isAutoRejoinOn())
+                join();
+            else if (user.getNick().equals(nick))
+                isRunning = false;
+        }
+    }
 }
