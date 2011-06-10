@@ -1,9 +1,9 @@
 package com.speed.irc.types;
 
-import com.speed.irc.connection.Server;
-
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
+
+import com.speed.irc.connection.Server;
 
 /**
  * A class representing user and channel modes.
@@ -22,59 +22,59 @@ import java.util.List;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * @author Speed
  */
 public class Mode {
-    private List<Character> modes = new LinkedList<Character>();
-    private final Server server;
+	private List<Character> modes = new ArrayList<Character>();
+	private final Server server;
 
-    public Mode(final Server server, final String modes) {
-        this.server = server;
-        if (!modes.isEmpty())
-            parse(modes);
-    }
+	public Mode(final Server server, final String modes) {
+		this.server = server;
+		if (!modes.isEmpty())
+			parse(modes);
+	}
 
-    protected void clear() {
-        modes.clear();
-    }
+	protected void clear() {
+		modes.clear();
+	}
 
-    public char channelModeLetterToSymbol(char letter) {
-        for (int i = 0; i < server.getModeLetters().length; i++) {
-            if (server.getModeLetters()[i] == letter) {
-                return server.getModeSymbols()[i];
-            }
-        }
-        return '0';
-    }
+	public char channelModeLetterToSymbol(char letter) {
+		for (int i = 0; i < server.getModeLetters().length; i++) {
+			if (server.getModeLetters()[i] == letter) {
+				return server.getModeSymbols()[i];
+			}
+		}
+		return '0';
+	}
 
-    public char channelModeSymbolToLetter(char symbol) {
-        for (int i = 0; i < server.getModeSymbols().length; i++) {
-            if (server.getModeSymbols()[i] == symbol) {
-                return server.getModeLetters()[i];
-            }
-        }
-        return '0';
-    }
+	public char channelModeSymbolToLetter(char symbol) {
+		for (int i = 0; i < server.getModeSymbols().length; i++) {
+			if (server.getModeSymbols()[i] == symbol) {
+				return server.getModeLetters()[i];
+			}
+		}
+		return '0';
+	}
 
-    public void parse(String modes) {
-        boolean plus = false;
-        int index = 0;
-        for (int i = 0; i < modes.toCharArray().length; i++) {
-            char c = modes.toCharArray()[i];
-            if (c == '+') {
-                plus = true;
-                continue;
-            } else if (c == '-') {
-                plus = false;
-                continue;
-            }
-            index++;
-            if (plus) {
-                this.modes.add(c);
-            } else {
-                this.modes.remove(c);
-            }
-        }
-    }
+	public void parse(String modes) {
+		boolean plus = false;
+		int index = 0;
+		for (int i = 0; i < modes.toCharArray().length; i++) {
+			char c = modes.toCharArray()[i];
+			if (c == '+') {
+				plus = true;
+				continue;
+			} else if (c == '-') {
+				plus = false;
+				continue;
+			}
+			index++;
+			if (plus) {
+				this.modes.add(c);
+			} else {
+				this.modes.remove(c);
+			}
+		}
+	}
 }
