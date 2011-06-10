@@ -1,8 +1,8 @@
 package com.speed.irc.event;
 
 /**
- * Allows identification as an event. All events must implement this class to be
- * fired by the event manager.
+ * Implement this interface and register to the event manager to receive channel
+ * events.
  * 
  * This file is part of Speed's IRC API.
  * 
@@ -22,6 +22,8 @@ package com.speed.irc.event;
  * @author Speed
  * 
  */
-public interface IRCEvent {
-	public Object getSource();
+public interface ChannelEventListener extends IRCEventListener {
+	public void channelTopicChanged(ChannelEvent e);
+
+	public void channelModeChanged(ChannelEvent e);
 }

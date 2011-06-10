@@ -48,4 +48,20 @@ public class ServerUser extends Conversable {
     public String getName() {
         return nick;
     }
+
+	public String getNick() {
+		return nick;
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public String getUser() {
+		return user;
+	}
+
+	public Server getServer() {
+		return server;
+	}
 }

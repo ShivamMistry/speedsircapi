@@ -1,11 +1,10 @@
 package com.speed.irc.event;
 
 import com.speed.irc.types.Channel;
-import com.speed.irc.types.ChannelUser;
 
 /**
  * 
- * Represents a channel user event.
+ * Represents a channel event.
  * 
  * This file is part of Speed's IRC API.
  * 
@@ -25,37 +24,30 @@ import com.speed.irc.types.ChannelUser;
  * @author Speed
  * 
  */
-public class ChannelUserEvent extends ChannelEvent {
-	private Object source;
-	private Channel channel;
-	private ChannelUser user;
-	private int code;
-	public static final int USER_JOINED = 0, USER_PARTED = 1,
-			USER_MODE_CHANGED = 2, USER_KICKED = 3;
+public class ChannelEvent implements IRCEvent {
 
-	public ChannelUserEvent(Object source, final Channel channel,
-			final ChannelUser user, final int code) {
-		super(channel, code, source);
-		this.source = source;
-		this.channel = channel;
-		this.user = user;
+	public static final int TOPIC_CHANGED = 10, MODE_CHANGED = 11;
+	private final int code;
+	private final Channel channel;
+	private final Object source;
+
+	public ChannelEvent(final Channel channel, final int code,
+			final Object source) {
 		this.code = code;
+		this.channel = channel;
+		this.source = source;
 	}
 
 	public int getCode() {
 		return code;
 	}
 
-	public Object getSource() {
-		return source;
-	}
-
 	public Channel getChannel() {
 		return channel;
 	}
 
-	public ChannelUser getUser() {
-		return user;
+	public Object getSource() {
+		return source;
 	}
 
 }
