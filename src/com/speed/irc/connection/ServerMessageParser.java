@@ -1,5 +1,8 @@
 package com.speed.irc.connection;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.speed.irc.event.ChannelEvent;
 import com.speed.irc.event.ChannelUserEvent;
 import com.speed.irc.event.NoticeEvent;
@@ -36,6 +39,10 @@ import com.speed.irc.types.ServerUser;
  */
 public class ServerMessageParser implements Runnable {
 	private final Server server;
+	private static final Pattern PATTERN_PRIVMSG = Pattern
+			.compile("(\\w+)!(~?\\w+)@(.+?) PRIVMSG (#?[\\w\\d]+?) :(.*)");
+	private static final Pattern PATTERN_NOTICE = Pattern
+			.compile("(\\w+)!(~?\\w+)@(.+?) NOTICE (#?[\\w\\d]+?) :(.*)");
 
 	public ServerMessageParser(final Server server) {
 		this.server = server;
@@ -49,19 +56,17 @@ public class ServerMessageParser implements Runnable {
 				final RawMessage message = new RawMessage(s);
 				String raw = message.getRaw();
 				String code = message.getCommand();
+				final Matcher priv_matcher = PATTERN_PRIVMSG.matcher(s);
+				final Matcher notice_matcher = PATTERN_NOTICE.matcher(s);
 				if (s.startsWith("PING")) {
 					server.sendRaw("PONG" + s.replaceFirst("PING", "") + "\n");
-				} else if (message.getCommand().equals("PRIVMSG")) {
-					final String msg = s.substring(s.indexOf(" :")).trim()
-							.replaceFirst(":", "");
-					final String sender = message.getSender().split("!")[0];
-					final String user = message.getSender().substring(
-							message.getSender().indexOf("!") + 1,
-							message.getSender().indexOf("@"));
-					final String host = message.getSender().substring(
-							message.getSender().indexOf("@") + 1);
-
-					final String name = message.getRaw().split(" ")[2];
+				} else if (message.getCommand().equals("PRIVMSG")
+						&& priv_matcher.matches()) {
+					final String msg = priv_matcher.group(5);
+					final String sender = priv_matcher.group(1);
+					final String user = priv_matcher.group(2);
+					final String host = priv_matcher.group(3);
+					final String name = priv_matcher.group(4);
 					if (msg.startsWith("\u0001")) {
 						String request = msg.replace("\u0001", "");
 						synchronized (server.ctcpReplies) {
@@ -81,28 +86,31 @@ public class ServerMessageParser implements Runnable {
 					}
 					server.eventManager.fireEvent(new PrivateMessageEvent(
 							new PRIVMSG(msg, sender, conversable), this));
-				} else if (message.getCommand().equals("NOTICE")) {
-					String msg = s.substring(s.indexOf(" :")).trim()
-							.replaceFirst(":", "");
-					String sender = s.split("!")[0];
+				} else if (message.getCommand().equals("NOTICE")
+						&& notice_matcher.matches()) {
+					final String msg = notice_matcher.group(5);
+					final String sender = notice_matcher.group(1);
+					final String name = notice_matcher.group(4);
 					String channel = null;
 					if (s.contains("NOTICE #"))
-						channel = s.substring(s.indexOf("#")).split(" ")[0]
-								.trim();
+						channel = name;
 					server.eventManager.fireEvent(new NoticeEvent(new NOTICE(
 							msg, sender, channel), this));
 
 				} else if (message.getCommand().equals(Numerics.SERVER_SUPPORT)) {
 					if (s.contains("PREFIX")) {
-						String temp = s.substring(s.indexOf("PREFIX"));
-						temp = temp.substring(0, temp.indexOf(" ")).replace(
-								"PREFIX=", "");
-						String letters = temp.substring(temp.indexOf("(") + 1,
-								temp.indexOf(")"));
-						String symbols = temp.substring(temp.indexOf(")") + 1);
-						if (letters.length() == symbols.length()) {
-							server.setModeLetters(letters.toCharArray());
-							server.setModeSymbols(symbols.toCharArray());
+						String temp = s.substring(0, s.indexOf(" :"));
+						String[] parts = temp.split(" ");
+						for (String t : parts) {
+							if (t.startsWith("PREFIX=")) {
+								String letters = t.split("\\(", 2)[1]
+										.split("\\)")[0];
+								String symbols = t.split("\\)", 2)[1];
+								if (letters.length() == symbols.length()) {
+									server.setModeLetters(letters.toCharArray());
+									server.setModeSymbols(symbols.toCharArray());
+								}
+							}
 						}
 					}
 				} else if (code.equals("KICK")) {
@@ -130,13 +138,11 @@ public class ServerMessageParser implements Runnable {
 							new ChannelUserEvent(this, channel, user,
 									ChannelUserEvent.USER_PARTED));
 				} else if (code.equals("JOIN")) {
-					final String nick = raw.split("!")[0];
-					final String user = raw.substring(raw.indexOf("!") + 1,
-							raw.indexOf("@"));
-					final String host = raw.substring(raw.indexOf("@") + 1,
-							raw.indexOf("JOIN")).trim();
-					Channel channel = server.channels.get(raw.split(" ")[2]
-							.replace(":", ""));
+					final String[] parts = raw.split("!");
+					final String nick = parts[0];
+					final String user = parts[1].split("@")[0];
+					final String host = parts[1].split("@")[1].split(" ")[0];
+					Channel channel = server.channels.get(raw.split(" ")[2]);
 					if (channel == null) {
 						channel = new Channel(raw.split(" ")[2], server);
 					}
@@ -152,9 +158,7 @@ public class ServerMessageParser implements Runnable {
 					}
 					Channel channel = server.channels.get(name);
 
-					raw = raw.substring(raw.indexOf(code));
-					raw = raw.substring(raw.indexOf(name) + name.length())
-							.trim();
+					raw = raw.split("MODE", 2)[1].trim();
 					String[] strings = raw.split(" ");
 					String modes = strings[0];
 					if (strings.length == 1) {
