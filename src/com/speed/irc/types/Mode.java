@@ -59,7 +59,6 @@ public class Mode {
 
 	public void parse(String modes) {
 		boolean plus = false;
-		int index = 0;
 		for (int i = 0; i < modes.toCharArray().length; i++) {
 			char c = modes.toCharArray()[i];
 			if (c == '+') {
@@ -69,7 +68,6 @@ public class Mode {
 				plus = false;
 				continue;
 			}
-			index++;
 			if (plus) {
 				this.modes.add(c);
 			} else {

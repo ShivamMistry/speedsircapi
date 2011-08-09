@@ -23,33 +23,34 @@ package com.speed.irc.types;
  */
 public class RawMessage {
 
-	private String raw;
-	private String code;
-	private String sender;
-	private String target;
+    private String raw;
+    private String code;
+    private String sender;
+    private String target;
 
-	public RawMessage(String raw) {
-		this.raw = raw;
-		String[] strings = raw.split(" ");
-		code = strings[1];
-		sender = strings[0];
-		target = strings[2];
+    public RawMessage(String raw) {
+	this.raw = raw;
+	String[] strings = raw.split(" ");
+	code = strings[1];
+	sender = strings[0];
+	if (strings.length > 2)
+	    target = strings[2];
 
-	}
+    }
 
-	public String getRaw() {
-		return raw;
-	}
+    public String getRaw() {
+	return raw;
+    }
 
-	public String getCommand() {
-		return code;
-	}
+    public String getCommand() {
+	return code;
+    }
 
-	public String getTarget() {
-		return target;
-	}
+    public String getTarget() {
+	return target;
+    }
 
-	public String getSender() {
-		return sender;
-	}
+    public String getSender() {
+	return sender;
+    }
 }
