@@ -1,5 +1,7 @@
 package com.speed.irc.connection;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,6 +13,7 @@ import com.speed.irc.event.RawMessageEvent;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
 import com.speed.irc.types.Conversable;
+import com.speed.irc.types.MessageReader;
 import com.speed.irc.types.NOTICE;
 import com.speed.irc.types.Numerics;
 import com.speed.irc.types.PRIVMSG;
@@ -39,13 +42,25 @@ import com.speed.irc.types.ServerUser;
  */
 public class ServerMessageParser implements Runnable {
     private final Server server;
+    /**
+     * Regex is only being used temporarily, we will return to using split once
+     * I make it less messy.
+     */
     private static final Pattern PATTERN_PRIVMSG = Pattern
-	    .compile("(.+?)!(.+?)@(.+) PRIVMSG (#?.+?) :(.*)");
+	    .compile("(.+?)!(.+?)@(.+?) PRIVMSG (#?.+?) :(.*)");
     private static final Pattern PATTERN_NOTICE = Pattern
-	    .compile("(.+?)!(.+?)@(.+) NOTICE (#?.+?) :(.*)");
+	    .compile("(.+?)!(.+?)@(.+?) NOTICE (#?.+?) :(.*)");
+    private Thread thread;
+    private List<MessageReader> readers = new CopyOnWriteArrayList<MessageReader>();
 
     public ServerMessageParser(final Server server) {
 	this.server = server;
+	thread = new Thread(this);
+	thread.start();
+    }
+
+    public synchronized void attach(final MessageReader reader) {
+	readers.add(reader);
     }
 
     public void run() {
@@ -53,6 +68,12 @@ public class ServerMessageParser implements Runnable {
 	try {
 	    while ((s = server.getReader().readLine()) != null) {
 		s = s.substring(1);
+		for (MessageReader r : readers) {
+		    if (r.filter.accept(s)) {
+			r.notify();
+			r.s = s;
+		    }
+		}
 		final RawMessage message = new RawMessage(s);
 		String raw = message.getRaw();
 		String code = message.getCommand();
@@ -224,15 +245,15 @@ public class ServerMessageParser implements Runnable {
 		    String modes = temp[8];
 		    modes = modes.replace("*", "").replace("G", "")
 			    .replace("H", "");
-		    channel.tempList.add(new ChannelUser(nick, modes, user,
+		    channel.userBuffer.add(new ChannelUser(nick, modes, user,
 			    host, channel));
 
 		} else if (code.equals(Numerics.WHO_END)) {
 		    Channel channel = server.channels.get(raw.split(" ")[3]);
 
 		    channel.users.clear();
-		    channel.users.addAll(channel.tempList);
-		    channel.tempList.clear();
+		    channel.users.addAll(channel.userBuffer);
+		    channel.userBuffer.clear();
 		} else if (code.toLowerCase().equals("topic")) {
 		    Channel channel = server.channels.get(raw.split(" ")[2]);
 		    String[] temp = raw.split(" :", 2);

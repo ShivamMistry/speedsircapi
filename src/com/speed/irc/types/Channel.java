@@ -32,7 +32,7 @@ public class Channel extends Conversable implements ChannelUserListener,
     protected String name;
     protected Server server;
     public List<ChannelUser> users = new LinkedList<ChannelUser>();
-    public List<ChannelUser> tempList = new LinkedList<ChannelUser>();
+    public List<ChannelUser> userBuffer = new LinkedList<ChannelUser>();
     public volatile boolean isRunning = true;
     public static final int WHO_DELAY = 90000;
     protected boolean autoRejoin;
@@ -107,7 +107,7 @@ public class Channel extends Conversable implements ChannelUserListener,
      */
     public ChannelUser getUser(final String nick) {
 	for (ChannelUser user : users) {
-	    if (user.getNick().equals(nick)) {
+	    if (user.getNick().equalsIgnoreCase(nick)) {
 		return user;
 	    }
 	}

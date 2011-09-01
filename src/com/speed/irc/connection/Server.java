@@ -43,6 +43,7 @@ public class Server implements ConnectionHandler, Runnable {
     private char[] modeLetters;
     private String serverName;
     private String nick;
+    private ServerMessageParser parser;
     protected HashMap<String, String> ctcpReplies = new HashMap<String, String>();
 
     public Server(final Socket sock) throws IOException {
@@ -54,10 +55,13 @@ public class Server implements ConnectionHandler, Runnable {
 	Thread eventThread = new Thread(eventManager);
 	eventThread.start();
 	new Thread(this).start();
+	parser = new ServerMessageParser(this);
 	ctcpReplies.put("VERSION", "Speed's IRC API");
 	ctcpReplies.put("TIME", "Get a watch!");
-	Thread thread = new Thread(new ServerMessageParser(this));
-	thread.start();
+    }
+
+    public ServerMessageParser getParser() {
+	return parser;
     }
 
     /**
