@@ -70,8 +70,12 @@ public class ServerMessageParser implements Runnable {
 		s = s.substring(1);
 		for (MessageReader r : readers) {
 		    if (r.filter.accept(s)) {
-			r.notify();
 			r.s = s;
+
+			synchronized (r) {
+			    r.notify();
+
+			}
 		    }
 		}
 		final RawMessage message = new RawMessage(s);
@@ -173,13 +177,14 @@ public class ServerMessageParser implements Runnable {
 			    new ChannelUserEvent(this, channel, u,
 				    ChannelUserEvent.USER_JOINED));
 		} else if (code.equals("MODE")) {
-		    String name = raw.split(" ")[2];
+
+		    String name = message.getTarget();
 		    if (!server.channels.containsKey(name)) {
 			continue;
 		    }
 		    Channel channel = server.channels.get(name);
 
-		    raw = raw.split("MODE", 2)[1].trim();
+		    raw = raw.split(name, 2)[1].trim();
 		    String[] strings = raw.split(" ");
 		    String modes = strings[0];
 		    if (strings.length == 1) {
