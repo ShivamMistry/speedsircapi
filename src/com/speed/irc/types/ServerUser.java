@@ -19,35 +19,36 @@ import com.speed.irc.connection.Server;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * @author Speed
  */
 public class ServerUser extends Conversable {
-    private String nick, host, user;
-    private Server server;
+	private String nick, host, user;
+	private Server server;
 
-    public ServerUser(final String nick, final String host, final String user, final Server server) {
-        this.nick = nick;
-        this.host = host;
-        this.user = user;
-        this.server = server;
-    }
+	public ServerUser(final String nick, final String host, final String user,
+			final Server server) {
+		this.nick = nick;
+		this.host = host;
+		this.user = user;
+		this.server = server;
+	}
 
-    public String toString() {
-        return String.format("%s!%s@%s", nick, user, host);
-    }
+	public String toString() {
+		return String.format("%s!%s@%s", nick, user, host);
+	}
 
-    public void sendMessage(final String message) {
-        server.sendRaw(String.format("PRIVMSG %s :%s", nick, message));
-    }
+	public void sendMessage(final String message) {
+		server.sendRaw(String.format("PRIVMSG %s :%s", nick, message));
+	}
 
-    public void sendNotice(final String notice) {
-        server.sendRaw(String.format("NOTICE %s :%s", nick, notice));
-    }
+	public void sendNotice(final String notice) {
+		server.sendRaw(String.format("NOTICE %s :%s", nick, notice));
+	}
 
-    public String getName() {
-        return nick;
-    }
+	public String getName() {
+		return nick;
+	}
 
 	public String getNick() {
 		return nick;

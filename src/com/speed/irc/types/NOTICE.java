@@ -33,7 +33,8 @@ public class NOTICE {
 	 * @param channel
 	 *            The channel the notice was sent to/from.
 	 */
-	public NOTICE(final String message, final String sender, final String channel) {
+	public NOTICE(final String message, final String sender,
+			final String channel) {
 		this.message = message;
 		this.channel = channel;
 		this.sender = sender;

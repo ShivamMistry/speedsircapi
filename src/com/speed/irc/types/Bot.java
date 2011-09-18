@@ -25,57 +25,60 @@ import java.net.UnknownHostException;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * @author Speed
  */
 public abstract class Bot {
 
-    public Server server;
-    private final int port;
+	public Server server;
+	private final int port;
 
-    public int getPort() {
-        return port;
-    }
+	public int getPort() {
+		return port;
+	}
 
-    public abstract void onStart();
+	public abstract void onStart();
 
-    public Bot(final String server, final int port) {
-        this.port = port;
+	public Bot(final String server, final int port) {
+		this.port = port;
 
-        try {
-            this.server = new Server(new Socket(server, port));
-            this.server.sendRaw("NICK " + getNick() + "\n");
-            this.server.sendRaw("USER " + getNick() + " team-deathmatch.com TB: Speed Bot\n");
-            if (this instanceof IRCEventListener) {
-                this.server.getEventManager().addListener((IRCEventListener) this);
-            }
-            for (Channel s : getChannels()) {
-                s.join();
-            }
-            onStart();
+		try {
+			this.server = new Server(new Socket(server, port));
+			this.server.sendRaw("NICK " + getNick() + "\n");
+			this.server.sendRaw("USER " + getNick()
+					+ " team-deathmatch.com TB: Speed Bot\n");
+			if (this instanceof IRCEventListener) {
+				this.server.getEventManager().addListener(
+						(IRCEventListener) this);
+			}
+			for (Channel s : getChannels()) {
+				s.join();
+			}
+			onStart();
 
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-    }
+	}
 
-    public abstract Channel[] getChannels();
+	public abstract Channel[] getChannels();
 
-    public abstract String getNick();
+	public abstract String getNick();
 
-    public String getUser() {
-        return "Speed";
-    }
+	public String getUser() {
+		return "Speed";
+	}
 
-    /**
-     * Used to identify to NickServ.
-     *
-     * @param password The password assigned to your nick
-     */
-    public void identify(final String password) {
-        server.sendRaw("PRIVMSG NickServ :identify " + password + "\n");
-    }
+	/**
+	 * Used to identify to NickServ.
+	 * 
+	 * @param password
+	 *            The password assigned to your nick
+	 */
+	public void identify(final String password) {
+		server.sendRaw("PRIVMSG NickServ :identify " + password + "\n");
+	}
 }

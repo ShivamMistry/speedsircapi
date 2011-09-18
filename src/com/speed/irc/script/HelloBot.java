@@ -27,75 +27,82 @@ import java.util.Random;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * @author Speed
  */
-public class HelloBot extends Bot implements ChannelUserListener, PrivateMessageListener {
+public class HelloBot extends Bot implements ChannelUserListener,
+		PrivateMessageListener {
 
-    private static final String[] HELLO_PHRASES = new String[]{"Hello", "Hi", "Hey", "Yo", "Wassup", "helo", "herro",
-            "hiya", "hai", "heya"};
-    private static final Random RANDOM_GENERATOR = new Random();
-    private Channel channel;
+	private static final String[] HELLO_PHRASES = new String[] { "Hello", "Hi",
+			"Hey", "Yo", "Wassup", "helo", "herro", "hiya", "hai", "heya" };
+	private static final Random RANDOM_GENERATOR = new Random();
+	private Channel channel;
 
-    public HelloBot(final String server, final int port) {
-        super(server, port);
-    }
+	public HelloBot(final String server, final int port) {
+		super(server, port);
+	}
 
-    public static void main(String[] args) {
-        new HelloBot("irc.strictfp.com", 6667);
-    }
+	public static void main(String[] args) {
+		new HelloBot("irc.strictfp.com", 6667);
+	}
 
-    public Channel[] getChannels() {
-        channel = new Channel("#rscode", server);
-        return new Channel[]{channel};
-    }
+	public Channel[] getChannels() {
+		channel = new Channel("#rscode", server);
+		return new Channel[] { channel };
+	}
 
-    public String getNick() {
-        return "London";
-    }
+	public String getNick() {
+		return "London";
+	}
 
-    public void onStart() {
-        try {
-            // identify("password");
-            channel.setAutoRejoin(true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+	public void onStart() {
+		try {
+			// identify("password");
+			channel.setAutoRejoin(true);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
-    }
+	}
 
-    public void messageReceived(PrivateMessageEvent e) {
-        final String message = e.getMessage().getMessage();
-        final String sender = e.getMessage().getSender();
-        if (message.contains("!raw") && sender.equals("Speed")) {
-            server.sendRaw(message.replaceFirst("!raw", "").trim() + "\n");
-        }
-        if (e.getMessage().getConversable() == null) {
-            return;
-        }
-        final ChannelUser user = channel.getUser(sender);
-        for (String s : HELLO_PHRASES) {
-            if (message.toLowerCase().equals(s.toLowerCase())
-                    || (message.contains("London") && message.toLowerCase().contains(s.toLowerCase()))) {
-                channel.sendMessage(HELLO_PHRASES[RANDOM_GENERATOR.nextInt(HELLO_PHRASES.length - 1)] + " " + sender
-                        + " with rights: " + user.getRights());
-            }
+	public void messageReceived(PrivateMessageEvent e) {
+		final String message = e.getMessage().getMessage();
+		final String sender = e.getMessage().getSender();
+		if (message.contains("!raw") && sender.equals("Speed")) {
+			server.sendRaw(message.replaceFirst("!raw", "").trim() + "\n");
+		}
+		if (e.getMessage().getConversable() == null) {
+			return;
+		}
+		final ChannelUser user = channel.getUser(sender);
+		for (String s : HELLO_PHRASES) {
+			if (message.toLowerCase().equals(s.toLowerCase())
+					|| (message.contains("London") && message.toLowerCase()
+							.contains(s.toLowerCase()))) {
+				channel.sendMessage(HELLO_PHRASES[RANDOM_GENERATOR
+						.nextInt(HELLO_PHRASES.length - 1)]
+						+ " "
+						+ sender
+						+ " with rights: " + user.getRights());
+			}
 
-        }
-    }
+		}
+	}
 
-    public void channelUserJoined(ChannelUserEvent e) {
-        channel.sendMessage(HELLO_PHRASES[RANDOM_GENERATOR.nextInt(HELLO_PHRASES.length - 1)] + " "
-                + e.getUser().getNick());
-    }
+	public void channelUserJoined(ChannelUserEvent e) {
+		channel.sendMessage(HELLO_PHRASES[RANDOM_GENERATOR
+				.nextInt(HELLO_PHRASES.length - 1)]
+				+ " "
+				+ e.getUser().getNick());
+	}
 
-    public void channelUserParted(ChannelUserEvent e) {
-    }
+	public void channelUserParted(ChannelUserEvent e) {
+	}
 
-    public void channelUserModeChanged(ChannelUserEvent e) {
-    }
+	public void channelUserModeChanged(ChannelUserEvent e) {
+	}
 
-    public void channelUserKicked(ChannelUserEvent e) {
-    }
+	public void channelUserKicked(ChannelUserEvent e) {
+	}
 
 }

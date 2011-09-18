@@ -27,96 +27,96 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class EventManager implements Runnable {
 
-    private List<IRCEventListener> listeners = new CopyOnWriteArrayList<IRCEventListener>();
-    private boolean isRunning = true;
-    private BlockingQueue<IRCEvent> eventQueue = new LinkedBlockingQueue<IRCEvent>();
+	private List<IRCEventListener> listeners = new CopyOnWriteArrayList<IRCEventListener>();
+	private boolean isRunning = true;
+	private BlockingQueue<IRCEvent> eventQueue = new LinkedBlockingQueue<IRCEvent>();
 
-    public synchronized void fireEvent(IRCEvent e) {
-	eventQueue.add(e);
-    }
-
-    public void addListener(final IRCEventListener e) {
-	synchronized (listeners) {
-	    listeners.add(e);
+	public synchronized void fireEvent(IRCEvent e) {
+		eventQueue.add(e);
 	}
-    }
 
-    public void run() {
-	while (isRunning) {
-	    IRCEvent e = null;
-	    e = eventQueue.poll();
-	    if (e != null)
-		try {
-
-		    for (IRCEventListener listener : listeners) {
-			if (e instanceof NoticeEvent) {
-			    if (listener instanceof NoticeListener) {
-				((NoticeListener) listener)
-					.noticeReceived((NoticeEvent) e);
-			    }
-			} else if (e instanceof PrivateMessageEvent) {
-			    if (listener instanceof PrivateMessageListener) {
-				((PrivateMessageListener) listener)
-					.messageReceived((PrivateMessageEvent) e);
-			    }
-			} else if (e instanceof RawMessageEvent) {
-			    if (listener instanceof RawMessageListener) {
-				((RawMessageListener) listener)
-					.rawMessageReceived((RawMessageEvent) e);
-			    }
-			} else if (e instanceof ChannelEvent) {
-			    if (listener instanceof ChannelUserListener
-				    && e instanceof ChannelUserEvent) {
-				final ChannelUserListener l = (ChannelUserListener) listener;
-				final ChannelUserEvent event = (ChannelUserEvent) e;
-				switch (event.getCode()) {
-				case ChannelUserEvent.USER_JOINED:
-				    l.channelUserJoined(event);
-				    break;
-				case ChannelUserEvent.USER_KICKED:
-				    l.channelUserKicked(event);
-				    break;
-				case ChannelUserEvent.USER_MODE_CHANGED:
-				    l.channelUserModeChanged(event);
-				    break;
-				case ChannelUserEvent.USER_PARTED:
-				    l.channelUserParted(event);
-				    break;
-				}
-			    } else if (listener instanceof ChannelEventListener) {
-				final ChannelEventListener l = (ChannelEventListener) listener;
-				final ChannelEvent event = (ChannelEvent) e;
-				switch (event.getCode()) {
-				case ChannelEvent.MODE_CHANGED:
-				    l.channelModeChanged(event);
-				    break;
-				case ChannelEvent.TOPIC_CHANGED:
-				    l.channelTopicChanged(event);
-				    break;
-				}
-			    }
-
-			}
-		    }
-		} catch (Exception ea) {
-		    ea.printStackTrace();
-		    continue;
+	public void addListener(final IRCEventListener e) {
+		synchronized (listeners) {
+			listeners.add(e);
 		}
-	    try {
-		Thread.sleep(50);
-	    } catch (InterruptedException e1) {
-		e1.printStackTrace();
-	    }
 	}
-    }
 
-    public void clearQueue() {
-	eventQueue.clear();
+	public void run() {
+		while (isRunning) {
+			IRCEvent e = null;
+			e = eventQueue.poll();
+			if (e != null)
+				try {
 
-    }
+					for (IRCEventListener listener : listeners) {
+						if (e instanceof NoticeEvent) {
+							if (listener instanceof NoticeListener) {
+								((NoticeListener) listener)
+										.noticeReceived((NoticeEvent) e);
+							}
+						} else if (e instanceof PrivateMessageEvent) {
+							if (listener instanceof PrivateMessageListener) {
+								((PrivateMessageListener) listener)
+										.messageReceived((PrivateMessageEvent) e);
+							}
+						} else if (e instanceof RawMessageEvent) {
+							if (listener instanceof RawMessageListener) {
+								((RawMessageListener) listener)
+										.rawMessageReceived((RawMessageEvent) e);
+							}
+						} else if (e instanceof ChannelEvent) {
+							if (listener instanceof ChannelUserListener
+									&& e instanceof ChannelUserEvent) {
+								final ChannelUserListener l = (ChannelUserListener) listener;
+								final ChannelUserEvent event = (ChannelUserEvent) e;
+								switch (event.getCode()) {
+								case ChannelUserEvent.USER_JOINED:
+									l.channelUserJoined(event);
+									break;
+								case ChannelUserEvent.USER_KICKED:
+									l.channelUserKicked(event);
+									break;
+								case ChannelUserEvent.USER_MODE_CHANGED:
+									l.channelUserModeChanged(event);
+									break;
+								case ChannelUserEvent.USER_PARTED:
+									l.channelUserParted(event);
+									break;
+								}
+							} else if (listener instanceof ChannelEventListener) {
+								final ChannelEventListener l = (ChannelEventListener) listener;
+								final ChannelEvent event = (ChannelEvent) e;
+								switch (event.getCode()) {
+								case ChannelEvent.MODE_CHANGED:
+									l.channelModeChanged(event);
+									break;
+								case ChannelEvent.TOPIC_CHANGED:
+									l.channelTopicChanged(event);
+									break;
+								}
+							}
 
-    public void setRunning(boolean b) {
-	this.isRunning = b;
-    }
+						}
+					}
+				} catch (Exception ea) {
+					ea.printStackTrace();
+					continue;
+				}
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+		}
+	}
+
+	public void clearQueue() {
+		eventQueue.clear();
+
+	}
+
+	public void setRunning(boolean b) {
+		this.isRunning = b;
+	}
 
 }

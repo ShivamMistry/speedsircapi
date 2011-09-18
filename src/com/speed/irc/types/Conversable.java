@@ -17,28 +17,30 @@ package com.speed.irc.types;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * @author Speed
  */
 public abstract class Conversable {
-    /**
-     * Sends a PRIVMSG message to the entity.
-     *
-     * @param message the message that is to be sent.
-     */
-    public abstract void sendMessage(final String message);
+	/**
+	 * Sends a PRIVMSG message to the entity.
+	 * 
+	 * @param message
+	 *            the message that is to be sent.
+	 */
+	public abstract void sendMessage(final String message);
 
-    /**
-     * Sends a NOTICE message to the entity.
-     *
-     * @param notice the notice that is to be sent.
-     */
-    public abstract void sendNotice(final String notice);
+	/**
+	 * Sends a NOTICE message to the entity.
+	 * 
+	 * @param notice
+	 *            the notice that is to be sent.
+	 */
+	public abstract void sendNotice(final String notice);
 
-    /**
-     * Gets the name of the entity.
-     *
-     * @return the name of the channel or user.
-     */
-    public abstract String getName();
+	/**
+	 * Gets the name of the entity.
+	 * 
+	 * @return the name of the channel or user.
+	 */
+	public abstract String getName();
 }

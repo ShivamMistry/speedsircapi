@@ -17,47 +17,51 @@ package com.speed.irc.types;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- *
+ * 
  * @author Speed
  */
 public class PRIVMSG {
 
-    private final String message, sender;
-    private Conversable conversable;
+	private final String message, sender;
+	private Conversable conversable;
 
-    /**
-     * @param message     The actual message.
-     * @param sender      The nick of the person who the message was sent to/from.
-     * @param conversable The channel the message was sent to/from.
-     */
-    public PRIVMSG(final String message, final String sender, final Conversable conversable) {
-        this.message = message;
-        this.conversable = conversable;
-        this.sender = sender;
-    }
+	/**
+	 * @param message
+	 *            The actual message.
+	 * @param sender
+	 *            The nick of the person who the message was sent to/from.
+	 * @param conversable
+	 *            The channel the message was sent to/from.
+	 */
+	public PRIVMSG(final String message, final String sender,
+			final Conversable conversable) {
+		this.message = message;
+		this.conversable = conversable;
+		this.sender = sender;
+	}
 
-    public String getMessage() {
-        return message;
-    }
+	public String getMessage() {
+		return message;
+	}
 
-    public String getSender() {
-        return sender;
-    }
+	public String getSender() {
+		return sender;
+	}
 
-    public Conversable getConversable() {
-        return conversable;
-    }
+	public Conversable getConversable() {
+		return conversable;
+	}
 
-    public boolean isPrivateMessage() {
-        return !conversable.getName().contains("#");
-    }
+	public boolean isPrivateMessage() {
+		return !conversable.getName().contains("#");
+	}
 
-    public boolean isChannelMessage() {
-        return conversable.getName().contains("#");
-    }
+	public boolean isChannelMessage() {
+		return conversable.getName().contains("#");
+	}
 
-    public boolean isCtcpMessage() {
-        return message.startsWith("\u0001");
-    }
+	public boolean isCtcpMessage() {
+		return message.startsWith("\u0001");
+	}
 
 }
