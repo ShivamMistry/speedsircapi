@@ -6,6 +6,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.speed.irc.event.ApiEvent;
 import com.speed.irc.event.ChannelEvent;
 import com.speed.irc.event.ChannelUserEvent;
 import com.speed.irc.event.NoticeEvent;
@@ -311,8 +312,10 @@ public class ServerMessageParser implements Runnable {
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
-				if (!running)
+				if (!running) {
 					server.connect();
+					server.eventManager.fireEvent(new ApiEvent(ApiEvent.SERVER_RECONNECTED, server, this));
+				}
 			}
 		}
 	}

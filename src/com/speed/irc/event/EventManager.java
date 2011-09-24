@@ -54,6 +54,11 @@ public class EventManager implements Runnable {
 								((NoticeListener) listener)
 										.noticeReceived((NoticeEvent) e);
 							}
+						} else if (e instanceof ApiEvent) {
+							if (listener instanceof ApiListener) {
+								((ApiListener) listener)
+										.apiEventReceived((ApiEvent) e);
+							}
 						} else if (e instanceof PrivateMessageEvent) {
 							if (listener instanceof PrivateMessageListener) {
 								((PrivateMessageListener) listener)

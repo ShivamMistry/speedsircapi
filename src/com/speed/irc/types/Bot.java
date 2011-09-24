@@ -1,11 +1,13 @@
 package com.speed.irc.types;
 
-import com.speed.irc.connection.Server;
-import com.speed.irc.event.IRCEventListener;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+
+import com.speed.irc.connection.Server;
+import com.speed.irc.event.ApiEvent;
+import com.speed.irc.event.ApiListener;
+import com.speed.irc.event.IRCEventListener;
 
 /**
  * The abstract class for making robots. To create a robot, you can extend this
@@ -28,7 +30,7 @@ import java.net.UnknownHostException;
  * 
  * @author Speed
  */
-public abstract class Bot {
+public abstract class Bot implements ApiListener {
 
 	public Server server;
 	private final int port;
@@ -72,6 +74,15 @@ public abstract class Bot {
 		return "Speed";
 	}
 
+	private void connect() {
+		this.server.sendRaw("NICK " + getNick() + "\n");
+		this.server.sendRaw("USER " + getNick()
+				+ " team-deathmatch.com TB: Speed Bot\n");
+		for (Channel s : getChannels()) {
+			s.join();
+		}
+	}
+
 	/**
 	 * Used to identify to NickServ.
 	 * 
@@ -80,5 +91,12 @@ public abstract class Bot {
 	 */
 	public void identify(final String password) {
 		server.sendRaw("PRIVMSG NickServ :identify " + password + "\n");
+	}
+
+	@Override
+	public void apiEventReceived(ApiEvent e) {
+		if (e.getOpcode() == ApiEvent.SERVER_RECONNECTED) {
+			connect();
+		}
 	}
 }
