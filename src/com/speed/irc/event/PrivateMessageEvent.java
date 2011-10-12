@@ -21,7 +21,7 @@ import com.speed.irc.types.PRIVMSG;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  * 
  * 
- * @author Speed
+ * @author Shivam Mistry
  * 
  */
 public class PrivateMessageEvent implements IRCEvent {

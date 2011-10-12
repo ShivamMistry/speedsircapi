@@ -23,7 +23,7 @@ import com.speed.irc.connection.Server;
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Speed
+ * @author Shivam Mistry
  */
 public class Mode {
 	private List<Character> modes = new ArrayList<Character>();

@@ -1,16 +1,22 @@
 package com.speed.irc.connection;
 
-import com.speed.irc.event.EventManager;
-import com.speed.irc.types.Channel;
-import com.speed.irc.types.NOTICE;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import com.speed.irc.event.ApiEvent;
+import com.speed.irc.event.EventManager;
+import com.speed.irc.types.Channel;
+import com.speed.irc.types.NOTICE;
 
 /**
  * A class representing a socket connection to an IRC server with the
@@ -31,11 +37,11 @@ import java.util.concurrent.LinkedBlockingQueue;
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Speed
+ * @author Shivam Mistry
  */
 public class Server implements ConnectionHandler, Runnable {
-	private BufferedWriter write;
-	private BufferedReader read;
+	private volatile BufferedWriter write;
+	private volatile BufferedReader read;
 	protected Socket socket;
 	protected EventManager eventManager = new EventManager();
 	private BlockingQueue<String> messageQueue = new LinkedBlockingQueue<String>();
@@ -264,6 +270,19 @@ public class Server implements ConnectionHandler, Runnable {
 						write.flush();
 					} else {
 						messageQueue.add(s);
+					}
+				} catch (SocketException e) {
+					System.out.println("Attempting to reconnect");
+					try {
+						getWriter().close();
+						getReader().close();
+						socket.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					if (autoConnect) {
+						connect();
+						eventManager.fireEvent(new ApiEvent(ApiEvent.SERVER_RECONNECTED, this, this));
 					}
 				} catch (IOException e) {
 					e.printStackTrace();

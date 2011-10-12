@@ -18,7 +18,7 @@ package com.speed.irc.types;
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  * 
- * @author Speed
+ * @author Shivam Mistry
  */
 public class ChannelUser extends ServerUser {
 	private String nick, modes, user;

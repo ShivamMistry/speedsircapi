@@ -20,7 +20,7 @@ package com.speed.irc.types;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  * 
  * 
- * @author Speed
+ * @author Shivam Mistry
  * 
  */
 public interface Numerics {
