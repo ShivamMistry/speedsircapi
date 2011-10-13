@@ -10,8 +10,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import com.speed.irc.event.ApiEvent;
 import com.speed.irc.event.EventManager;
@@ -44,7 +42,6 @@ public class Server implements ConnectionHandler, Runnable {
 	private volatile BufferedReader read;
 	protected Socket socket;
 	protected EventManager eventManager = new EventManager();
-	private BlockingQueue<String> messageQueue = new LinkedBlockingQueue<String>();
 	protected Map<String, Channel> channels = new HashMap<String, Channel>();
 	private char[] modeSymbols;
 	private char[] modeLetters;
@@ -146,8 +143,17 @@ public class Server implements ConnectionHandler, Runnable {
 	 * @param raw
 	 *            The raw command to be added to the sending queue.
 	 */
-	public void sendRaw(final String raw) {
-		messageQueue.add(raw);
+	public void sendRaw(String raw) {
+		if (raw.startsWith("NICK")) {
+			nick = raw.replace("NICK", "").replace(":", "").trim();
+		}
+		if (!raw.endsWith("\n"))
+			raw += '\n';
+		try {
+			write.write(raw);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -195,6 +201,16 @@ public class Server implements ConnectionHandler, Runnable {
 	 */
 	public void setRead(final BufferedReader read) {
 		this.read = read;
+	}
+
+	/**
+	 * Checks whether the api is connected to the server.
+	 * 
+	 * @return <code>true</code> if we are connected, <code>false</code> if
+	 *         unconnected.
+	 */
+	public boolean isConnected() {
+		return socket.isConnected();
 	}
 
 	/**
@@ -253,47 +269,36 @@ public class Server implements ConnectionHandler, Runnable {
 
 	public void run() {
 		while (socket.isConnected()) {
-
-			String s = messageQueue.poll();
-
-			if (s != null) {
-				if (!s.endsWith("\n")) {
-					s = s + "\n";
+			try {
+				if (write != null) {
+					write.flush();
+				} else {
 				}
+			} catch (SocketException e) {
+				System.out.println("Attempting to reconnect");
 				try {
-					if (write != null) {
-						if (s.startsWith("NICK")) {
-							nick = s.replace("NICK", "").replace(":", "")
-									.trim();
-						}
-						write.write(s);
-						write.flush();
-					} else {
-						messageQueue.add(s);
-					}
-				} catch (SocketException e) {
-					System.out.println("Attempting to reconnect");
-					try {
-						getWriter().close();
-						getReader().close();
-						socket.close();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-					if (autoConnect) {
-						connect();
-						eventManager.fireEvent(new ApiEvent(ApiEvent.SERVER_RECONNECTED, this, this));
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
+					getWriter().close();
+					getReader().close();
+					socket.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
 				}
+				if (autoConnect) {
+					connect();
+					eventManager.fireEvent(new ApiEvent(
+							ApiEvent.SERVER_RECONNECTED, this, this));
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 			try {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+
 			}
 		}
+
 	}
 
 	public void setServerName(String serverName) {
