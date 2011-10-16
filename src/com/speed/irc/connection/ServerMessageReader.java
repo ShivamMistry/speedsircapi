@@ -83,6 +83,7 @@ public class ServerMessageReader implements Runnable {
 					queue.add(current);
 				} catch (IllegalStateException e) {// should only happen if the
 													// parser dies
+					
 					queue.clear();
 					queue.add(current);
 				}

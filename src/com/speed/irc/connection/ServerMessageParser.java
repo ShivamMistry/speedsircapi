@@ -277,17 +277,11 @@ public class ServerMessageParser implements Runnable {
 
 	public void run() {
 		String s;
-		while (running) {
+		while (running && server.isConnected()) {
 			if (!reader.isEmpty()) {
 				s = reader.poll();
 				s = s.substring(1);
 				parse(s);
-			} else {
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
 			}
 		}
 	}

@@ -71,7 +71,8 @@ public class Mode {
 			if (plus) {
 				this.modes.add(c);
 			} else {
-				this.modes.remove(c);
+				if (this.modes.contains(c))
+					this.modes.remove(c);
 			}
 		}
 	}
