@@ -134,15 +134,15 @@ public class ChannelUser extends ServerUser {
 
 	public int getRights() {
 		if (isOwner()) {
-			return 5;
+			return OWNER;
 		} else if (isProtected()) {
-			return 4;
+			return ADMIN;
 		} else if (isOperator()) {
-			return 3;
+			return OP;
 		} else if (isHalfOperator()) {
-			return 2;
+			return HALF_OP;
 		} else if (isVoiced()) {
-			return 1;
+			return VOICE;
 		}
 		return 0;
 	}
