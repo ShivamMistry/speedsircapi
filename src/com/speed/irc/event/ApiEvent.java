@@ -3,7 +3,7 @@ package com.speed.irc.event;
 import com.speed.irc.connection.Server;
 
 public class ApiEvent implements IRCEvent {
-	public static final int SERVER_RECONNECTED = 1;
+	public static final int SERVER_RECONNECTED = 1, EXCEPTION_RECEIVED = 2;
 
 	private int opcode;
 	private Server server;

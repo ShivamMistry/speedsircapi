@@ -49,33 +49,13 @@ public class Channel extends Conversable implements ChannelUserListener,
 	 *            the name of the channel.
 	 * @param server
 	 *            the server object this channel is associated with.
-	 * @param nick
-	 *            the nick of the client.
-	 * @deprecated See {@link #Channel(String, com.speed.irc.connection.Server)}
-	 */
-	public Channel(final String name, final Server server, final String nick) {
-		this.name = name;
-		this.server = server;
-		this.nick = server.getNick();
-		this.server.getChannels().put(name, this);
-		this.server.getEventManager().addListener(this);
-		chanMode = new Mode(server, "");
-	}
-
-	/**
-	 * Constructs a channel.
-	 * 
-	 * @param name
-	 *            the name of the channel.
-	 * @param server
-	 *            the server object this channel is associated with.
 	 */
 	public Channel(final String name, final Server server) {
 		this.name = name;
 		this.server = server;
 		this.nick = server.getNick();
-		this.server.getChannels().put(name, this);
 		this.server.getEventManager().addListener(this);
+		this.server.getChannels().put(name, this);
 		chanMode = new Mode(server, "");
 	}
 
@@ -190,7 +170,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 	 */
 	public void join() {
 		server.sendRaw("JOIN :" + name);
-
+		server.sendRaw("MODE " + name);
 		isRunning = true;
 		if (!server.getChannels().containsValue(this)) {
 			server.getChannels().put(name, this);
@@ -209,7 +189,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 	 */
 	public void join(final String password) {
 		server.sendRaw("JOIN :" + name + " " + password);
-
+		server.sendRaw("MODE " + name);
 		isRunning = true;
 		if (!server.getChannels().containsValue(this)) {
 			server.getChannels().put(name, this);

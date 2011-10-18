@@ -1,32 +1,38 @@
-package com.speed.irc.types;
+package com.speed.irc.event;
+
+import com.speed.irc.connection.Server;
 
 /**
- * Stores IRC numerics used by the API internal classes. Numerics are stored as
- * strings to allow easy comparison. (numerics are parsed as strings)
- * 
+ * Wraps an exception into an event
+ * <p/>
  * This file is part of Speed's IRC API.
- * 
+ * <p/>
  * Speed's IRC API is free software: you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
  * Free Software Foundation, either version 3 of the License, or (at your
  * option) any later version.
- * 
+ * <p/>
  * Speed's IRC API is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
  * for more details.
- * 
+ * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  * 
- * 
  * @author Shivam Mistry
- * 
  */
-public interface Numerics {
-	String WHO_RESPONSE = "352";
-	String WHO_END = "315";
-	String SERVER_SUPPORT = "005";
-	String BANNED_FROM_CHANNEL = "474";
-	String NOT_AN_OPERATOR = "482";
+public class ExceptionEvent extends ApiEvent {
+	private final Exception exception;
+
+	public ExceptionEvent(final Exception e, final Object source,
+			final Server server) {
+		super(ApiEvent.EXCEPTION_RECEIVED, server, source);
+		exception = e;
+	}
+
+	public Exception getException() {
+		return exception;
+	}
+
 }

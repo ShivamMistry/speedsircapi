@@ -47,7 +47,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public Channel[] getChannels() {
-		channel = new Channel("#rscode", server);
+		channel = new Channel("#news", server);
 		return new Channel[] { channel };
 	}
 

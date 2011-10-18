@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import com.speed.irc.event.ChannelEvent;
 import com.speed.irc.event.ChannelUserEvent;
+import com.speed.irc.event.ExceptionEvent;
 import com.speed.irc.event.NoticeEvent;
 import com.speed.irc.event.PrivateMessageEvent;
 import com.speed.irc.event.RawMessageEvent;
@@ -15,10 +16,11 @@ import com.speed.irc.types.ChannelUser;
 import com.speed.irc.types.Conversable;
 import com.speed.irc.types.MessageReader;
 import com.speed.irc.types.NOTICE;
-import com.speed.irc.types.Numerics;
 import com.speed.irc.types.PRIVMSG;
+import com.speed.irc.types.ParsingException;
 import com.speed.irc.types.RawMessage;
 import com.speed.irc.types.ServerUser;
+import com.speed.irc.util.Numerics;
 
 /**
  * Processes messages sent from the server.
@@ -68,7 +70,7 @@ public class ServerMessageParser implements Runnable {
 		readers.add(reader);
 	}
 
-	private synchronized void parse(final String s) {
+	private synchronized void parse(final String s) throws Exception {
 		for (MessageReader r : readers) {
 			if (r.filter.accept(s)) {
 				r.s = s;
@@ -173,6 +175,14 @@ public class ServerMessageParser implements Runnable {
 			server.getEventManager().fireEvent(
 					new ChannelUserEvent(this, channel, u,
 							ChannelUserEvent.USER_JOINED));
+		} else if (code.equals(Numerics.CHANNEL_MODES)) {
+			String chan_name = message.getRaw().split(" ")[3];
+			String modez = message.getRaw().split(" ")[4];
+			if (!server.channels.containsKey(chan_name)) {
+				return;
+			}
+			Channel channel = server.channels.get(chan_name);
+			channel.chanMode.parse(modez);
 		} else if (code.equals("MODE")) {
 
 			String name = message.getTarget();
@@ -180,7 +190,6 @@ public class ServerMessageParser implements Runnable {
 				return;
 			}
 			Channel channel = server.channels.get(name);
-
 			raw = raw.split(name, 2)[1].trim();
 			String[] strings = raw.split(" ");
 			String modes = strings[0];
@@ -287,7 +296,13 @@ public class ServerMessageParser implements Runnable {
 			} else {
 				s = reader.poll();
 				s = s.substring(1);
-				parse(s);
+				try {
+					parse(s);
+				} catch (Exception e) {
+					server.eventManager.fireEvent(new ExceptionEvent(
+							new ParsingException("Parsing error", e), this,
+							server));
+				}
 			}
 		}
 	}

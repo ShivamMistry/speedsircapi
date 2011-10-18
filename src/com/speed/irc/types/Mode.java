@@ -1,7 +1,7 @@
 package com.speed.irc.types;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import com.speed.irc.connection.Server;
 
@@ -26,7 +26,7 @@ import com.speed.irc.connection.Server;
  * @author Shivam Mistry
  */
 public class Mode {
-	private List<Character> modes = new ArrayList<Character>();
+	private Set<Character> modes = new CopyOnWriteArraySet<Character>();
 	private final Server server;
 
 	public Mode(final Server server, final String modes) {
@@ -69,10 +69,12 @@ public class Mode {
 				continue;
 			}
 			if (plus) {
+
 				this.modes.add(c);
 			} else {
 				if (this.modes.contains(c))
 					this.modes.remove(c);
+
 			}
 		}
 	}
