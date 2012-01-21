@@ -77,7 +77,7 @@ public abstract class Bot implements ApiListener {
 	private void connect() {
 		this.server.sendRaw("NICK " + getNick() + "\n");
 		this.server.sendRaw("USER " + getNick()
-				+ " team-deathmatch.com TB: Speed Bot\n");
+				+ " metalmonster.me TB: Speed Bot\n");
 		for (Channel s : getChannels()) {
 			s.join();
 		}
@@ -93,7 +93,6 @@ public abstract class Bot implements ApiListener {
 		server.sendRaw("PRIVMSG NickServ :identify " + password + "\n");
 	}
 
-	@Override
 	public void apiEventReceived(ApiEvent e) {
 		if (e.getOpcode() == ApiEvent.SERVER_RECONNECTED) {
 			connect();

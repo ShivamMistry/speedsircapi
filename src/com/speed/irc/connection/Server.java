@@ -93,6 +93,7 @@ public class Server implements ConnectionHandler, Runnable {
 					socket.getOutputStream()));
 			read = new BufferedReader(new InputStreamReader(
 					socket.getInputStream()));
+			parser.reader = new ServerMessageReader(this);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
