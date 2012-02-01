@@ -22,9 +22,20 @@ package com.speed.irc.util;
  */
 public class ControlCodeFormatter {
 	public static final char UNICODE_COLOUR = '\u0003';
-	public static final char UNICODE_BOLD = '\u0001';
+	public static final char UNICODE_BOLD = '\u0002';
 	public static final char UNICODE_UNDERLINE = '\u001F';
-	private static char FORMAT_CHAR = '$';
+
+	private static char format_character = '$';
+	
+	private char formatChar;
+
+	public ControlCodeFormatter() {
+		formatChar = '$';
+	}
+
+	public ControlCodeFormatter(final char format_char) {
+		formatChar = format_char;
+	}
 
 	public enum Colour {
 		WHITE(0), BLACK(1), NAVY_BLUE(2), GREEN(3), RED(4), CRIMSON_RED(5), MAGENTA(
@@ -44,8 +55,8 @@ public class ControlCodeFormatter {
 	 * @param c
 	 *            the new format character
 	 */
-	public static void setFormatCharacter(final char c) {
-		FORMAT_CHAR = c;
+	public void setFormatChar(final char c) {
+		format_character = c;
 	}
 
 	/**
@@ -54,13 +65,81 @@ public class ControlCodeFormatter {
 	 * 
 	 * @return the format character
 	 */
+	public char getFormatChar() {
+		return format_character;
+	}
+
+	/**
+	 * Sets the default character to be replaced with colour control code in
+	 * {@link #format(String, Colour...)}
+	 * 
+	 * @deprecated Use the instance instead {@link #setFormatChar(char)}
+	 * @param c
+	 *            the new format character
+	 */
+	public static void setFormatCharacter(final char c) {
+		format_character = c;
+	}
+
+	/**
+	 * Gets the default character to be replaced with colour control code in
+	 * {@link #format(String, Colour...)}
+	 * 
+	 * @deprecated Use the instance instead {@link #getFormatChar()}
+	 * @return the format character
+	 */
 	public static char getFormatCharacter() {
-		return FORMAT_CHAR;
+		return format_character;
 	}
 
 	/**
 	 * Formats the string with the colours specified. Default format character
 	 * is '$' and any format character is escaped using '\'.
+	 * 
+	 * 
+	 * @param s
+	 *            The string to be formatted.
+	 * @param colours
+	 *            The colours to format the string with.
+	 * @return the formatted string
+	 */
+	public String formatString(final String s, final Colour... colours) {
+		final StringBuilder builder = new StringBuilder();
+		if (colours.length == 0)
+			return s;
+		int replaced = 0;
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (replaced >= colours.length) {
+				if (c == '\\' && s.charAt(i + 1) == formatChar) {
+					builder.append(formatChar);
+					i++;
+				} else {
+					builder.append(c);
+				}
+				continue;
+			} else if (c == formatChar) {
+				if (i != 0) {
+					if (s.charAt(i - 1) == '\\') {
+						builder.deleteCharAt(builder.lastIndexOf("\\"));
+						builder.append(c);
+						continue;
+					}
+				}
+				builder.append(UNICODE_COLOUR).append(colours[replaced++].code);
+
+			} else {
+				builder.append(c);
+			}
+		}
+		return builder.toString() + ControlCodeFormatter.UNICODE_COLOUR;
+	}
+
+	/**
+	 * Formats the string with the colours specified. Default format character
+	 * is '$' and any format character is escaped using '\'.
+	 * 
+	 * Will be retained for fast formatting using the default char $
 	 * 
 	 * @param s
 	 *            The string to be formatted.
@@ -76,14 +155,14 @@ public class ControlCodeFormatter {
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			if (replaced >= colours.length) {
-				if (c == '\\' && s.charAt(i + 1) == FORMAT_CHAR) {
-					builder.append(FORMAT_CHAR);
+				if (c == '\\' && s.charAt(i + 1) == format_character) {
+					builder.append(format_character);
 					i++;
 				} else {
 					builder.append(c);
 				}
 				continue;
-			} else if (c == FORMAT_CHAR) {
+			} else if (c == format_character) {
 				if (i != 0) {
 					if (s.charAt(i - 1) == '\\') {
 						builder.deleteCharAt(builder.lastIndexOf("\\"));
@@ -97,6 +176,6 @@ public class ControlCodeFormatter {
 				builder.append(c);
 			}
 		}
-		return builder.toString();
+		return builder.toString() + ControlCodeFormatter.UNICODE_COLOUR;
 	}
 }

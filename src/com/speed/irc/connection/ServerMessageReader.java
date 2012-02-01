@@ -3,6 +3,7 @@ package com.speed.irc.connection;
 import java.io.IOException;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.logging.Logger;
 
 import com.speed.irc.event.ApiEvent;
 
@@ -32,6 +33,9 @@ public class ServerMessageReader implements Runnable {
 	private final Server server;
 	private LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<String>();
 	private volatile String current;
+	protected volatile boolean running = true;
+	protected Logger logger = Logger.getLogger(Logger.class.getName());
+	protected boolean logging;
 
 	/**
 	 * No public access to queue to prevent reading before the parser. Gets the
@@ -77,31 +81,38 @@ public class ServerMessageReader implements Runnable {
 
 	public void run() {
 		try {
-			while (server.isConnected()
+			while (server.isConnected() && running
 					&& (current = server.getReader().readLine()) != null) {
 				try {
 					queue.add(current);
-				} catch (IllegalStateException e) {// should only happen if the
-													// parser dies
-					
+				} catch (IllegalStateException e) {
+
 					queue.clear();
 					queue.add(current);
 				}
+				if (logging) {
+					logger.info(current);
+				}
+				if (current.startsWith("ERROR :Closing Link:")) {
+					if (server.autoConnect && running) {
+						try {
+							Thread.sleep(200);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						server.connect();
+						server.eventManager.fireEvent(new ApiEvent(
+								ApiEvent.SERVER_DISCONNECTED, server, this));
+						break;
+					}
+				}
 			}
 		} catch (IOException e) {
-			try {
-				server.getWriter().close();
-				server.getReader().close();
-				server.socket.close();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			if (server.autoConnect) {
-				server.connect();
-				server.eventManager.fireEvent(new ApiEvent(
-						ApiEvent.SERVER_RECONNECTED, server, this));
-			}
+
+			server.quit();
+
 		}
+
 	}
 
 }

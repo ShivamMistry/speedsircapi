@@ -31,8 +31,8 @@ public class Channel extends Conversable implements ChannelUserListener,
 		Runnable {
 	protected String name;
 	protected Server server;
-	public List<ChannelUser> users = new LinkedList<ChannelUser>();
-	public List<ChannelUser> userBuffer = new LinkedList<ChannelUser>();
+	public volatile List<ChannelUser> users = new LinkedList<ChannelUser>();
+	public volatile List<ChannelUser> userBuffer = new LinkedList<ChannelUser>();
 	public volatile boolean isRunning = true;
 	public static final int WHO_DELAY = 90000;
 	protected boolean autoRejoin;
@@ -40,7 +40,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 	public Mode chanMode;
 	public List<String> bans = new LinkedList<String>();
 	protected String topic;
-	protected Thread channel;
+	public Thread channel;
 
 	/**
 	 * Constructs a channel.
@@ -150,7 +150,8 @@ public class Channel extends Conversable implements ChannelUserListener,
 			try {
 				Thread.sleep(users.isEmpty() ? 5000 : Channel.WHO_DELAY);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
+				continue;
 			}
 
 		} while (isRunning);

@@ -1,5 +1,6 @@
 package com.speed.irc.connection;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
@@ -11,6 +12,7 @@ import com.speed.irc.event.ExceptionEvent;
 import com.speed.irc.event.NoticeEvent;
 import com.speed.irc.event.PrivateMessageEvent;
 import com.speed.irc.event.RawMessageEvent;
+import com.speed.irc.types.CTCPReply;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
 import com.speed.irc.types.Conversable;
@@ -56,6 +58,29 @@ public class ServerMessageParser implements Runnable {
 	private List<MessageReader> readers = new CopyOnWriteArrayList<MessageReader>();
 	protected volatile boolean running = true;
 	protected ServerMessageReader reader;
+	public static final CTCPReply CTCP_REPLY_VERSION = new CTCPReply() {
+
+		public String getResponse() {
+			return "Speed's IRC API";
+		}
+
+		public String getRequest() {
+			return "VERSION";
+		}
+
+	};
+
+	public static final CTCPReply CTCP_REPLY_TIME = new CTCPReply() {
+
+		public String getResponse() {
+			return new Date().toString();
+		}
+
+		public String getRequest() {
+			return "TIME";
+		}
+
+	};
 
 	public ServerMessageParser(final Server server) {
 		this.server = server;
@@ -97,12 +122,11 @@ public class ServerMessageParser implements Runnable {
 			final String name = priv_matcher.group(4);
 			if (msg.startsWith("\u0001")) {
 				String request = msg.replace("\u0001", "");
-				synchronized (server.ctcpReplies) {
-					if (server.ctcpReplies.containsKey(request)) {
-						server.sendRaw(String.format(
-								"NOTICE %s :\u0001%s %s\u0001\n", sender,
-								request, server.ctcpReplies.get(request)));
-					}
+				String reply = server.getCtcpReply(request);
+				if (reply != null) {
+					server.sendRaw(String.format(
+							"NOTICE %s :\u0001%s %s\u0001\n", sender, request,
+							reply));
 				}
 			}
 			Conversable conversable = null;

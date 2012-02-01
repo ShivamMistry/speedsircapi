@@ -1,9 +1,9 @@
-package com.speed.irc.event;
-
-import com.speed.irc.connection.Server;
+package com.speed.irc.types;
 
 /**
- * Provides events for many API features.
+ * Abstract class used to represent ctcp replies, allows ctcp replies to be
+ * dynamic.
+ * 
  * <p/>
  * This file is part of Speed's IRC API.
  * <p/>
@@ -22,32 +22,23 @@ import com.speed.irc.connection.Server;
  * 
  * @author Shivam Mistry
  */
-public class ApiEvent implements IRCEvent {
-	public static final int SERVER_DISCONNECTED = 1, EXCEPTION_RECEIVED = 2;
+public abstract class CTCPReply {
 
-	public static final int SERVER_QUIT = 3;
+	public abstract String getResponse();
 
+	public abstract String getRequest();
 
-	private int opcode;
-	private Server server;
-	private Object source;
-
-	public ApiEvent(final int opcode, final Server server, final Object src) {
-		source = src;
-		this.opcode = opcode;
-		this.server = server;
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof CTCPReply) {
+			return getResponse().equals(((CTCPReply) o).getResponse())
+					&& getRequest().equals(((CTCPReply) o).getRequest());
+		}
+		return false;
 	}
 
-	public int getOpcode() {
-		return opcode;
+	@Override
+	public int hashCode() {
+		return (getResponse().hashCode() | getRequest().hashCode()) & 0xffffff;
 	}
-
-	public Server getServer() {
-		return server;
-	}
-
-	public Object getSource() {
-		return source;
-	}
-
 }

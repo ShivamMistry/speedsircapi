@@ -9,10 +9,13 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import com.speed.irc.event.ApiEvent;
 import com.speed.irc.event.EventManager;
+import com.speed.irc.types.CTCPReply;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.NOTICE;
 
@@ -40,7 +43,7 @@ import com.speed.irc.types.NOTICE;
 public class Server implements ConnectionHandler, Runnable {
 	private volatile BufferedWriter write;
 	private volatile BufferedReader read;
-	protected Socket socket;
+	protected volatile Socket socket;
 	protected EventManager eventManager = new EventManager();
 	protected Map<String, Channel> channels = new HashMap<String, Channel>();
 	private char[] modeSymbols;
@@ -48,7 +51,7 @@ public class Server implements ConnectionHandler, Runnable {
 	private String serverName;
 	private String nick;
 	private ServerMessageParser parser;
-	protected HashMap<String, String> ctcpReplies = new HashMap<String, String>();
+	protected HashSet<CTCPReply> ctcpReplies = new HashSet<CTCPReply>();
 	protected boolean autoConnect;
 	private int port;
 
@@ -63,37 +66,58 @@ public class Server implements ConnectionHandler, Runnable {
 		eventThread.start();
 		new Thread(this).start();
 		parser = new ServerMessageParser(this);
-		ctcpReplies.put("VERSION", "Speed's IRC API");
-		ctcpReplies.put("TIME", "Get a watch!");
+		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_VERSION);
+		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_TIME);
 	}
 
 	public void quit() {
 		parser.running = false;
-
+		parser.reader.running = false;
+		eventManager.fireEvent(new ApiEvent(ApiEvent.SERVER_QUIT, this, this));
 		try {
-			getWriter().write("QUIT\n");
-			getWriter().flush();
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				getWriter().close();
-				getReader().close();
-				socket.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+			if (!socket.isClosed()) {
+				getWriter().write("QUIT\n");
+				getWriter().flush();
 			}
+		} catch (Exception e) {
+
 		}
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+		for (Channel c : channels.values()) {
+			if (c.channel != null)
+				c.channel.interrupt();
+			c.isRunning = false;
+		}
+		try {
+			socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		eventManager.setRunning(false);
+
 	}
 
-	protected void connect() {
+	public final void setReadDebug(final Logger logger) {
+		parser.reader.logger = logger;
+		parser.reader.logging = true;
+	}
+
+	public final void setReadDebug(boolean on) {
+		parser.reader.logging = on;
+	}
+
+	protected final void connect() {
 		try {
 			socket = new Socket(serverName, port);
 			write = new BufferedWriter(new OutputStreamWriter(
 					socket.getOutputStream()));
 			read = new BufferedReader(new InputStreamReader(
 					socket.getInputStream()));
-			parser.reader = new ServerMessageReader(this);
+			parser = new ServerMessageParser(this);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -134,8 +158,36 @@ public class Server implements ConnectionHandler, Runnable {
 	 */
 	public void setCtcpReply(final String request, final String reply) {
 		synchronized (ctcpReplies) {
-			ctcpReplies.put(request, reply);
+			ctcpReplies.add(new CTCPReply() {
+
+				public String getResponse() {
+					return reply;
+				}
+
+				public String getRequest() {
+					return request;
+				}
+				
+			});
 		}
+	}
+	
+	public void addCtcpReply(final CTCPReply reply) {
+		synchronized (ctcpReplies) {
+			ctcpReplies.add(reply);
+		}
+	}
+	
+	public String getCtcpReply(final String request) {
+		synchronized(ctcpReplies) {
+			for(CTCPReply reply : ctcpReplies) {
+				if(reply.getRequest().equalsIgnoreCase(request)) {
+					return reply.getResponse();
+				}
+			}
+		}
+		
+		return null;
 	}
 
 	/**
@@ -211,7 +263,7 @@ public class Server implements ConnectionHandler, Runnable {
 	 *         unconnected.
 	 */
 	public boolean isConnected() {
-		return socket.isConnected();
+		return !socket.isClosed();
 	}
 
 	/**
@@ -269,35 +321,38 @@ public class Server implements ConnectionHandler, Runnable {
 	}
 
 	public void run() {
-		while (socket.isConnected()) {
+		while (!socket.isClosed()) {
 			try {
 				if (write != null) {
 					write.flush();
-				} else {
 				}
 			} catch (SocketException e) {
-				System.out.println("Attempting to reconnect");
-				try {
-					getWriter().close();
-					getReader().close();
-					socket.close();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
 				if (autoConnect) {
+					try {
+						Thread.sleep(200);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+					try {
+						socket.close();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
 					connect();
 					eventManager.fireEvent(new ApiEvent(
-							ApiEvent.SERVER_RECONNECTED, this, this));
+							ApiEvent.SERVER_DISCONNECTED, this, this));
+				} else {
+					break;
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			try {
-				Thread.sleep(200);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
-
 			}
+
 		}
 
 	}

@@ -3,10 +3,12 @@ package com.speed.irc.types;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.logging.Logger;
 
 import com.speed.irc.connection.Server;
 import com.speed.irc.event.ApiEvent;
 import com.speed.irc.event.ApiListener;
+import com.speed.irc.event.ExceptionEvent;
 import com.speed.irc.event.IRCEventListener;
 
 /**
@@ -34,11 +36,16 @@ public abstract class Bot implements ApiListener {
 
 	public Server server;
 	private final int port;
+	protected Logger logger = Logger.getLogger(Bot.class.getName());
 
 	public int getPort() {
 		return port;
 	}
-
+	
+	public final void info(final String message) {
+		logger.info(message);
+	}
+	
 	public abstract void onStart();
 
 	public Bot(final String server, final int port) {
@@ -94,8 +101,10 @@ public abstract class Bot implements ApiListener {
 	}
 
 	public void apiEventReceived(ApiEvent e) {
-		if (e.getOpcode() == ApiEvent.SERVER_RECONNECTED) {
+		if (e.getOpcode() == ApiEvent.SERVER_DISCONNECTED) {
 			connect();
+		} else if (e.getOpcode() == ApiEvent.EXCEPTION_RECEIVED) {
+			((ExceptionEvent) e).getException().printStackTrace();
 		}
 	}
 }

@@ -25,11 +25,8 @@ public class ChannelUser extends ServerUser {
 	private String host;
 	private Mode channelModes;
 	private final Channel channel;
-	public static final byte VOICE = 1;
-	public static final byte HALF_OP = 2;
-	public static final byte OP = 3;
-	public static final byte ADMIN = 4;
-	public static final byte OWNER = 5;
+	public static final int VOICE_FLAG = 0x1, HALF_OP_FLAG = 0x2,
+			OP_FLAG = 0x4, ADMIN_FLAG = 0x8, OWNER_FLAG = 0x10;
 
 	public String getNick() {
 		return nick;
@@ -113,43 +110,49 @@ public class ChannelUser extends ServerUser {
 	}
 
 	public boolean isOperator() {
-		return modes.indexOf(channel.server.getModeSymbols()[2]) != -1;
+		return (getRights() & OP_FLAG) != 0 || isProtected() || isOwner();
 	}
 
 	public boolean isHalfOperator() {
-		return modes.indexOf(channel.server.getModeSymbols()[3]) != -1;
+		return (getRights() & HALF_OP_FLAG) != 0 || isOperator()
+				|| isProtected() || isOwner();
 	}
 
 	public boolean isVoiced() {
-		return modes.indexOf(channel.server.getModeSymbols()[4]) != -1;
+		return (getRights() & VOICE_FLAG) != 0 || isHalfOperator()
+				|| isOperator() || isProtected() || isOwner();
 	}
 
 	public boolean isOwner() {
-		return modes.indexOf(channel.server.getModeSymbols()[0]) != -1;
+		return (getRights() & OWNER_FLAG) != 0;
 	}
 
 	public boolean isProtected() {
-		return modes.indexOf(channel.server.getModeSymbols()[1]) != -1;
+		return (getRights() & ADMIN_FLAG) != 0 || isOwner();
 	}
 
+	/**
+	 * Useful if you're only checking for a single flag.
+	 * 
+	 * @returns the bitmask of the user's flags
+	 */
 	public int getRights() {
-		if (isOwner()) {
-			return OWNER;
-		} else if (isProtected()) {
-			return ADMIN;
-		} else if (isOperator()) {
-			return OP;
-		} else if (isHalfOperator()) {
-			return HALF_OP;
-		} else if (isVoiced()) {
-			return VOICE;
-		}
-		return 0;
+		int rights = 0;
+		if (modes.indexOf(channel.server.getModeSymbols()[0]) != -1)
+			rights = rights | OWNER_FLAG;
+		if (modes.indexOf(channel.server.getModeSymbols()[1]) != -1)
+			rights = rights | ADMIN_FLAG;
+		if (modes.indexOf(channel.server.getModeSymbols()[2]) != -1)
+			rights = rights | OP_FLAG;
+		if (modes.indexOf(channel.server.getModeSymbols()[3]) != -1)
+			rights = rights | HALF_OP_FLAG;
+		if (modes.indexOf(channel.server.getModeSymbols()[4]) != -1)
+			rights = rights | VOICE_FLAG;
+		return rights;
 	}
 
 	@Override
 	public String toString() {
-		return (getRights() > 0 ? String.valueOf(channel.server
-				.getModeSymbols()[5 - getRights()]) : "").concat(nick);
+		return nick;
 	}
 }
