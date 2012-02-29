@@ -96,7 +96,7 @@ public class ServerMessageReader implements Runnable {
 				if (current.startsWith("ERROR :Closing Link:")) {
 					if (server.autoConnect && running) {
 						try {
-							Thread.sleep(200);
+							Thread.sleep(5000);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}

@@ -3,6 +3,10 @@ package com.speed.irc.connection;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -54,13 +58,13 @@ public class ServerMessageParser implements Runnable {
 			.compile("(.+?)!(.+?)@(.+?) PRIVMSG (#?.+?) :(.*)");
 	private static final Pattern PATTERN_NOTICE = Pattern
 			.compile("(.+?)!(.+?)@(.+?) NOTICE (#?.+?) :(.*)");
-	private Thread thread;
 	private List<MessageReader> readers = new CopyOnWriteArrayList<MessageReader>();
-	protected volatile boolean running = true;
 	protected ServerMessageReader reader;
+	protected ScheduledExecutorService execServ;
+	protected Future<?> future;
 	public static final CTCPReply CTCP_REPLY_VERSION = new CTCPReply() {
 
-		public String getResponse() {
+		public String getReply() {
 			return "Speed's IRC API";
 		}
 
@@ -72,7 +76,7 @@ public class ServerMessageParser implements Runnable {
 
 	public static final CTCPReply CTCP_REPLY_TIME = new CTCPReply() {
 
-		public String getResponse() {
+		public String getReply() {
 			return new Date().toString();
 		}
 
@@ -81,13 +85,26 @@ public class ServerMessageParser implements Runnable {
 		}
 
 	};
+	
+	public static final CTCPReply CTCP_REPLY_PING = new CTCPReply() {
+
+		public String getReply() {
+			return "";
+		}
+
+		public String getRequest() {
+			return "PING (.*)";
+		}
+
+	};
 
 	public ServerMessageParser(final Server server) {
 		this.server = server;
 		reader = new ServerMessageReader(server);
+		execServ = Executors.newSingleThreadScheduledExecutor();
 		new Thread(reader, "Server message reader").start();
-		thread = new Thread(this);
-		thread.start();
+		future = execServ.scheduleWithFixedDelay(this, 0, 50,
+				TimeUnit.MILLISECONDS);
 
 	}
 
@@ -310,24 +327,17 @@ public class ServerMessageParser implements Runnable {
 
 	public void run() {
 		String s;
-		while (running && server.isConnected()) {
-			if (reader.isEmpty()) {
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			} else {
-				s = reader.poll();
-				s = s.substring(1);
-				try {
-					parse(s);
-				} catch (Exception e) {
-					server.eventManager.fireEvent(new ExceptionEvent(
-							new ParsingException("Parsing error", e), this,
-							server));
-				}
+		if (!reader.isEmpty()) {
+			s = reader.poll();
+			s = s.substring(1);
+			try {
+				parse(s);
+			} catch (Exception e) {
+				server.eventManager
+						.fireEvent(new ExceptionEvent(new ParsingException(
+								"Parsing error", e), this, server));
 			}
 		}
+
 	}
 }

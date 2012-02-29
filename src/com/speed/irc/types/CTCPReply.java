@@ -1,8 +1,8 @@
 package com.speed.irc.types;
 
 /**
- * Abstract class used to represent ctcp replies, allows ctcp replies to be
- * dynamic.
+ * Abstract class used to represent CTCP requests and replies, allows CTCP
+ * replies to be dynamic.
  * 
  * <p/>
  * This file is part of Speed's IRC API.
@@ -24,14 +24,14 @@ package com.speed.irc.types;
  */
 public abstract class CTCPReply {
 
-	public abstract String getResponse();
+	public abstract String getReply();
 
 	public abstract String getRequest();
 
 	@Override
 	public boolean equals(Object o) {
 		if (o instanceof CTCPReply) {
-			return getResponse().equals(((CTCPReply) o).getResponse())
+			return getReply().equals(((CTCPReply) o).getReply())
 					&& getRequest().equals(((CTCPReply) o).getRequest());
 		}
 		return false;
@@ -39,6 +39,6 @@ public abstract class CTCPReply {
 
 	@Override
 	public int hashCode() {
-		return (getResponse().hashCode() | getRequest().hashCode()) & 0xffffff;
+		return (getReply().hashCode() | getRequest().hashCode()) & 0xfffff;
 	}
 }

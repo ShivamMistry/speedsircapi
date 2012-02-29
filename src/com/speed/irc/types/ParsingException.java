@@ -27,6 +27,11 @@ public class ParsingException extends Exception {
 	public ParsingException(final String msg, final Exception e) {
 		this.msg = msg;
 		this.e = e;
+
+	}
+
+	public void printStackTrace() {
+		e.printStackTrace();
 	}
 
 	public String getMessage() {

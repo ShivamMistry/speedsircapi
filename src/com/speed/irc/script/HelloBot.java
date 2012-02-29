@@ -1,5 +1,8 @@
 package com.speed.irc.script;
 
+import java.util.Random;
+
+import com.speed.irc.event.ApiEvent;
 import com.speed.irc.event.ChannelUserEvent;
 import com.speed.irc.event.ChannelUserListener;
 import com.speed.irc.event.PrivateMessageEvent;
@@ -7,8 +10,6 @@ import com.speed.irc.event.PrivateMessageListener;
 import com.speed.irc.types.Bot;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
-
-import java.util.Random;
 
 /**
  * Greets people as they join the channel or speak a greeting.
@@ -62,7 +63,17 @@ public class HelloBot extends Bot implements ChannelUserListener,
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		server.setAutoReconnect(true);
+		server.setReadDebug(true);
 
+	}
+
+	@Override
+	public void apiEventReceived(final ApiEvent e) {
+		super.apiEventReceived(e);
+		if (e.getOpcode() == ApiEvent.SERVER_QUIT) {
+			logger.info("WE HAVE QUIT FROM THE SERVER.");
+		}
 	}
 
 	public void messageReceived(PrivateMessageEvent e) {
@@ -70,8 +81,11 @@ public class HelloBot extends Bot implements ChannelUserListener,
 		final String sender = e.getMessage().getSender();
 		if (message.contains("!raw") && sender.equals("Speed")) {
 			server.sendRaw(message.replaceFirst("!raw", "").trim() + "\n");
+		} else if (message.equals("!quit") && sender.equals("Speed")) {
+			server.quit("bai");
 		}
-		if (e.getMessage().getConversable() == null) {
+		if (e.getMessage().getConversable() == null
+				|| !(e.getMessage().getConversable() instanceof Channel)) {
 			return;
 		}
 		final ChannelUser user = channel.getUser(sender);

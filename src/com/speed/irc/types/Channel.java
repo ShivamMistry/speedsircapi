@@ -2,6 +2,9 @@ package com.speed.irc.types;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import com.speed.irc.connection.Server;
 import com.speed.irc.event.ChannelUserEvent;
@@ -40,7 +43,11 @@ public class Channel extends Conversable implements ChannelUserListener,
 	public Mode chanMode;
 	public List<String> bans = new LinkedList<String>();
 	protected String topic;
-	public Thread channel;
+	protected ScheduledFuture<?> future;
+
+	public Future<?> getFuture() {
+		return future;
+	}
 
 	/**
 	 * Constructs a channel.
@@ -124,7 +131,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 	 */
 	public void part(final String message) {
 		isRunning = false;
-		if (message == null)
+		if (message != null && !message.isEmpty())
 			server.sendRaw(String.format("PART %s :%s\n", name, message));
 		else
 			server.sendRaw(String.format("PART %s\n", name));
@@ -145,16 +152,8 @@ public class Channel extends Conversable implements ChannelUserListener,
 	}
 
 	public void run() {
-		do {
-			server.sendRaw("WHO " + name);
-			try {
-				Thread.sleep(users.isEmpty() ? 5000 : Channel.WHO_DELAY);
-			} catch (InterruptedException e) {
-				//e.printStackTrace();
-				continue;
-			}
+		server.sendRaw("WHO " + name);
 
-		} while (isRunning);
 	}
 
 	/**
@@ -176,10 +175,8 @@ public class Channel extends Conversable implements ChannelUserListener,
 		if (!server.getChannels().containsValue(this)) {
 			server.getChannels().put(name, this);
 		}
-		if (channel == null || !channel.isAlive()) {
-			channel = new Thread(this);
-			channel.start();
-		}
+		future = server.getChanExec().scheduleWithFixedDelay(this, 0, 2,
+				TimeUnit.MINUTES);
 	}
 
 	/**
@@ -195,10 +192,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 		if (!server.getChannels().containsValue(this)) {
 			server.getChannels().put(name, this);
 		}
-		if (channel == null || !channel.isAlive()) {
-			channel = new Thread(this);
-			channel.start();
-		}
+		future = getServer().getChanExec().schedule(this, 5, TimeUnit.SECONDS);
 	}
 
 	/**

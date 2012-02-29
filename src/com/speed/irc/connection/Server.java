@@ -11,7 +11,13 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.speed.irc.event.ApiEvent;
 import com.speed.irc.event.EventManager;
@@ -54,6 +60,8 @@ public class Server implements ConnectionHandler, Runnable {
 	protected HashSet<CTCPReply> ctcpReplies = new HashSet<CTCPReply>();
 	protected boolean autoConnect;
 	private int port;
+	private ScheduledThreadPoolExecutor chanExec;
+	private ScheduledExecutorService serverExecutor, eventExecutor;
 
 	public Server(final Socket sock) throws IOException {
 		socket = sock;
@@ -62,21 +70,46 @@ public class Server implements ConnectionHandler, Runnable {
 		write = new BufferedWriter(new OutputStreamWriter(
 				sock.getOutputStream()));
 		read = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-		Thread eventThread = new Thread(eventManager);
-		eventThread.start();
-		new Thread(this).start();
+		chanExec = new ScheduledThreadPoolExecutor(10);
+		serverExecutor = Executors.newSingleThreadScheduledExecutor();
+		eventExecutor = Executors.newSingleThreadScheduledExecutor();
+		serverExecutor.scheduleWithFixedDelay(this, 1000, 200,
+				TimeUnit.MILLISECONDS);
+		eventExecutor.scheduleWithFixedDelay(eventManager, 1000, 100,
+				TimeUnit.MILLISECONDS);
 		parser = new ServerMessageParser(this);
 		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_VERSION);
 		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_TIME);
+		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_PING);
 	}
 
+	public ScheduledThreadPoolExecutor getChanExec() {
+		return chanExec;
+	}
+
+	/**
+	 * Sends a QUIT command (with no message) to the server and shuts down this
+	 * server connection.
+	 */
 	public void quit() {
-		parser.running = false;
-		parser.reader.running = false;
+		quit(null);
+	}
+
+	/**
+	 * Sends a QUIT command to the server and shuts down this server connection.
+	 * 
+	 * @param message
+	 *            the quit message to send to the server, <tt>null</tt> or
+	 *            <tt>""</tt> for no message
+	 */
+	public void quit(final String message) {
 		eventManager.fireEvent(new ApiEvent(ApiEvent.SERVER_QUIT, this, this));
 		try {
 			if (!socket.isClosed()) {
-				getWriter().write("QUIT\n");
+				getWriter()
+						.write("QUIT"
+								+ (message == null || message.trim().isEmpty() ? "\n"
+										: ("Quit :" + message + "\n")));
 				getWriter().flush();
 			}
 		} catch (Exception e) {
@@ -88,17 +121,19 @@ public class Server implements ConnectionHandler, Runnable {
 			e1.printStackTrace();
 		}
 		for (Channel c : channels.values()) {
-			if (c.channel != null)
-				c.channel.interrupt();
-			c.isRunning = false;
+			if (c.getFuture() != null && !c.getFuture().isDone())
+				c.getFuture().cancel(true);
 		}
+		parser.reader.running = false;
 		try {
 			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		eventManager.setRunning(false);
-
+		eventExecutor.shutdownNow();
+		parser.execServ.shutdownNow();
+		chanExec.shutdownNow();
+		serverExecutor.shutdownNow();
 	}
 
 	public final void setReadDebug(final Logger logger) {
@@ -117,7 +152,16 @@ public class Server implements ConnectionHandler, Runnable {
 					socket.getOutputStream()));
 			read = new BufferedReader(new InputStreamReader(
 					socket.getInputStream()));
+			Logger logger = null;
+			boolean log = false;
+			if (parser.reader.logging) {
+				logger = parser.reader.logger;
+				log = parser.reader.logging;
+			}
 			parser = new ServerMessageParser(this);
+			if (logger != null && log) {
+				setReadDebug(logger);
+			}
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -160,33 +204,64 @@ public class Server implements ConnectionHandler, Runnable {
 		synchronized (ctcpReplies) {
 			ctcpReplies.add(new CTCPReply() {
 
-				public String getResponse() {
+				public String getReply() {
 					return reply;
 				}
 
 				public String getRequest() {
 					return request;
 				}
-				
+
 			});
 		}
 	}
-	
+
 	public void addCtcpReply(final CTCPReply reply) {
 		synchronized (ctcpReplies) {
 			ctcpReplies.add(reply);
 		}
 	}
-	
+
 	public String getCtcpReply(final String request) {
-		synchronized(ctcpReplies) {
-			for(CTCPReply reply : ctcpReplies) {
-				if(reply.getRequest().equalsIgnoreCase(request)) {
-					return reply.getResponse();
+		synchronized (ctcpReplies) {
+			for (CTCPReply reply : ctcpReplies) {
+				Matcher matcher = Pattern.compile(reply.getRequest(),
+						Pattern.CASE_INSENSITIVE).matcher(request);
+				if (matcher.matches()) {
+					if (matcher.groupCount() == 0)
+						return reply.getReply();
+					else {
+						String resp = reply.getReply();
+						StringBuffer response = new StringBuffer();
+						boolean flag = false;
+						for (int i = 0; i < resp.length(); i++) {
+							char c = resp.charAt(i);
+							if (c == '$'
+									&& (i == 0 || resp.charAt(i - 1) != '\\')) {
+								flag = true;
+								continue;
+							} else if (resp.charAt(i - 1) == '\\') {
+								response.deleteCharAt(i - 1);
+							} else if (Character.isDigit(c) && flag) {
+								int group = Character.getNumericValue(c);
+								flag = false;
+								try {
+									String str = matcher.group(group);
+									response.append(str);
+								} catch (IndexOutOfBoundsException e) {
+									e.printStackTrace();
+								}
+								continue;
+
+							}
+							response.append(c);
+
+						}
+						return response.toString();
+					}
 				}
 			}
 		}
-		
 		return null;
 	}
 
@@ -321,38 +396,28 @@ public class Server implements ConnectionHandler, Runnable {
 	}
 
 	public void run() {
-		while (!socket.isClosed()) {
-			try {
-				if (write != null) {
-					write.flush();
-				}
-			} catch (SocketException e) {
-				if (autoConnect) {
-					try {
-						Thread.sleep(200);
-					} catch (InterruptedException e1) {
-						e1.printStackTrace();
-					}
-					try {
-						socket.close();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-					connect();
-					eventManager.fireEvent(new ApiEvent(
-							ApiEvent.SERVER_DISCONNECTED, this, this));
-				} else {
-					break;
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
+		try {
+			if (write != null) {
+				write.flush();
 			}
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+		} catch (SocketException e) {
+			if (autoConnect) {
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				try {
+					socket.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				connect();
+				eventManager.fireEvent(new ApiEvent(
+						ApiEvent.SERVER_DISCONNECTED, this, this));
 			}
-
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 	}
