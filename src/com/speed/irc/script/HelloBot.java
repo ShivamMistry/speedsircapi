@@ -37,10 +37,11 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	private static final String[] HELLO_PHRASES = new String[] { "Hello", "Hi",
 			"Hey", "Yo", "Wassup", "helo", "herro", "hiya", "hai", "heya" };
 	private static final Random RANDOM_GENERATOR = new Random();
-	private Channel channel;
+	private Channel[] channels;
 
 	public HelloBot(final String server, final int port) {
 		super(server, port);
+
 	}
 
 	public static void main(String[] args) {
@@ -48,8 +49,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public Channel[] getChannels() {
-		channel = new Channel("#news", server);
-		return new Channel[] { channel };
+		return channels;
 	}
 
 	public String getNick() {
@@ -57,12 +57,9 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public void onStart() {
-		try {
-			// identify("password");
-			channel.setAutoRejoin(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		channels = new Channel[] { new Channel("#irc", server) };
+		channels[0].setAutoRejoin(true);
+		// identify("password");
 		server.setAutoReconnect(true);
 		server.setReadDebug(true);
 
@@ -80,7 +77,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 		final String message = e.getMessage().getMessage();
 		final String sender = e.getMessage().getSender();
 		if (message.contains("!raw") && sender.equals("Speed")) {
-			server.sendRaw(message.replaceFirst("!raw", "").trim() + "\n");
+			server.sendRaw(message.replaceFirst("!raw", "").trim());
 		} else if (message.equals("!quit") && sender.equals("Speed")) {
 			server.quit("bai");
 		}
@@ -88,6 +85,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 				|| !(e.getMessage().getConversable() instanceof Channel)) {
 			return;
 		}
+		final Channel channel = (Channel) e.getMessage().getConversable();
 		final ChannelUser user = channel.getUser(sender);
 		for (String s : HELLO_PHRASES) {
 			if (message.toLowerCase().equals(s.toLowerCase())
@@ -104,10 +102,12 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public void channelUserJoined(ChannelUserEvent e) {
-		channel.sendMessage(HELLO_PHRASES[RANDOM_GENERATOR
-				.nextInt(HELLO_PHRASES.length - 1)]
-				+ " "
-				+ e.getUser().getNick());
+		System.out.println(e.getChannel().getName());
+		e.getChannel().sendMessage(
+				HELLO_PHRASES[RANDOM_GENERATOR
+						.nextInt(HELLO_PHRASES.length - 1)]
+						+ " "
+						+ e.getUser().getNick());
 	}
 
 	public void channelUserParted(ChannelUserEvent e) {

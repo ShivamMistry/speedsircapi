@@ -54,17 +54,15 @@ public abstract class Bot implements ApiListener {
 		try {
 			this.server = new Server(new Socket(server, port));
 			this.server.sendRaw("NICK " + getNick() + "\n");
-			this.server.sendRaw("USER " + getUser()
-					+" 0 * :" + getRealName());
+			this.server.sendRaw("USER " + getUser() + " 0 * :" + getRealName());
 			if (this instanceof IRCEventListener) {
 				this.server.getEventManager().addListener(
 						(IRCEventListener) this);
 			}
+			onStart();
 			for (Channel s : getChannels()) {
 				s.join();
 			}
-			onStart();
-
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -76,7 +74,7 @@ public abstract class Bot implements ApiListener {
 	public abstract Channel[] getChannels();
 
 	public abstract String getNick();
-	
+
 	public String getRealName() {
 		return "SpeedsIrcApi";
 	}

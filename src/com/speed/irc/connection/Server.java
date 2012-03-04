@@ -275,8 +275,10 @@ public class Server implements ConnectionHandler, Runnable {
 		if (raw.startsWith("NICK")) {
 			nick = raw.replace("NICK", "").replace(":", "").trim();
 		}
-		if (!raw.endsWith("\n"))
-			raw += '\n';
+		if ((raw.contains("\n") || raw.contains("\r")) && !raw.endsWith("\r\n"))
+			raw = raw.replace("\n", "").replace("\r", "");
+		if (!raw.endsWith("\r\n"))
+			raw += "\r\n";
 		try {
 			write.write(raw);
 		} catch (IOException e) {

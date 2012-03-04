@@ -85,7 +85,7 @@ public class ServerMessageParser implements Runnable {
 		}
 
 	};
-	
+
 	public static final CTCPReply CTCP_REPLY_PING = new CTCPReply() {
 
 		public String getReply() {
@@ -208,9 +208,16 @@ public class ServerMessageParser implements Runnable {
 			final String nick = parts[0];
 			final String user = parts[1].split("@")[0];
 			final String host = parts[1].split("@")[1].split(" ")[0];
-			Channel channel = server.channels.get(raw.split(" ")[2]);
+			String chan = raw.split(" ")[2];
+			if (raw.split(" ")[2].startsWith(":")) {
+				chan = chan.substring(1);
+			}
+			Channel channel = server.channels.get(chan);
 			if (channel == null) {
-				channel = new Channel(raw.split(" ")[2], server);
+				channel = new Channel(chan, server);
+			}
+			if (channel.getUser(nick) != null) {
+				channel.removeChannelUser(channel.getUser(nick));
 			}
 			final ChannelUser u = new ChannelUser(nick, "", user, host, channel);
 			server.getEventManager().fireEvent(
