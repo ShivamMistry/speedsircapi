@@ -35,7 +35,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 		PrivateMessageListener {
 
 	private static final String[] HELLO_PHRASES = new String[] { "Hello", "Hi",
-			"Hey", "Yo", "Wassup", "helo", "herro", "hiya", "hai", "heya" };
+			"Hey", "Yo", "Wassup", "helo", "herro", "hiya", "hai", "heya", "sup" };
 	private static final Random RANDOM_GENERATOR = new Random();
 	private Channel[] channels;
 
@@ -102,7 +102,6 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public void channelUserJoined(ChannelUserEvent e) {
-		System.out.println(e.getChannel().getName());
 		e.getChannel().sendMessage(
 				HELLO_PHRASES[RANDOM_GENERATOR
 						.nextInt(HELLO_PHRASES.length - 1)]

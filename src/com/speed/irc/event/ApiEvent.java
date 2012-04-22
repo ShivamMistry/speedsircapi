@@ -27,7 +27,6 @@ public class ApiEvent implements IRCEvent {
 
 	public static final int SERVER_QUIT = 3;
 
-
 	private int opcode;
 	private Server server;
 	private Object source;
@@ -38,16 +37,36 @@ public class ApiEvent implements IRCEvent {
 		this.server = server;
 	}
 
+	/**
+	 * Gets the opcode of the event.
+	 * 
+	 * @see {@link ApiEvent#SERVER_DISCONNECTED}
+	 * @see {@link ApiEvent#EXCEPTION_RECEIVED}
+	 * @see {@link ApiEvent#SERVER_QUIT}
+	 * @return the opcode of this event
+	 */
 	public int getOpcode() {
 		return opcode;
 	}
 
+	/**
+	 * Gets the server from which the event was thrown.
+	 * 
+	 * @return the server from which the event was thrown
+	 */
 	public Server getServer() {
 		return server;
 	}
 
 	public Object getSource() {
 		return source;
+	}
+
+	public void callListener(final IRCEventListener listener) {
+		if (listener instanceof ApiListener) {// these checks SHOULDN'T be
+												// necessary
+			((ApiListener) listener).apiEventReceived(this);
+		}
 	}
 
 }

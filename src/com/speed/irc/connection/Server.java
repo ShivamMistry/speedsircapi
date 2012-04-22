@@ -104,16 +104,18 @@ public class Server implements ConnectionHandler, Runnable {
 	 */
 	public void quit(final String message) {
 		eventManager.fireEvent(new ApiEvent(ApiEvent.SERVER_QUIT, this, this));
+		parser.reader.running = false;
 		try {
 			if (!socket.isClosed()) {
 				getWriter()
 						.write("QUIT"
 								+ (message == null || message.trim().isEmpty() ? "\n"
-										: ("Quit :" + message + "\n")));
+										: (" :Quit :" + message + "\n")));
 				getWriter().flush();
+				socket.close();
 			}
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		}
 		try {
 			Thread.sleep(100);
@@ -124,7 +126,6 @@ public class Server implements ConnectionHandler, Runnable {
 			if (c.getFuture() != null && !c.getFuture().isDone())
 				c.getFuture().cancel(true);
 		}
-		parser.reader.running = false;
 		try {
 			socket.close();
 		} catch (IOException e) {

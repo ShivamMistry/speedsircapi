@@ -42,4 +42,11 @@ public class PrivateMessageEvent implements IRCEvent {
 		return message;
 	}
 
+	public void callListener(IRCEventListener listener) {
+		if (listener instanceof PrivateMessageListener) {
+			((PrivateMessageListener) listener)
+					.messageReceived(this);
+		}		
+	}
+
 }

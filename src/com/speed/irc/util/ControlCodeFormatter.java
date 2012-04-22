@@ -56,7 +56,7 @@ public class ControlCodeFormatter {
 	 *            the new format character
 	 */
 	public void setFormatChar(final char c) {
-		format_character = c;
+		formatChar = c;
 	}
 
 	/**
@@ -66,7 +66,7 @@ public class ControlCodeFormatter {
 	 * @return the format character
 	 */
 	public char getFormatChar() {
-		return format_character;
+		return formatChar;
 	}
 
 	/**

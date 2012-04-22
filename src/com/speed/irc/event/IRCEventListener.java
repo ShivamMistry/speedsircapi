@@ -23,5 +23,5 @@ package com.speed.irc.event;
  * 
  */
 public interface IRCEventListener {
-
+	
 }

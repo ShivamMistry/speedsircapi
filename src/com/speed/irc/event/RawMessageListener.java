@@ -22,6 +22,7 @@ package com.speed.irc.event;
  * @author Shivam Mistry
  * 
  */
+@ListenerProperties(events = RawMessageEvent.class)
 public interface RawMessageListener extends IRCEventListener {
 	void rawMessageReceived(RawMessageEvent e);
 

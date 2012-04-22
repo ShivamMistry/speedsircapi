@@ -38,4 +38,10 @@ public class NoticeEvent implements IRCEvent {
 	public Object getSource() {
 		return source;
 	}
+
+	public void callListener(IRCEventListener listener) {
+		if (listener instanceof NoticeListener) {
+			((NoticeListener) listener).noticeReceived(this);
+		}
+	}
 }

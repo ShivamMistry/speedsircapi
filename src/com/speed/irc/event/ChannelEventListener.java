@@ -22,6 +22,7 @@ package com.speed.irc.event;
  * @author Shivam Mistry
  * 
  */
+@ListenerProperties(events = { ChannelEvent.class })
 public interface ChannelEventListener extends IRCEventListener {
 	public void channelTopicChanged(ChannelEvent e);
 

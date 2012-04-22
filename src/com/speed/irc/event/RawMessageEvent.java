@@ -40,4 +40,10 @@ public class RawMessageEvent implements IRCEvent {
 		return source;
 	}
 
+	public void callListener(IRCEventListener listener) {
+		if (listener instanceof RawMessageListener) {
+			((RawMessageListener) listener).rawMessageReceived(this);
+		}
+	}
+
 }

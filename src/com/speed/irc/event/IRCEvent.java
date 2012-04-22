@@ -24,4 +24,6 @@ package com.speed.irc.event;
  */
 public interface IRCEvent {
 	public Object getSource();
+
+	public void callListener(IRCEventListener listener);
 }

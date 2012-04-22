@@ -50,4 +50,37 @@ public class ChannelEvent implements IRCEvent {
 		return source;
 	}
 
+	public void callListener(IRCEventListener listener) {
+		if (listener instanceof ChannelUserListener
+				&& this instanceof ChannelUserEvent) {
+			final ChannelUserListener l = (ChannelUserListener) listener;
+			final ChannelUserEvent event = (ChannelUserEvent) this;
+			switch (event.getCode()) {
+			case ChannelUserEvent.USER_JOINED:
+				l.channelUserJoined(event);
+				break;
+			case ChannelUserEvent.USER_KICKED:
+				l.channelUserKicked(event);
+				break;
+			case ChannelUserEvent.USER_MODE_CHANGED:
+				l.channelUserModeChanged(event);
+				break;
+			case ChannelUserEvent.USER_PARTED:
+				l.channelUserParted(event);
+				break;
+			}
+		} else if (listener instanceof ChannelEventListener) {
+			final ChannelEventListener l = (ChannelEventListener) listener;
+			final ChannelEvent event = this;
+			switch (event.getCode()) {
+			case ChannelEvent.MODE_CHANGED:
+				l.channelModeChanged(event);
+				break;
+			case ChannelEvent.TOPIC_CHANGED:
+				l.channelTopicChanged(event);
+				break;
+			}
+		}		
+	}
+
 }
