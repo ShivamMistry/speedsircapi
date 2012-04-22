@@ -46,7 +46,7 @@ import com.speed.irc.types.NOTICE;
  * 
  * @author Shivam Mistry
  */
-public class Server implements ConnectionHandler, Runnable {
+public class Server implements Runnable {
 	private volatile BufferedWriter write;
 	private volatile BufferedReader read;
 	protected volatile Socket socket;
