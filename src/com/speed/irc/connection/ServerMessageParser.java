@@ -12,7 +12,9 @@ import java.util.regex.Pattern;
 
 import com.speed.irc.event.ChannelEvent;
 import com.speed.irc.event.ChannelUserEvent;
+import com.speed.irc.event.EventGenerator;
 import com.speed.irc.event.ExceptionEvent;
+import com.speed.irc.event.IRCEvent;
 import com.speed.irc.event.NoticeEvent;
 import com.speed.irc.event.PrivateMessageEvent;
 import com.speed.irc.event.RawMessageEvent;
@@ -20,7 +22,6 @@ import com.speed.irc.types.CTCPReply;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
 import com.speed.irc.types.Conversable;
-import com.speed.irc.types.MessageReader;
 import com.speed.irc.types.NOTICE;
 import com.speed.irc.types.PRIVMSG;
 import com.speed.irc.types.ParsingException;
@@ -48,7 +49,7 @@ import com.speed.irc.util.Numerics;
  * 
  * @author Shivam Mistry
  */
-public class ServerMessageParser implements Runnable {
+public class ServerMessageParser implements Runnable, EventGenerator {
 	private final Server server;
 	/**
 	 * Regex is only being used temporarily, we will return to using split once
@@ -58,7 +59,7 @@ public class ServerMessageParser implements Runnable {
 			.compile("(.+?)!(.+?)@(.+?) PRIVMSG (#?.+?) :(.*)");
 	private static final Pattern PATTERN_NOTICE = Pattern
 			.compile("(.+?)!(.+?)@(.+?) NOTICE (#?.+?) :(.*)");
-	private List<MessageReader> readers = new CopyOnWriteArrayList<MessageReader>();
+	private List<EventGenerator> generators;
 	protected ServerMessageReader reader;
 	protected ScheduledExecutorService execServ;
 	protected Future<?> future;
@@ -100,6 +101,8 @@ public class ServerMessageParser implements Runnable {
 
 	public ServerMessageParser(final Server server) {
 		this.server = server;
+		generators = new CopyOnWriteArrayList<EventGenerator>();
+		generators.add(this);
 		reader = new ServerMessageReader(server);
 		execServ = Executors.newSingleThreadScheduledExecutor();
 		new Thread(reader, "Server message reader").start();
@@ -108,28 +111,46 @@ public class ServerMessageParser implements Runnable {
 
 	}
 
-	public synchronized void attach(final MessageReader reader) {
-		readers.add(reader);
-	}
-
 	private synchronized void parse(final String s) throws Exception {
-		for (MessageReader r : readers) {
-			if (r.filter.accept(s)) {
-				r.s = s;
-
-				synchronized (r) {
-					r.notify();
-
-				}
+		final RawMessage message = new RawMessage(s);
+		for (EventGenerator generator : generators) {
+			if (generator.accept(message)) {
+				IRCEvent event = generator.generate(message);
+				if (event != null)
+					server.eventManager.dispatchEvent(event);
 			}
 		}
-		final RawMessage message = new RawMessage(s);
+		server.eventManager.dispatchEvent(new RawMessageEvent(message, this));
+
+	}
+
+	public void run() {
+		String s;
+		if (!reader.isEmpty()) {
+			s = reader.poll();
+			s = s.substring(1);
+			try {
+				parse(s);
+			} catch (Exception e) {
+				server.eventManager
+						.dispatchEvent(new ExceptionEvent(new ParsingException(
+								"Parsing error", e), this, server));
+			}
+		}
+
+	}
+
+	public boolean accept(RawMessage message) {
+		return message != null;
+	}
+
+	public IRCEvent generate(RawMessage message) {
 		String raw = message.getRaw();
 		String code = message.getCommand();
-		final Matcher priv_matcher = PATTERN_PRIVMSG.matcher(s);
-		final Matcher notice_matcher = PATTERN_NOTICE.matcher(s);
-		if (s.startsWith("PING")) {
-			server.sendRaw("PONG" + s.replaceFirst("PING", "") + "\n");
+		final Matcher priv_matcher = PATTERN_PRIVMSG.matcher(raw);
+		final Matcher notice_matcher = PATTERN_NOTICE.matcher(raw);
+		if (raw.startsWith("PING")) {
+			server.sendRaw(raw.replaceFirst("PING", "PONG") + "\n");
 		} else if (message.getCommand().equals("PRIVMSG")
 				&& priv_matcher.matches()) {
 			final String msg = priv_matcher.group(5);
@@ -147,27 +168,26 @@ public class ServerMessageParser implements Runnable {
 				}
 			}
 			Conversable conversable = null;
-			if (s.contains("PRIVMSG #")) {
+			if (raw.contains("PRIVMSG #")) {
 				conversable = server.channels.get(name);
 			} else {
 				conversable = new ServerUser(sender, host, user, server);
 			}
-			server.eventManager.fireEvent(new PrivateMessageEvent(new PRIVMSG(
-					msg, sender, conversable), this));
+			return new PrivateMessageEvent(
+					new PRIVMSG(msg, sender, conversable), this);
 		} else if (message.getCommand().equals("NOTICE")
 				&& notice_matcher.matches()) {
 			final String msg = notice_matcher.group(5);
 			final String sender = notice_matcher.group(1);
 			final String name = notice_matcher.group(4);
 			String channel = null;
-			if (s.contains("NOTICE #"))
+			if (raw.contains("NOTICE #"))
 				channel = name;
-			server.eventManager.fireEvent(new NoticeEvent(new NOTICE(msg,
-					sender, channel), this));
+			return new NoticeEvent(new NOTICE(msg, sender, channel), this);
 
 		} else if (message.getCommand().equals(Numerics.SERVER_SUPPORT)) {
-			if (s.contains("PREFIX")) {
-				String temp = s.substring(0, s.indexOf(" :"));
+			if (raw.contains("PREFIX")) {
+				String temp = raw.substring(0, raw.indexOf(" :"));
 				String[] parts = temp.split(" ");
 				for (String t : parts) {
 					if (t.startsWith("PREFIX=")) {
@@ -183,16 +203,14 @@ public class ServerMessageParser implements Runnable {
 		} else if (code.equals("KICK")) {
 			final Channel channel = server.channels.get(raw.split(" ")[2]);
 			if (channel == null) {
-				return;
+				return null;
 			}
 			final ChannelUser user = channel.getUser(raw.split(" ")[3]);
 			if (user == null) {
-				return;
+				return null;
 			}
-
-			server.getEventManager().fireEvent(
-					new ChannelUserEvent(this, channel, user,
-							ChannelUserEvent.USER_KICKED));
+			return new ChannelUserEvent(this, channel, user,
+					ChannelUserEvent.USER_KICKED);
 		} else if (code.equals("PART")) {
 			final String nick = message.getSender().split("!")[0];
 			Channel channel = server.channels.get(raw.split(" ")[2]);
@@ -200,9 +218,8 @@ public class ServerMessageParser implements Runnable {
 				channel = new Channel(raw.split(" ")[2], server);
 			}
 			final ChannelUser user = channel.getUser(nick);
-			server.getEventManager().fireEvent(
-					new ChannelUserEvent(this, channel, user,
-							ChannelUserEvent.USER_PARTED));
+			return new ChannelUserEvent(this, channel, user,
+					ChannelUserEvent.USER_PARTED);
 		} else if (code.equals("JOIN")) {
 			final String[] parts = raw.split("!");
 			final String nick = parts[0];
@@ -220,14 +237,13 @@ public class ServerMessageParser implements Runnable {
 				channel.removeChannelUser(channel.getUser(nick));
 			}
 			final ChannelUser u = new ChannelUser(nick, "", user, host, channel);
-			server.getEventManager().fireEvent(
-					new ChannelUserEvent(this, channel, u,
-							ChannelUserEvent.USER_JOINED));
+			return new ChannelUserEvent(this, channel, u,
+					ChannelUserEvent.USER_JOINED);
 		} else if (code.equals(Numerics.CHANNEL_MODES)) {
 			String chan_name = message.getRaw().split(" ")[3];
 			String modez = message.getRaw().split(" ")[4];
 			if (!server.channels.containsKey(chan_name)) {
-				return;
+				return null;
 			}
 			Channel channel = server.channels.get(chan_name);
 			channel.chanMode.parse(modez);
@@ -235,7 +251,7 @@ public class ServerMessageParser implements Runnable {
 
 			String name = message.getTarget();
 			if (!server.channels.containsKey(name)) {
-				return;
+				return null;
 			}
 			Channel channel = server.channels.get(name);
 			raw = raw.split(name, 2)[1].trim();
@@ -243,9 +259,8 @@ public class ServerMessageParser implements Runnable {
 			String modes = strings[0];
 			if (strings.length == 1) {
 				channel.chanMode.parse(modes);
-				server.getEventManager().fireEvent(
-						new ChannelEvent(channel, ChannelEvent.MODE_CHANGED,
-								this));
+				return new ChannelEvent(channel, ChannelEvent.MODE_CHANGED,
+						this);
 			} else {
 				String[] u = new String[strings.length - 1];
 				System.arraycopy(strings, 1, u, 0, u.length);
@@ -266,7 +281,7 @@ public class ServerMessageParser implements Runnable {
 						} else {
 							channel.bans.remove(u[index]);
 						}
-						server.getEventManager().fireEvent(
+						server.getEventManager().dispatchEvent(
 								new ChannelEvent(channel,
 										ChannelEvent.MODE_CHANGED, this));
 						continue;
@@ -278,7 +293,7 @@ public class ServerMessageParser implements Runnable {
 						} else {
 							user.removeMode(c);
 						}
-						server.getEventManager().fireEvent(
+						server.getEventManager().dispatchEvent(
 								new ChannelUserEvent(this, channel, user,
 										ChannelUserEvent.USER_MODE_CHANGED));
 
@@ -310,9 +325,8 @@ public class ServerMessageParser implements Runnable {
 			String[] temp = raw.split(" :", 2);
 			if (temp[0].substring(temp[0].indexOf("TOPIC")).contains(
 					channel.getName())) {
-				server.getEventManager().fireEvent(
-						new ChannelEvent(channel, ChannelEvent.TOPIC_CHANGED,
-								this));
+				return new ChannelEvent(channel, ChannelEvent.TOPIC_CHANGED,
+						this);
 			}
 		} else if (code.equals(Numerics.BANNED_FROM_CHANNEL)
 				&& message.getTarget().equals(server.getNick())) {
@@ -328,23 +342,6 @@ public class ServerMessageParser implements Runnable {
 				}
 			}
 		}
-		server.eventManager.fireEvent(new RawMessageEvent(message, this));
-
-	}
-
-	public void run() {
-		String s;
-		if (!reader.isEmpty()) {
-			s = reader.poll();
-			s = s.substring(1);
-			try {
-				parse(s);
-			} catch (Exception e) {
-				server.eventManager
-						.fireEvent(new ExceptionEvent(new ParsingException(
-								"Parsing error", e), this, server));
-			}
-		}
-
+		return null;
 	}
 }

@@ -103,7 +103,8 @@ public class Server implements Runnable {
 	 *            <tt>""</tt> for no message
 	 */
 	public void quit(final String message) {
-		eventManager.fireEvent(new ApiEvent(ApiEvent.SERVER_QUIT, this, this));
+		eventManager.dispatchEvent(new ApiEvent(ApiEvent.SERVER_QUIT, this,
+				this));
 		parser.reader.running = false;
 		try {
 			if (!socket.isClosed()) {
@@ -217,12 +218,25 @@ public class Server implements Runnable {
 		}
 	}
 
+	/**
+	 * Adds an automated CTCP reply to the reply list.
+	 * 
+	 * @param reply
+	 *            the CTCPReply to be added to the list
+	 */
 	public void addCtcpReply(final CTCPReply reply) {
 		synchronized (ctcpReplies) {
 			ctcpReplies.add(reply);
 		}
 	}
 
+	/**
+	 * Gets the reply which corresponds to the request.
+	 * 
+	 * @param request
+	 *            the request to retrieve the reply for
+	 * @return the reply for the supplied request
+	 */
 	public String getCtcpReply(final String request) {
 		synchronized (ctcpReplies) {
 			for (CTCPReply reply : ctcpReplies) {
@@ -416,7 +430,7 @@ public class Server implements Runnable {
 					e1.printStackTrace();
 				}
 				connect();
-				eventManager.fireEvent(new ApiEvent(
+				eventManager.dispatchEvent(new ApiEvent(
 						ApiEvent.SERVER_DISCONNECTED, this, this));
 			}
 		} catch (IOException e) {

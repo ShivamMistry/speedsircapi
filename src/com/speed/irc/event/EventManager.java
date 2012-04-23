@@ -30,14 +30,32 @@ public class EventManager implements Runnable {
 	private List<IRCEventListener> listeners = new CopyOnWriteArrayList<IRCEventListener>();
 	private BlockingQueue<IRCEvent> eventQueue = new LinkedBlockingQueue<IRCEvent>();
 
+	/**
+	 * @deprecated see {@link #dispatchEvent(IRCEvent)} instead
+	 * @param e
+	 */
 	public synchronized void fireEvent(IRCEvent e) {
-		eventQueue.add(e);
+		dispatchEvent(e);
 	}
 
-	public void addListener(final IRCEventListener e) {
-		synchronized (listeners) {
-			listeners.add(e);
-		}
+	/**
+	 * Adds an event to the event queue.
+	 * 
+	 * @param event
+	 *            the event to be processed by the event queue.
+	 */
+	public synchronized void dispatchEvent(final IRCEvent event) {
+		eventQueue.add(event);
+	}
+
+	/**
+	 * Adds an event listener to this event manager.
+	 * 
+	 * @param listener
+	 *            the listener to be added to this event manager
+	 */
+	public synchronized void addListener(final IRCEventListener listener) {
+		listeners.add(listener);
 	}
 
 	public void run() {
@@ -59,7 +77,7 @@ public class EventManager implements Runnable {
 								}
 							}
 						} catch (Exception e1) {
-							this.fireEvent(new ExceptionEvent(e1, this, null));
+							this.dispatchEvent(new ExceptionEvent(e1, this, null));
 							e1.printStackTrace();
 						}
 					}
@@ -68,6 +86,9 @@ public class EventManager implements Runnable {
 		}
 	}
 
+	/**
+	 * Clears the queue of events to be processed.
+	 */
 	public void clearQueue() {
 		eventQueue.clear();
 
