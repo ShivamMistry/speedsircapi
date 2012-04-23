@@ -1,5 +1,7 @@
 package com.speed.irc.types;
 
+import com.speed.irc.connection.Server;
+
 /**
  * Represents a raw message.
  * 
@@ -27,9 +29,11 @@ public class RawMessage {
 	private String code;
 	private String sender;
 	private String target;
+	private Server server;
 
-	public RawMessage(String raw) {
+	public RawMessage(String raw, final Server server) {
 		this.raw = raw;
+		this.server = server;
 		String[] strings = raw.split(" ");
 		code = strings[1];
 		sender = strings[0];
@@ -53,4 +57,9 @@ public class RawMessage {
 	public String getSender() {
 		return sender;
 	}
+
+	public Server getServer() {
+		return server;
+	}
+
 }
