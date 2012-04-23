@@ -123,6 +123,14 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 		server.eventManager.dispatchEvent(new RawMessageEvent(message, this));
 
 	}
+	
+	public void addGenerator(final EventGenerator generator) {
+		generators.add(generator);
+	}
+	
+	public boolean removeGenerator(final EventGenerator generator) {
+		return generators.remove(generator);
+	}
 
 	public void run() {
 		String s;
