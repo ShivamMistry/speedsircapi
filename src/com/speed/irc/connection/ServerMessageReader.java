@@ -101,7 +101,7 @@ public class ServerMessageReader implements Runnable {
 							e.printStackTrace();
 						}
 						server.connect();
-						server.eventManager.fireEvent(new ApiEvent(
+						server.eventManager.dispatchEvent(new ApiEvent(
 								ApiEvent.SERVER_DISCONNECTED, server, this));
 						break;
 					}

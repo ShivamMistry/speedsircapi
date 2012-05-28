@@ -1,14 +1,16 @@
-package com.speed.irc.connection.generators;
+package com.speed.irc.event.generators;
 
-import com.speed.irc.event.ChannelUserEvent;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.speed.irc.event.EventGenerator;
 import com.speed.irc.event.IRCEvent;
-import com.speed.irc.types.Channel;
-import com.speed.irc.types.ChannelUser;
+import com.speed.irc.event.NoticeEvent;
+import com.speed.irc.types.NOTICE;
 import com.speed.irc.types.RawMessage;
 
 /**
- * Processes PART messages sent from the server.
+ * Processes NOTICE messages sent from the server.
  * <p/>
  * This file is part of Speed's IRC API.
  * <p/>
@@ -27,22 +29,26 @@ import com.speed.irc.types.RawMessage;
  * 
  * @author Shivam Mistry
  */
-public class PartGenerator implements EventGenerator {
+public class NoticeGenerator implements EventGenerator {
+	private static final Pattern PATTERN_NOTICE = Pattern
+			.compile("(.+?)!(.+?)@(.+?) NOTICE (#?.+?) :(.*)");
 
 	public boolean accept(RawMessage raw) {
-		return raw.getCommand().equals("PART");
+		return PATTERN_NOTICE.matcher(raw.getRaw()).matches();
 	}
 
 	public IRCEvent generate(RawMessage raw) {
-		final String nick = raw.getSender().split("!")[0];
-		Channel channel = raw.getServer().getChannels()
-				.get(raw.getRaw().split(" ")[2]);
-		if (channel == null) {
-			channel = new Channel(raw.getRaw().split(" ")[2], raw.getServer());
+		final Matcher notice_matcher = PATTERN_NOTICE.matcher(raw.getRaw());
+		if (notice_matcher.matches()) {
+			final String msg = notice_matcher.group(5);
+			final String sender = notice_matcher.group(1);
+			final String name = notice_matcher.group(4);
+			String channel = null;
+			if (raw.getRaw().split(" :", 2)[0].contains("NOTICE #"))
+				channel = name;
+			return new NoticeEvent(new NOTICE(msg, sender, channel), this);
 		}
-		final ChannelUser user = channel.getUser(nick);
-		return new ChannelUserEvent(this, channel, user,
-				ChannelUserEvent.USER_PARTED);
+		return null;
 	}
 
 }

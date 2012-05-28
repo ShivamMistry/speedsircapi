@@ -1,4 +1,4 @@
-package com.speed.irc.connection.generators;
+package com.speed.irc.event.generators;
 
 import com.speed.irc.event.ChannelUserEvent;
 import com.speed.irc.event.EventGenerator;

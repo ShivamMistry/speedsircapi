@@ -1,4 +1,4 @@
-package com.speed.irc.connection.generators;
+package com.speed.irc.event.generators;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
