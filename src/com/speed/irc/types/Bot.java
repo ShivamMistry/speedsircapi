@@ -34,9 +34,10 @@ import com.speed.irc.event.IRCEventListener;
  */
 public abstract class Bot implements ApiListener {
 
-	public Server server;
-	private final int port;
+	protected Server server;
+	protected final int port;
 	protected Logger logger = Logger.getLogger(Bot.class.getName());
+	protected int modes;
 
 	public int getPort() {
 		return port;
@@ -46,11 +47,14 @@ public abstract class Bot implements ApiListener {
 		logger.info(message);
 	}
 
+	public final Server getServer() {
+		return server;
+	}
+
 	public abstract void onStart();
 
 	public Bot(final String server, final int port) {
 		this.port = port;
-
 		try {
 			this.server = new Server(new Socket(server, port));
 			this.server.sendRaw("NICK " + getNick() + "\n");
@@ -85,8 +89,8 @@ public abstract class Bot implements ApiListener {
 
 	private void connect() {
 		this.server.sendRaw("NICK " + getNick() + "\n");
-		this.server.sendRaw("USER " + getNick()
-				+ " metalmonster.me TB: Speed Bot\n");
+		this.server.sendRaw("USER " + getUser() + " " + modes + " * :"
+				+ getRealName() + "\n");
 		for (Channel s : getChannels()) {
 			s.join();
 		}

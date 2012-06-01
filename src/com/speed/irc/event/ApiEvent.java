@@ -40,9 +40,8 @@ public class ApiEvent implements IRCEvent {
 	/**
 	 * Gets the opcode of the event.
 	 * 
-	 * @see {@link ApiEvent#SERVER_DISCONNECTED}
-	 * @see {@link ApiEvent#EXCEPTION_RECEIVED}
-	 * @see {@link ApiEvent#SERVER_QUIT}
+	 * @see {@link ApiEvent#SERVER_DISCONNECTED},
+	 *      {@link ApiEvent#EXCEPTION_RECEIVED}, {@link ApiEvent#SERVER_QUIT}
 	 * @return the opcode of this event
 	 */
 	public int getOpcode() {

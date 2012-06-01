@@ -62,7 +62,6 @@ public class HelloBot extends Bot implements ChannelUserListener,
 		// identify("password");
 		server.setAutoReconnect(true);
 		server.setReadDebug(true);
-
 	}
 
 	@Override

@@ -119,7 +119,7 @@ public class Server implements Runnable {
 			e.printStackTrace();
 		}
 		try {
-			Thread.sleep(100);
+			Thread.sleep(1000);
 		} catch (InterruptedException e1) {
 			e1.printStackTrace();
 		}
