@@ -42,6 +42,8 @@ public class Channel extends Conversable implements ChannelUserListener,
 	protected String nick;
 	public Mode chanMode;
 	public List<String> bans = new LinkedList<String>();
+	public List<String> exempts = new LinkedList<String>();
+	public List<String> invites = new LinkedList<String>();
 	protected String topic;
 	protected ScheduledFuture<?> future;
 
@@ -347,5 +349,18 @@ public class Channel extends Conversable implements ChannelUserListener,
 				server.getChannels().remove(this);
 			}
 		}
+	}
+
+	public void setMode(String mode, String... args) {
+		StringBuilder arg = new StringBuilder();
+		for (String s : args) {
+			arg.append(s).append(' ');
+		}
+		server.sendRaw(String.format("MODE %s %s %s", name, mode,
+				arg.toString()));
+	}
+
+	public void removeExempt(String mask) {
+		setMode("-e", mask);
 	}
 }

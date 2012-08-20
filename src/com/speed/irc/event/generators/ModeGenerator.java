@@ -73,6 +73,26 @@ public class ModeGenerator implements EventGenerator {
 							new ChannelEvent(channel,
 									ChannelEvent.MODE_CHANGED, this));
 					continue;
+				} else if (c == 'e') {
+					if (plus) {
+						channel.exempts.add(u[index]);
+					} else {
+						channel.exempts.remove(u[index]);
+					}
+					server.getEventManager().dispatchEvent(
+							new ChannelEvent(channel,
+									ChannelEvent.MODE_CHANGED, this));
+					continue;
+				} else if (c == 'I') {
+					if (plus) {
+						channel.invites.add(u[index]);
+					} else {
+						channel.invites.remove(u[index]);
+					}
+					server.getEventManager().dispatchEvent(
+							new ChannelEvent(channel,
+									ChannelEvent.MODE_CHANGED, this));
+					continue;
 				}
 				ChannelUser user = channel.getUser(u[index]);
 				if (user != null) {
