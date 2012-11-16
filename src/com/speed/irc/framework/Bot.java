@@ -1,4 +1,4 @@
-package com.speed.irc.types;
+package com.speed.irc.framework;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -10,6 +10,7 @@ import com.speed.irc.event.ApiEvent;
 import com.speed.irc.event.ApiListener;
 import com.speed.irc.event.ExceptionEvent;
 import com.speed.irc.event.IRCEventListener;
+import com.speed.irc.types.Channel;
 
 /**
  * The abstract class for making robots. To create a robot, you can extend this
@@ -31,11 +32,10 @@ import com.speed.irc.event.IRCEventListener;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  * 
  * @author Shivam Mistry
- * @deprecated use {@link com.speed.irc.framework.Bot} instead
  */
 public abstract class Bot implements ApiListener {
 
-	protected Server server;
+	private Server server;
 	protected final int port;
 	protected Logger logger = Logger.getLogger(Bot.class.getName());
 	protected int modes;
@@ -79,13 +79,17 @@ public abstract class Bot implements ApiListener {
 	public abstract Channel[] getChannels();
 
 	public abstract String getNick();
+	
+	public String getAltNick() {
+		return getNick() + "_";
+	}
 
 	public String getRealName() {
 		return "SpeedsIrcApi";
 	}
 
 	public String getUser() {
-		return "Speed";
+		return "SpeedsIrcApi";
 	}
 
 	private void connect() {

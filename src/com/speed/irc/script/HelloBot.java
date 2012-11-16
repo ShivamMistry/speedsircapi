@@ -57,11 +57,11 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public void onStart() {
-		channels = new Channel[] { new Channel("#irc", server) };
+		channels = new Channel[] { new Channel("#irc", getServer()) };
 		channels[0].setAutoRejoin(true);
 		// identify("password");
-		server.setAutoReconnect(true);
-		server.setReadDebug(true);
+		getServer().setAutoReconnect(true);
+		getServer().setReadDebug(true);
 	}
 
 	@Override
@@ -76,9 +76,9 @@ public class HelloBot extends Bot implements ChannelUserListener,
 		final String message = e.getMessage().getMessage();
 		final String sender = e.getMessage().getSender();
 		if (message.contains("!raw") && sender.equals("Speed")) {
-			server.sendRaw(message.replaceFirst("!raw", "").trim());
+			getServer().sendRaw(message.replaceFirst("!raw", "").trim());
 		} else if (message.equals("!quit") && sender.equals("Speed")) {
-			server.quit("bai");
+			getServer().quit("bai");
 		}
 		if (e.getMessage().getConversable() == null
 				|| !(e.getMessage().getConversable() instanceof Channel)) {
