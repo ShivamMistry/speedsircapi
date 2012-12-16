@@ -63,6 +63,13 @@ public class Server implements Runnable {
 	private ScheduledThreadPoolExecutor chanExec;
 	private ScheduledExecutorService serverExecutor, eventExecutor;
 
+	/**
+	 * Initialises a server object. Only blocking IO is supported.
+	 * 
+	 * @param sock
+	 *            The socket used for communication to the IRC server.
+	 * @throws IOException
+	 */
 	public Server(final Socket sock) throws IOException {
 		socket = sock;
 		port = sock.getPort();
@@ -83,6 +90,11 @@ public class Server implements Runnable {
 		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_PING);
 	}
 
+	/**
+	 * Gets the channel thread executor, used to send WHO requests for channels.
+	 * 
+	 * @return the channel thread executor
+	 */
 	public ScheduledThreadPoolExecutor getChanExec() {
 		return chanExec;
 	}
@@ -138,11 +150,23 @@ public class Server implements Runnable {
 		serverExecutor.shutdownNow();
 	}
 
+	/**
+	 * Sets the logger to log debug output to and turns debugging on.
+	 * 
+	 * @param logger
+	 *            the logger to log output to.
+	 */
 	public final void setReadDebug(final Logger logger) {
 		parser.reader.logger = logger;
-		parser.reader.logging = true;
+		setReadDebug(true);
 	}
 
+	/**
+	 * Controls whether the API should log debug output.
+	 * 
+	 * @param on
+	 *            <tt>true</tt> to enable debug output, <tt>false</tt> otherwise
+	 */
 	public final void setReadDebug(boolean on) {
 		parser.reader.logging = on;
 	}
@@ -408,6 +432,11 @@ public class Server implements Runnable {
 		sendRaw("PRIVMSG " + channel + ": \u0001ACTION " + action + "\n");
 	}
 
+	/**
+	 * Gets the event manager associated with this server object.
+	 * 
+	 * @return the event manager for this server.
+	 */
 	public EventManager getEventManager() {
 		return eventManager;
 	}
@@ -439,6 +468,12 @@ public class Server implements Runnable {
 
 	}
 
+	/**
+	 * Sets the server's host address.
+	 * 
+	 * @param serverName
+	 *            the server's host address.
+	 */
 	public void setServerName(String serverName) {
 		this.serverName = serverName;
 	}
@@ -461,7 +496,7 @@ public class Server implements Runnable {
 	 */
 	public Channel joinChannel(final String channelName) {
 		if (channels.containsKey(channelName.trim())) {
-			final Channel channel = channels.get(channelName);
+			final Channel channel = channels.get(channelName.toLowerCase());
 			if (!channel.isRunning) {
 				channel.join();
 			}
@@ -470,5 +505,17 @@ public class Server implements Runnable {
 		final Channel channel = new Channel(channelName, this);
 		channel.join();
 		return channel;
+	}
+
+	/**
+	 * Creates/finds a channel object for the specified channel.
+	 * 
+	 * @param channelName
+	 *            the name of the channel.
+	 * @return a channel object.
+	 */
+	public Channel getChannel(final String channelName) {
+		return channels.containsKey(channelName.toLowerCase().trim()) ? channels
+				.get(channelName) : new Channel(channelName, this);
 	}
 }

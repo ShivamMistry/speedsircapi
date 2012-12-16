@@ -64,7 +64,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 		this.server = server;
 		this.nick = server.getNick();
 		this.server.getEventManager().addListener(this);
-		this.server.getChannels().put(name, this);
+		this.server.getChannels().put(name.toLowerCase().trim(), this);
 		chanMode = new Mode(server, "");
 	}
 
