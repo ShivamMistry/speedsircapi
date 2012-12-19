@@ -25,10 +25,7 @@ import com.speed.irc.connection.Server;
  */
 public class RawMessage {
 
-	private String raw;
-	private String code;
-	private String sender;
-	private String target;
+	private String raw, code, sender, target;
 	private Server server;
 
 	public RawMessage(String raw, final Server server) {

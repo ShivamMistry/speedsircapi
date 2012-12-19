@@ -80,11 +80,11 @@ public class ChannelUser extends ServerUser {
 		modes = modes + mode;
 		sync(modes);
 	}
-	
+
 	public void removeExempts() {
-		for(final String s : channel.exempts) {
-				Mask mask = new Mask(s);
-			if(mask.matches(this)) {
+		for (final String s : channel.exempts) {
+			Mask mask = new Mask(s);
+			if (mask.matches(this)) {
 				channel.removeExempt(s);
 			}
 		}

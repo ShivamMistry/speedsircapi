@@ -26,16 +26,38 @@ public class ServerUser extends Conversable {
 	private String nick, host, user;
 	private Server server;
 
+	/**
+	 * Initialises a server user.
+	 * 
+	 * @param nick
+	 *            the nick of the user
+	 * @param host
+	 *            the host of the user
+	 * @param user
+	 *            the username of the user
+	 * @param server
+	 *            the server the user is on
+	 */
 	public ServerUser(final String nick, final String host, final String user,
 			final Server server) {
 		this.nick = nick;
 		this.host = host;
 		this.user = user;
 		this.server = server;
+		getServer().addUser(this);
 	}
 
 	public String toString() {
 		return String.format("%s!%s@%s", nick, user, host);
+	}
+
+	/**
+	 * Gets the mask of this user.
+	 * 
+	 * @return the mask of the user
+	 */
+	public Mask getMask() {
+		return new Mask(getNick(), getUser(), getHost());
 	}
 
 	public void sendMessage(final String message) {
@@ -43,25 +65,45 @@ public class ServerUser extends Conversable {
 	}
 
 	public void sendNotice(final String notice) {
-		server.sendRaw(String.format("NOTICE %s :%s", nick, notice));
+		server.sendNotice(new Notice(notice, null, nick, server));
 	}
 
 	public String getName() {
 		return nick;
 	}
 
+	/**
+	 * Gets the nick of this user.
+	 * 
+	 * @return the nick of the user
+	 */
 	public String getNick() {
 		return nick;
 	}
 
+	/**
+	 * Gets the host of the user.
+	 * 
+	 * @return the users host.
+	 */
 	public String getHost() {
 		return host;
 	}
 
+	/**
+	 * Gets the username of this user.
+	 * 
+	 * @return the username of this user
+	 */
 	public String getUser() {
 		return user;
 	}
 
+	/**
+	 * Gets the server this user is on
+	 * 
+	 * @return the server this user is on
+	 */
 	public Server getServer() {
 		return server;
 	}

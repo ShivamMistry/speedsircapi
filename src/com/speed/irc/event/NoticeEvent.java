@@ -1,6 +1,6 @@
 package com.speed.irc.event;
 
-import com.speed.irc.types.NOTICE;
+import com.speed.irc.types.Notice;
 
 /**
  * 
@@ -23,15 +23,15 @@ import com.speed.irc.types.NOTICE;
  * 
  */
 public class NoticeEvent implements IRCEvent {
-	protected NOTICE notice;
+	protected Notice notice;
 	protected Object source;
 
-	public NoticeEvent(final NOTICE notice, final Object source) {
+	public NoticeEvent(final Notice notice, final Object source) {
 		this.notice = notice;
 		this.source = source;
 	}
 
-	public NOTICE getNotice() {
+	public Notice getNotice() {
 		return notice;
 	}
 

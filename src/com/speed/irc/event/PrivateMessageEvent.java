@@ -1,6 +1,6 @@
 package com.speed.irc.event;
 
-import com.speed.irc.types.PRIVMSG;
+import com.speed.irc.types.Privmsg;
 
 /**
  * The wrapper class for an PRIVMSG event.
@@ -27,9 +27,9 @@ import com.speed.irc.types.PRIVMSG;
 public class PrivateMessageEvent implements IRCEvent {
 
 	protected Object source;
-	protected PRIVMSG message;
+	protected Privmsg message;
 
-	public PrivateMessageEvent(final PRIVMSG message, final Object source) {
+	public PrivateMessageEvent(final Privmsg message, final Object source) {
 		this.source = source;
 		this.message = message;
 	}
@@ -38,7 +38,7 @@ public class PrivateMessageEvent implements IRCEvent {
 		return source;
 	}
 
-	public PRIVMSG getMessage() {
+	public Privmsg getMessage() {
 		return message;
 	}
 

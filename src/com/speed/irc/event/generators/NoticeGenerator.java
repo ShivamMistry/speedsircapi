@@ -3,10 +3,11 @@ package com.speed.irc.event.generators;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.speed.irc.connection.Server;
 import com.speed.irc.event.EventGenerator;
 import com.speed.irc.event.IRCEvent;
 import com.speed.irc.event.NoticeEvent;
-import com.speed.irc.types.NOTICE;
+import com.speed.irc.types.Notice;
 import com.speed.irc.types.RawMessage;
 
 /**
@@ -31,7 +32,12 @@ import com.speed.irc.types.RawMessage;
  */
 public class NoticeGenerator implements EventGenerator {
 	private static final Pattern PATTERN_NOTICE = Pattern
-			.compile("(.+?)!(.+?)@(.+?) NOTICE (#?.+?) :(.*)");
+			.compile("(.+?)!(.+?)@(.+?) NOTICE (#?.+?) :(+.*)");
+	private final Server server;
+
+	public NoticeGenerator(Server server) {
+		this.server = server;
+	}
 
 	public boolean accept(RawMessage raw) {
 		return PATTERN_NOTICE.matcher(raw.getRaw()).matches();
@@ -41,12 +47,10 @@ public class NoticeGenerator implements EventGenerator {
 		final Matcher notice_matcher = PATTERN_NOTICE.matcher(raw.getRaw());
 		if (notice_matcher.matches()) {
 			final String msg = notice_matcher.group(5);
-			final String sender = notice_matcher.group(1);
+			final String sender = notice_matcher.group(1) + '!'
+					+ notice_matcher.group(2) + '@' + notice_matcher.group(3);
 			final String name = notice_matcher.group(4);
-			String channel = null;
-			if (raw.getRaw().split(" :", 2)[0].contains("NOTICE #"))
-				channel = name;
-			return new NoticeEvent(new NOTICE(msg, sender, channel), this);
+			return new NoticeEvent(new Notice(msg, sender, name, server), this);
 		}
 		return null;
 	}

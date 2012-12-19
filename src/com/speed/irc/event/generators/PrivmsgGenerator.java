@@ -8,7 +8,7 @@ import com.speed.irc.event.EventGenerator;
 import com.speed.irc.event.IRCEvent;
 import com.speed.irc.event.PrivateMessageEvent;
 import com.speed.irc.types.Conversable;
-import com.speed.irc.types.PRIVMSG;
+import com.speed.irc.types.Privmsg;
 import com.speed.irc.types.RawMessage;
 import com.speed.irc.types.ServerUser;
 
@@ -65,7 +65,7 @@ public class PrivmsgGenerator implements EventGenerator {
 				conversable = new ServerUser(sender, host, user, server);
 			}
 			return new PrivateMessageEvent(
-					new PRIVMSG(msg, sender, conversable), this);
+					new Privmsg(msg, sender, conversable), this);
 		}
 		return null;
 	}

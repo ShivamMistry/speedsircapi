@@ -23,9 +23,18 @@ package com.speed.irc.types;
  * @author Shivam Mistry
  */
 public abstract class CTCPReply {
-
+	/**
+	 * Gets the reply message
+	 * 
+	 * @return the reply message
+	 */
 	public abstract String getReply();
 
+	/**
+	 * Gets the request message
+	 * 
+	 * @return the request message
+	 */
 	public abstract String getRequest();
 
 	@Override

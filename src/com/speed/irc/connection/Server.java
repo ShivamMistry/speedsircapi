@@ -8,8 +8,10 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -23,7 +25,8 @@ import com.speed.irc.event.ApiEvent;
 import com.speed.irc.event.EventManager;
 import com.speed.irc.types.CTCPReply;
 import com.speed.irc.types.Channel;
-import com.speed.irc.types.NOTICE;
+import com.speed.irc.types.Notice;
+import com.speed.irc.types.ServerUser;
 
 /**
  * A class representing a socket connection to an IRC server with the
@@ -52,6 +55,7 @@ public class Server implements Runnable {
 	protected volatile Socket socket;
 	protected EventManager eventManager = new EventManager();
 	protected Map<String, Channel> channels = new HashMap<String, Channel>();
+	private List<ServerUser> users;
 	private char[] modeSymbols;
 	private char[] modeLetters;
 	private String serverName;
@@ -85,6 +89,7 @@ public class Server implements Runnable {
 		eventExecutor.scheduleWithFixedDelay(eventManager, 1000, 100,
 				TimeUnit.MILLISECONDS);
 		parser = new ServerMessageParser(this);
+		users = new ArrayList<ServerUser>();
 		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_VERSION);
 		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_TIME);
 		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_PING);
@@ -414,9 +419,17 @@ public class Server implements Runnable {
 	 * @param notice
 	 *            sender can be null.
 	 */
-	public void sendNotice(final NOTICE notice) {
-		sendRaw("NOTICE " + notice.getChannel() + " :" + notice.getMessage()
+	public void sendNotice(final Notice notice) {
+		sendRaw("NOTICE " + notice.getTarget() + " :" + notice.getMessage()
 				+ "\n");
+	}
+
+	public ServerUser getUser(String nick) {
+		for (ServerUser u : users) {
+			if (u.getNick().equalsIgnoreCase(nick))
+				return u;
+		}
+		return new ServerUser(nick, null, null, this);
 	}
 
 	/**
@@ -517,5 +530,10 @@ public class Server implements Runnable {
 	public Channel getChannel(final String channelName) {
 		return channels.containsKey(channelName.toLowerCase().trim()) ? channels
 				.get(channelName) : new Channel(channelName, this);
+	}
+
+	public void addUser(final ServerUser user) {
+		if (!users.contains(user))
+			users.add(user);
 	}
 }

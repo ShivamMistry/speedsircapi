@@ -52,7 +52,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 	protected ServerMessageReader reader;
 	protected ScheduledExecutorService execServ;
 	protected Future<?> future;
-	
+
 	public static final CTCPReply CTCP_REPLY_VERSION = new CTCPReply() {
 
 		public String getReply() {
@@ -96,7 +96,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 		generators.add(new JoinGenerator());
 		generators.add(new KickGenerator());
 		generators.add(new ModeGenerator());
-		generators.add(new NoticeGenerator());
+		generators.add(new NoticeGenerator(server));
 		generators.add(new PartGenerator());
 		generators.add(new PrivmsgGenerator());
 		reader = new ServerMessageReader(server);
@@ -119,11 +119,24 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 		server.eventManager.dispatchEvent(new RawMessageEvent(message, this));
 
 	}
-	
+
+	/**
+	 * Submits an event generator to this parser
+	 * 
+	 * @param generator
+	 *            generator to add
+	 */
 	public void addGenerator(final EventGenerator generator) {
 		generators.add(generator);
 	}
-	
+
+	/**
+	 * Removes a generator from this parser
+	 * 
+	 * @param generator
+	 *            the generator to remove
+	 * @return true if it was removed, false if it failed to be removed
+	 */
 	public boolean removeGenerator(final EventGenerator generator) {
 		return generators.remove(generator);
 	}

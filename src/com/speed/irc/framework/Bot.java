@@ -40,20 +40,47 @@ public abstract class Bot implements ApiListener {
 	protected Logger logger = Logger.getLogger(Bot.class.getName());
 	protected int modes;
 
+	/**
+	 * Gets the port the bot is connected to
+	 * 
+	 * @return the port the bot is connected to
+	 */
 	public int getPort() {
 		return port;
 	}
 
+	/**
+	 * Logs an info message
+	 * 
+	 * @param message
+	 *            the message to log
+	 */
 	public final void info(final String message) {
 		logger.info(message);
 	}
 
+	/**
+	 * Gets the server the bot is connected to
+	 * 
+	 * @return the server the bot is connected to
+	 */
 	public final Server getServer() {
 		return server;
 	}
 
+	/**
+	 * Executed just after connecting to the server and before joining channels
+	 */
 	public abstract void onStart();
 
+	/**
+	 * Initialises a bot.
+	 * 
+	 * @param server
+	 *            the server host name to connect to
+	 * @param port
+	 *            the port number
+	 */
 	public Bot(final String server, final int port) {
 		this.port = port;
 		try {
@@ -76,18 +103,43 @@ public abstract class Bot implements ApiListener {
 
 	}
 
+	/**
+	 * Gets the channels to auto connect to
+	 * 
+	 * @return the channels to auto connect to
+	 */
 	public abstract Channel[] getChannels();
 
+	/**
+	 * Gets the nickname the bot should try to connect with
+	 * 
+	 * @return the nickname of the bot
+	 */
 	public abstract String getNick();
-	
+
+	/**
+	 * Gets the alternative nickname of the bot
+	 * 
+	 * @return the alternative nickname of the bot
+	 */
 	public String getAltNick() {
 		return getNick() + "_";
 	}
 
+	/**
+	 * Gets the real name of the bot
+	 * 
+	 * @return the real nameof bot
+	 */
 	public String getRealName() {
 		return "SpeedsIrcApi";
 	}
 
+	/**
+	 * Gets the username of the bot
+	 * 
+	 * @return the username of bot
+	 */
 	public String getUser() {
 		return "SpeedsIrcApi";
 	}
