@@ -7,7 +7,7 @@ import com.speed.irc.event.ChannelUserEvent;
 import com.speed.irc.event.ChannelUserListener;
 import com.speed.irc.event.PrivateMessageEvent;
 import com.speed.irc.event.PrivateMessageListener;
-import com.speed.irc.types.Bot;
+import com.speed.irc.framework.Bot;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
 

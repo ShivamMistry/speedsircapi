@@ -21,6 +21,8 @@ package com.speed.irc.types;
  * @author Shivam Mistry
  */
 public class ParsingException extends Exception {
+
+	private static final long serialVersionUID = 2238835287734082797L;
 	private final String msg;
 	private final Exception e;
 
