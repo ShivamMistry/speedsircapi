@@ -26,6 +26,14 @@ public class ParsingException extends Exception {
 	private final String msg;
 	private final Exception e;
 
+	/**
+	 * Initialises a ParsingException.
+	 * 
+	 * @param msg
+	 *            the message
+	 * @param e
+	 *            the exception
+	 */
 	public ParsingException(final String msg, final Exception e) {
 		this.msg = msg;
 		this.e = e;
@@ -40,6 +48,11 @@ public class ParsingException extends Exception {
 		return msg;
 	}
 
+	/**
+	 * Gets the exception
+	 * 
+	 * @return the exception.
+	 */
 	public Exception getException() {
 		return e;
 	}

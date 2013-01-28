@@ -31,4 +31,6 @@ public interface ChannelUserListener extends IRCEventListener {
 	void channelUserModeChanged(ChannelUserEvent e);
 
 	void channelUserKicked(ChannelUserEvent e);
+
+	void channelUserNickChanged(ChannelUserEvent e);
 }

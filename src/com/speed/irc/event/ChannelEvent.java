@@ -68,6 +68,9 @@ public class ChannelEvent implements IRCEvent {
 			case ChannelUserEvent.USER_PARTED:
 				l.channelUserParted(event);
 				break;
+			case ChannelUserEvent.USER_NICK_CHANGED:
+				l.channelUserNickChanged(event);
+				break;
 			}
 		} else if (listener instanceof ChannelEventListener) {
 			final ChannelEventListener l = (ChannelEventListener) listener;
@@ -80,7 +83,7 @@ public class ChannelEvent implements IRCEvent {
 				l.channelTopicChanged(event);
 				break;
 			}
-		}		
+		}
 	}
 
 }

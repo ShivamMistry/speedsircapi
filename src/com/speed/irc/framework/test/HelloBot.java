@@ -1,4 +1,4 @@
-package com.speed.irc.script;
+package com.speed.irc.framework.test;
 
 import java.util.Random;
 
@@ -30,7 +30,6 @@ import com.speed.irc.types.ChannelUser;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  * 
  * @author Shivam Mistry
- * @deprecated see {@link com.speed.irc.framework.test.HelloBot} instead
  */
 public class HelloBot extends Bot implements ChannelUserListener,
 		PrivateMessageListener {
@@ -47,7 +46,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public static void main(String[] args) {
-		new HelloBot("irc.strictfp.com", 6667);
+		new HelloBot("irc.rizon.net", 6667);
 	}
 
 	public Channel[] getChannels() {
@@ -59,7 +58,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public void onStart() {
-		channels = new Channel[] { new Channel("#irc", getServer()) };
+		channels = new Channel[] { new Channel("#rscode", getServer()) };
 		channels[0].setAutoRejoin(true);
 		// identify("password");
 		getServer().setAutoReconnect(true);
@@ -120,8 +119,8 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public void channelUserNickChanged(ChannelUserEvent e) {
-		final String newNick = e.getArguments()[0];
-		final String oldNick = e.getArguments()[1];
+		final String newNick = e.getArguments()[1];
+		final String oldNick = e.getArguments()[0];
 		info(oldNick + " changed to " + newNick);
 		e.getChannel().sendMessage(
 				HELLO_PHRASES[RANDOM_GENERATOR

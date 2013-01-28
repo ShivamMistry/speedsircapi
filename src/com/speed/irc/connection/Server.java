@@ -8,11 +8,11 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -26,6 +26,7 @@ import com.speed.irc.event.EventManager;
 import com.speed.irc.types.CTCPReply;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.Notice;
+import com.speed.irc.types.Privmsg;
 import com.speed.irc.types.ServerUser;
 
 /**
@@ -89,7 +90,7 @@ public class Server implements Runnable {
 		eventExecutor.scheduleWithFixedDelay(eventManager, 1000, 100,
 				TimeUnit.MILLISECONDS);
 		parser = new ServerMessageParser(this);
-		users = new ArrayList<ServerUser>();
+		users = new CopyOnWriteArrayList<ServerUser>();
 		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_VERSION);
 		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_TIME);
 		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_PING);
@@ -417,14 +418,33 @@ public class Server implements Runnable {
 	 * Sends a notice to the specified nick.
 	 * 
 	 * @param notice
-	 *            sender can be null.
+	 *            the notice to send, sender can be null.
 	 */
 	public void sendNotice(final Notice notice) {
 		sendRaw("NOTICE " + notice.getTarget() + " :" + notice.getMessage()
 				+ "\n");
 	}
 
-	public ServerUser getUser(String nick) {
+	/**
+	 * Sends a private message to the server.
+	 * 
+	 * @param msg
+	 *            the message to send, sender can be null.
+	 */
+	public void sendMessage(final Privmsg msg) {
+		sendRaw(String.format("PRIVMSG %s :%s", msg.getConversable().getName(),
+				msg.getMessage()));
+	}
+
+	/**
+	 * Gets a server user object with a supplied nickname.
+	 * 
+	 * @param nick
+	 *            the nickname to search for
+	 * @return the ServerUser object, creates a new object if the user wasn't
+	 *         found.
+	 */
+	public ServerUser getUser(final String nick) {
 		for (ServerUser u : users) {
 			if (u.getNick().equalsIgnoreCase(nick))
 				return u;
@@ -535,5 +555,9 @@ public class Server implements Runnable {
 	public void addUser(final ServerUser user) {
 		if (!users.contains(user))
 			users.add(user);
+	}
+
+	protected void removeUser(final ServerUser user) {
+		users.remove(user);
 	}
 }

@@ -28,25 +28,18 @@ public class ChannelUser extends ServerUser {
 	public static final int VOICE_FLAG = 0x1, HALF_OP_FLAG = 0x2,
 			OP_FLAG = 0x4, ADMIN_FLAG = 0x8, OWNER_FLAG = 0x10;
 
-	public String getNick() {
+	public String getNick() {// docs from superclass are sufficient
 		return nick;
 	}
 
-	public void setNick(String nick) {
+	protected void setNick(String nick) {
 		this.nick = nick;
 	}
 
-	public String getModes() {
-		return modes;
-	}
-
-	public void setModes(String modes) {
-		this.modes = modes;
-	}
-
-	public void sendMessage(final String message) {
-		channel.server.sendRaw(String.format("PRIVMSG %s :%s", nick, message));
-	}
+	/*
+	 * public String getModes() { return modes; } //dont need this any more
+	 * public void setModes(String modes) { this.modes = modes; }
+	 */
 
 	public Channel getChannel() {
 		return channel;
@@ -57,7 +50,7 @@ public class ChannelUser extends ServerUser {
 		super(nick, host, user, channel.getServer());
 		this.channel = channel;
 		this.channelModes = new Mode(this.channel.server, "");
-		this.setModes(modes);
+		this.modes = (modes);
 		this.setNick(nick);
 		this.setHost(host);
 		this.setUser(user);
@@ -119,17 +112,15 @@ public class ChannelUser extends ServerUser {
 	}
 
 	public boolean isOperator() {
-		return (getRights() & OP_FLAG) != 0 || isProtected() || isOwner();
+		return (getRights() & OP_FLAG) != 0;
 	}
 
 	public boolean isHalfOperator() {
-		return (getRights() & HALF_OP_FLAG) != 0 || isOperator()
-				|| isProtected() || isOwner();
+		return (getRights() & HALF_OP_FLAG) != 0;
 	}
 
 	public boolean isVoiced() {
-		return (getRights() & VOICE_FLAG) != 0 || isHalfOperator()
-				|| isOperator() || isProtected() || isOwner();
+		return (getRights() & VOICE_FLAG) != 0;
 	}
 
 	public boolean isOwner() {
@@ -137,7 +128,7 @@ public class ChannelUser extends ServerUser {
 	}
 
 	public boolean isProtected() {
-		return (getRights() & ADMIN_FLAG) != 0 || isOwner();
+		return (getRights() & ADMIN_FLAG) != 0;
 	}
 
 	/**

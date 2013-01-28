@@ -9,6 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.speed.irc.event.ChannelEvent;
+import com.speed.irc.event.ChannelUserEvent;
 import com.speed.irc.event.EventGenerator;
 import com.speed.irc.event.ExceptionEvent;
 import com.speed.irc.event.IRCEvent;
@@ -24,6 +25,7 @@ import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
 import com.speed.irc.types.ParsingException;
 import com.speed.irc.types.RawMessage;
+import com.speed.irc.types.ServerUser;
 import com.speed.irc.util.Numerics;
 
 /**
@@ -163,7 +165,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 
 	public IRCEvent generate(RawMessage message) {
 		String raw = message.getRaw();
-		String code = message.getCommand();
+		String code = message.getCommand().trim();
 		if (raw.startsWith("PING")) {
 			server.sendRaw(raw.replaceFirst("PING", "PONG") + "\n");
 		} else if (message.getCommand().equals(Numerics.SERVER_SUPPORT)) {
@@ -219,13 +221,28 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 			Channel channel = server.channels.get(raw.split(" ")[3]);
 			if (channel != null && channel.isRunning)
 				channel.isRunning = false;
-		} else if (code.equals("NICK")) {
-			for (Channel channel : server.channels.values()) {
-				final ChannelUser user = channel.getUser(message.getSender()
-						.split("!")[0]);
-				if (user != null) {
-					user.setNick(raw.substring(raw.indexOf(": ") + 2).trim());
+		} else if (code.trim().equalsIgnoreCase("nick")) {
+			try {
+				final ServerUser u = server.getUser(message.getSender().split(
+						"!")[0]);
+				final String oldNick = u.getNick();
+				final String newNick = raw.split(" :")[1].trim();
+				System.out.println("hi");
+				if (u instanceof ChannelUser) {
+					return new ChannelUserEvent(this,
+							((ChannelUser) u).getChannel(), (ChannelUser) u,
+							ChannelUserEvent.USER_NICK_CHANGED, new String[] {
+									oldNick, newNick });
+				} else {
+					// this user is not in a channel, so we need to recreate the
+					// object
+					ServerUser n_u = new ServerUser(newNick, u.getHost(),
+							u.getUser(), server);
+					server.removeUser(u);
+					server.addUser(n_u);
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 		return null;

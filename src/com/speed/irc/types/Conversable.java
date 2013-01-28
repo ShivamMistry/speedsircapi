@@ -1,5 +1,7 @@
 package com.speed.irc.types;
 
+import com.speed.irc.connection.Server;
+
 /**
  * An abstract representation of a communicable entity on a server.
  * <p/>
@@ -27,7 +29,9 @@ public abstract class Conversable {
 	 * @param message
 	 *            the message that is to be sent.
 	 */
-	public abstract void sendMessage(final String message);
+	public void sendMessage(final String message) {
+		getServer().sendMessage(new Privmsg(message, null, this));
+	}
 
 	/**
 	 * Sends a NOTICE message to the entity.
@@ -35,7 +39,10 @@ public abstract class Conversable {
 	 * @param notice
 	 *            the notice that is to be sent.
 	 */
-	public abstract void sendNotice(final String notice);
+	public void sendNotice(final String notice) {
+		getServer()
+				.sendNotice(new Notice(notice, null, getName(), getServer()));
+	}
 
 	/**
 	 * Gets the name of the entity.
@@ -43,4 +50,12 @@ public abstract class Conversable {
 	 * @return the name of the channel or user.
 	 */
 	public abstract String getName();
+
+	/**
+	 * Gets the server this entity is on.
+	 * 
+	 * @return the server.
+	 */
+	public abstract Server getServer();
+
 }

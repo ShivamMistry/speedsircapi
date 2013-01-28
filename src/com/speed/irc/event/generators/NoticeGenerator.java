@@ -32,7 +32,7 @@ import com.speed.irc.types.RawMessage;
  */
 public class NoticeGenerator implements EventGenerator {
 	private static final Pattern PATTERN_NOTICE = Pattern
-			.compile("(.+?)!(.+?)@(.+?) NOTICE (#?.+?) :(+.*)");
+			.compile("(.+?)!(.+?)@(.+?) NOTICE (#?.+?) :(.*)");
 	private final Server server;
 
 	public NoticeGenerator(Server server) {

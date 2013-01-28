@@ -37,7 +37,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 	public volatile List<ChannelUser> users = new LinkedList<ChannelUser>();
 	public volatile List<ChannelUser> userBuffer = new LinkedList<ChannelUser>();
 	public volatile boolean isRunning = true;
-	public static final int WHO_DELAY = 90000;
+	public int whoDelay = 90000;
 	protected boolean autoRejoin;
 	protected String nick;
 	public Mode chanMode;
@@ -103,14 +103,33 @@ public class Channel extends Conversable implements ChannelUserListener,
 		return null;
 	}
 
+	/**
+	 * Adds a channel user to this channel.
+	 * 
+	 * @param user
+	 *            the user to add
+	 * @return <tt>true</tt> if it is added, <tt>false</tt> otherwise.
+	 */
 	public boolean addChannelUser(final ChannelUser user) {
 		return users.add(user);
 	}
 
+	/**
+	 * Removes a user from the channel.
+	 * 
+	 * @param user
+	 *            the user to remove.
+	 * @return <tt>true</tt> if they were removed, <tt>false</tt> otherwise.
+	 */
 	public boolean removeChannelUser(final ChannelUser user) {
 		return users.remove(user);
 	}
 
+	/**
+	 * Checks whether the channel will be auto-rejoined when kicked.
+	 * 
+	 * @return <tt>true</tt> if auto-rejoin is on, <tt>false</tt> otherwise.
+	 */
 	public boolean isAutoRejoinOn() {
 		return autoRejoin;
 	}
@@ -137,20 +156,6 @@ public class Channel extends Conversable implements ChannelUserListener,
 			server.sendRaw(String.format("PART %s :%s\n", name, message));
 		else
 			server.sendRaw(String.format("PART %s\n", name));
-	}
-
-	/**
-	 * Sends a message to the channel.
-	 * 
-	 * @param message
-	 *            The message to be sent
-	 */
-	public void sendMessage(final String message) {
-		server.sendRaw(String.format("PRIVMSG %s :%s\n", name, message));
-	}
-
-	public void sendNotice(String notice) {
-		server.sendRaw(String.format("NOTICE %s :%s\n", name, notice));
 	}
 
 	public void run() {
@@ -350,6 +355,18 @@ public class Channel extends Conversable implements ChannelUserListener,
 		}
 	}
 
+	/**
+	 * Sets a/many mode(s) on this channel. For example, to give a user voice
+	 * via modes:<br>
+	 * <tt>MODE #channel +vv-o nick1 nick2 nick2</tt> <br>
+	 * One would need to use: <br>
+	 * <tt>setMode("+vv-o", "nick1", "nick2", "nick2")</tt>
+	 * 
+	 * @param mode
+	 *            the mode(s) to set.
+	 * @param args
+	 *            the arguments of the mode, for example nicknames.
+	 */
 	public void setMode(String mode, String... args) {
 		StringBuilder arg = new StringBuilder();
 		for (String s : args) {
@@ -359,7 +376,19 @@ public class Channel extends Conversable implements ChannelUserListener,
 				arg.toString()));
 	}
 
+	/**
+	 * Removes kick exempt from a mask.
+	 * 
+	 * @param mask
+	 *            the mask to remove the kick exempt from.
+	 */
 	public void removeExempt(String mask) {
 		setMode("-e", mask);
+	}
+
+	public void channelUserNickChanged(ChannelUserEvent e) {
+		final String newNick = e.getArguments()[1];
+		if (e.getUser() != null)
+			e.getUser().setNick(newNick);
 	}
 }

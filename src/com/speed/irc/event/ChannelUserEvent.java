@@ -31,7 +31,8 @@ public class ChannelUserEvent extends ChannelEvent {
 	private ChannelUser user;
 	private int code;
 	public static final int USER_JOINED = 0, USER_PARTED = 1,
-			USER_MODE_CHANGED = 2, USER_KICKED = 3;
+			USER_MODE_CHANGED = 2, USER_KICKED = 3, USER_NICK_CHANGED = 4;
+	private String[] args;
 
 	public ChannelUserEvent(Object source, final Channel channel,
 			final ChannelUser user, final int code) {
@@ -40,6 +41,12 @@ public class ChannelUserEvent extends ChannelEvent {
 		this.channel = channel;
 		this.user = user;
 		this.code = code;
+	}
+
+	public ChannelUserEvent(Object source, final Channel channel,
+			final ChannelUser user, final int code, final String[] args) {
+		this(source, channel, user, code);
+		this.args = args;
 	}
 
 	public int getCode() {
@@ -56,6 +63,10 @@ public class ChannelUserEvent extends ChannelEvent {
 
 	public ChannelUser getUser() {
 		return user;
+	}
+
+	public String[] getArguments() {
+		return args;
 	}
 
 }

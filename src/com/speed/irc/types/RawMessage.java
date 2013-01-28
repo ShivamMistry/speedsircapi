@@ -28,6 +28,14 @@ public class RawMessage {
 	private String raw, code, sender, target;
 	private Server server;
 
+	/**
+	 * Initialises a wrapper for raw messages.
+	 * 
+	 * @param raw
+	 *            the raw message
+	 * @param server
+	 *            the server the raw message was sent from
+	 */
 	public RawMessage(String raw, final Server server) {
 		this.raw = raw;
 		this.server = server;
@@ -39,22 +47,47 @@ public class RawMessage {
 
 	}
 
+	/**
+	 * Gets the raw message.
+	 * 
+	 * @return the raw message.
+	 */
 	public String getRaw() {
 		return raw;
 	}
 
+	/**
+	 * Gets the command/code of this raw message.
+	 * 
+	 * @return the command or code of this raw message.
+	 */
 	public String getCommand() {
 		return code;
 	}
 
+	/**
+	 * Gets the target of this raw message.
+	 * 
+	 * @return the target of the message.
+	 */
 	public String getTarget() {
 		return target;
 	}
 
+	/**
+	 * Gets the sender of the message
+	 * 
+	 * @return the sender of the message, in the form <tt>*!*@*</tt>
+	 */
 	public String getSender() {
 		return sender;
 	}
 
+	/**
+	 * Gets the server the raw message was sent on.
+	 * 
+	 * @return the server the raw message was sent on.
+	 */
 	public Server getServer() {
 		return server;
 	}
