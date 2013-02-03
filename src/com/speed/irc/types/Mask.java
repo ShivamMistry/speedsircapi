@@ -26,9 +26,6 @@ import com.speed.irc.util.ControlCodeFormatter;
 public class Mask {
 
 	private final String mask;
-	private static final String ALLOWED_CHARS = "\\-\\[\\]\\\\`\\^\\{\\}";// escaped
-																			// for
-																			// regex
 
 	/**
 	 * Initialise the user mask
