@@ -1,5 +1,6 @@
 package com.speed.irc.framework.test;
 
+import java.util.List;
 import java.util.Random;
 
 import com.speed.irc.event.ApiEvent;
@@ -10,6 +11,7 @@ import com.speed.irc.event.PrivateMessageListener;
 import com.speed.irc.framework.Bot;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
+import com.speed.irc.types.Mask;
 
 /**
  * Greets people as they join the channel or speak a greeting.
@@ -43,6 +45,11 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	public HelloBot(final String server, final int port) {
 		super(server, port);
 
+	}
+
+	@Override
+	public String getRealName() {
+		return "Aion's Brother";
 	}
 
 	public static void main(String[] args) {
@@ -80,6 +87,26 @@ public class HelloBot extends Bot implements ChannelUserListener,
 			getServer().sendRaw(message.replaceFirst("!raw", "").trim());
 		} else if (message.equals("!quit") && sender.equals("Speed")) {
 			getServer().quit("bai");
+		} else if (message.equals("!list") && sender.equals("Speed")) {
+			Channel main = channels[0];
+			if (main.isRunning) {
+				List<ChannelUser> users = main.getUsers();
+				for (ChannelUser u : users) {
+					info(u.getMask().toString() + " - "
+							+ Integer.toBinaryString(u.getRights()));
+				}
+			} else {
+				info("Not in channel");
+			}
+		} else if (message.equals("!rejoin") && sender.equals("Speed")) {
+			channels[0].setAutoRejoin(!channels[0].isAutoRejoinOn());
+			info(Boolean.toString(channels[0].isAutoRejoinOn()));
+		} else if (message.startsWith("!verify") && sender.equals("Speed")) {
+			e.getMessage()
+					.getConversable()
+					.sendMessage(
+							Boolean.toString(Mask.verify(message.replaceFirst(
+									"!verify", "").trim())));
 		}
 		if (e.getMessage().getConversable() == null
 				|| !(e.getMessage().getConversable() instanceof Channel)) {

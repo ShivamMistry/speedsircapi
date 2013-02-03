@@ -1,5 +1,7 @@
 package com.speed.irc.types;
 
+import com.speed.irc.util.ControlCodeFormatter;
+
 /**
  * Class used to encapsulate user masks
  * 
@@ -24,6 +26,9 @@ package com.speed.irc.types;
 public class Mask {
 
 	private final String mask;
+	private static final String ALLOWED_CHARS = "\\-\\[\\]\\\\`\\^\\{\\}";// escaped
+																			// for
+																			// regex
 
 	/**
 	 * Initialise the user mask
@@ -40,7 +45,8 @@ public class Mask {
 	public Mask(final String nick, final String user, final String host) {
 		this.mask = nick + '!' + user + '@' + host;
 		if (!verify(mask))
-			throw new IllegalArgumentException("Arguments are not valid");
+			throw new IllegalArgumentException("Arguments are not valid: "
+					+ mask);
 	}
 
 	/**
@@ -51,7 +57,9 @@ public class Mask {
 	 * @return <tt>true</tt> if the mask is valid, <tt>false</tt> if it isn't.
 	 */
 	public static boolean verify(final String mask) {
-		return mask.matches("[\\w\\*]+?![\\*\\w]+?@[\\*\\w\\.]+?");
+		return mask
+				.matches("[a-zA-Z\\*][\\-\\\\\\[\\]\\^\\`\\*\\w]*?!~?[\\-\\\\\\[\\]\\^\\`\\*\\w]+?@[\\-\\\\\\[\\]\\^\\`\\*\\w\\.\\:"
+						+ ControlCodeFormatter.UNICODE_COLOUR + "]+");
 	}
 
 	/**
@@ -76,5 +84,9 @@ public class Mask {
 
 	public boolean equals(Object o) {
 		return o instanceof Mask && ((Mask) o).mask == mask;
+	}
+
+	public String toString() {
+		return mask;
 	}
 }

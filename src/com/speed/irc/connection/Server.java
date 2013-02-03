@@ -129,7 +129,7 @@ public class Server implements Runnable {
 				getWriter()
 						.write("QUIT"
 								+ (message == null || message.trim().isEmpty() ? "\n"
-										: (" :Quit :" + message + "\n")));
+										: (" :" + message + "\n")));
 				getWriter().flush();
 				socket.close();
 			}
@@ -552,9 +552,15 @@ public class Server implements Runnable {
 				.get(channelName) : new Channel(channelName, this);
 	}
 
+	/**
+	 * Adds a user to the Server's list.
+	 * 
+	 * @param user
+	 *            the {@link com.speed.irc.types.ServerUser} object to add to
+	 *            this Server.
+	 */
 	public void addUser(final ServerUser user) {
-		if (!users.contains(user))
-			users.add(user);
+		users.add(user);
 	}
 
 	protected void removeUser(final ServerUser user) {

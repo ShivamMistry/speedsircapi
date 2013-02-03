@@ -107,4 +107,15 @@ public class ServerUser extends Conversable {
 	public Server getServer() {
 		return server;
 	}
+
+	public boolean equals(final Object o) {
+		if (!(o instanceof ServerUser))
+			return false;
+		else {
+			ServerUser other = (ServerUser) o;
+			return other.getNick().equalsIgnoreCase(nick)
+					&& other.getHost().equalsIgnoreCase(getHost())
+					&& other.getUser().equalsIgnoreCase(user);
+		}
+	}
 }

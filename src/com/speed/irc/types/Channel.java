@@ -37,7 +37,8 @@ public class Channel extends Conversable implements ChannelUserListener,
 	public volatile List<ChannelUser> users = new LinkedList<ChannelUser>();
 	public volatile List<ChannelUser> userBuffer = new LinkedList<ChannelUser>();
 	public volatile boolean isRunning = true;
-	public int whoDelay = 90000;
+	public int whoDelay = 120000;
+	public int autoRejoinDelay = 50;
 	protected boolean autoRejoin;
 	protected String nick;
 	public Mode chanMode;
@@ -159,7 +160,10 @@ public class Channel extends Conversable implements ChannelUserListener,
 	}
 
 	public void run() {
-		server.sendRaw("WHO " + name);
+		if (isRunning)
+			server.sendRaw("WHO " + name);
+		else
+			future.cancel(true);
 
 	}
 
@@ -182,8 +186,10 @@ public class Channel extends Conversable implements ChannelUserListener,
 		if (!server.getChannels().containsValue(this)) {
 			server.getChannels().put(name, this);
 		}
-		future = server.getChanExec().scheduleWithFixedDelay(this, 0, 2,
-				TimeUnit.MINUTES);
+		// future = getServer().getChanExec().schedule(this, 5,
+		// TimeUnit.SECONDS);
+		future = server.getChanExec().schedule(this, whoDelay,
+				TimeUnit.MILLISECONDS);
 	}
 
 	/**
@@ -199,7 +205,8 @@ public class Channel extends Conversable implements ChannelUserListener,
 		if (!server.getChannels().containsValue(this)) {
 			server.getChannels().put(name, this);
 		}
-		future = getServer().getChanExec().schedule(this, 5, TimeUnit.SECONDS);
+		future = server.getChanExec().schedule(this, whoDelay,
+				TimeUnit.MILLISECONDS);
 	}
 
 	/**
@@ -341,7 +348,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 			removeChannelUser(user);
 			if (user.getNick().equals(nick) && isAutoRejoinOn()) {
 				try {
-					Thread.sleep(50);
+					Thread.sleep(autoRejoinDelay);
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
