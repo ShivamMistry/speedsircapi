@@ -65,7 +65,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public void onStart() {
-		channels = new Channel[] { new Channel("#rscode", getServer()) };
+		channels = new Channel[] { new Channel("#speedsircapi", getServer()) };
 		channels[0].setAutoRejoin(true);
 		// identify("password");
 		getServer().setAutoReconnect(true);
