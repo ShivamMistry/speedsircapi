@@ -40,7 +40,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 	public volatile List<ChannelUser> users = new LinkedList<ChannelUser>();
 	public volatile List<ChannelUser> userBuffer = new LinkedList<ChannelUser>();
 	public volatile boolean isRunning = true;
-	public long whoDelay = 60000L;
+	public long whoDelay = 120000L;
 	public int autoRejoinDelay = 50;
 	protected boolean autoRejoin;
 	protected String nick;
