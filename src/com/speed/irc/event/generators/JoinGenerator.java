@@ -45,6 +45,9 @@ public class JoinGenerator implements EventGenerator {
 		Channel channel = raw.getServer().getChannels().get(chan);
 		if (channel == null) {
 			channel = new Channel(chan, raw.getServer());
+			channel.setup();
+		} else if(!channel.isRunning) {
+			channel.setup();
 		}
 		if (channel.getUser(nick) != null) {
 			channel.removeChannelUser(channel.getUser(nick));

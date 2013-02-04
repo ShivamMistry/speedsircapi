@@ -116,8 +116,8 @@ public class HelloBot extends Bot implements ChannelUserListener,
 		final ChannelUser user = channel.getUser(sender);
 		for (String s : HELLO_PHRASES) {
 			if (message.toLowerCase().equals(s.toLowerCase())
-					|| (message.contains("London") && message.toLowerCase()
-							.contains(s.toLowerCase()))) {
+					|| (message.toLowerCase().contains("london") && message
+							.toLowerCase().contains(s.toLowerCase()))) {
 				channel.sendMessage(HELLO_PHRASES[RANDOM_GENERATOR
 						.nextInt(HELLO_PHRASES.length - 1)]
 						+ " "

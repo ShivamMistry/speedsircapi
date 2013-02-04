@@ -182,13 +182,15 @@ public class Channel extends Conversable implements ChannelUserListener,
 	 */
 	public void join() {
 		server.sendRaw("JOIN :" + name);
+		setup();
+	}
+	
+	public void setup() {
 		server.sendRaw("MODE " + name);
 		isRunning = true;
 		if (!server.getChannels().containsValue(this)) {
 			server.getChannels().put(name, this);
 		}
-		// future = getServer().getChanExec().schedule(this, 5,
-		// TimeUnit.SECONDS);
 		future = server.getChanExec().schedule(this, whoDelay,
 				TimeUnit.MILLISECONDS);
 	}
@@ -201,13 +203,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 	 */
 	public void join(final String password) {
 		server.sendRaw("JOIN :" + name + " " + password);
-		server.sendRaw("MODE " + name);
-		isRunning = true;
-		if (!server.getChannels().containsValue(this)) {
-			server.getChannels().put(name, this);
-		}
-		future = server.getChanExec().schedule(this, whoDelay,
-				TimeUnit.MILLISECONDS);
+		setup();
 	}
 
 	/**
