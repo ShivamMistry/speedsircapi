@@ -141,9 +141,9 @@ public class ServerUser extends Conversable {
 	}
 
 	/**
-	 * Sets whether the user is identified.
+	 * Sets whether the user is away.
 	 * 
-	 * @param identified
+	 * @param away
 	 *            returns true if they are away, false otherwise.
 	 */
 	public void setAway(boolean away) {
@@ -162,7 +162,7 @@ public class ServerUser extends Conversable {
 	/**
 	 * Sets whether the user is a server operator.
 	 * 
-	 * @param operator
+	 * @param oper
 	 *            returns true if they are an operator, false otherwise.
 	 */
 	public void setOper(boolean oper) {

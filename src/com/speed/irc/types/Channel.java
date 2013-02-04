@@ -214,7 +214,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 		Arrays.sort(u, new Comparator<ChannelUser>() {
 
 			public int compare(ChannelUser o1, ChannelUser o2) {
-				return o1.getRights() - o2.getRights();
+				return o2.getRights() - o1.getRights();
 			}
 		});
 		return u;
