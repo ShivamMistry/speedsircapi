@@ -1,5 +1,6 @@
 package com.speed.irc.types;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -37,7 +38,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 	public volatile List<ChannelUser> users = new LinkedList<ChannelUser>();
 	public volatile List<ChannelUser> userBuffer = new LinkedList<ChannelUser>();
 	public volatile boolean isRunning = true;
-	public int whoDelay = 120000;
+	public long whoDelay = 60000L;
 	public int autoRejoinDelay = 50;
 	protected boolean autoRejoin;
 	protected String nick;
@@ -83,7 +84,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 	 * 
 	 * @return The list of users in the channel.
 	 */
-	public List<ChannelUser> getUsers() {
+	public Collection<ChannelUser> getUsers() {
 		return users;
 	}
 
@@ -395,7 +396,13 @@ public class Channel extends Conversable implements ChannelUserListener,
 
 	public void channelUserNickChanged(ChannelUserEvent e) {
 		final String newNick = e.getArguments()[1];
-		if (e.getUser() != null)
-			e.getUser().setNick(newNick);
+		if (e.getUser() != null) {
+			final ChannelUser user = e.getUser();
+			final ChannelUser replace = new ChannelUser(newNick,
+					user.getModes(), user.getUser(), user.getHost(),
+					e.getChannel());
+			e.getChannel().removeChannelUser(user);
+			e.getChannel().addChannelUser(replace);
+		}
 	}
 }

@@ -191,6 +191,32 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 			}
 			Channel channel = server.channels.get(chan_name);
 			channel.chanMode.parse(modez);
+		} else if (code.equals(Numerics.CHANNEL_NAMES)) {
+			String[] parts = message.getRaw().split(" ");
+			// String secret = parts[3];
+			String chan_name = parts[4];
+			String users = message.getRaw().split(" :")[1];
+			if (!server.channels.containsKey(chan_name)) {
+				return null;
+			}
+			Channel channel = server.channels.get(chan_name);
+			if (channel.isRunning) {
+				for (String s : users.split(" ")) {
+					if (s.matches("[A-Za-z].*")) {
+						channel.userBuffer.add(new ChannelUser(s, "", "", "",
+								channel));
+					} else {
+						char c = s.charAt(0);
+						channel.userBuffer.add(new ChannelUser(s.substring(1),
+								Character.toString(c), "", "", channel));
+					}
+				}
+			}
+		} else if (code.equals(Numerics.CHANNEL_NAMES_END)) {
+			Channel channel = server.channels.get(raw.split(" ")[3]);
+			channel.users.clear();
+			channel.users.addAll(channel.userBuffer);
+			channel.userBuffer.clear();
 		} else if (code.equals(Numerics.WHO_RESPONSE)) {
 			Channel channel = server.channels.get(raw.split(" ")[3]);
 			String[] temp = raw.split(" ");
@@ -227,7 +253,6 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 						"!")[0]);
 				final String oldNick = u.getNick();
 				final String newNick = raw.split(" :")[1].trim();
-				System.out.println("hi");
 				if (u instanceof ChannelUser) {
 					return new ChannelUserEvent(this,
 							((ChannelUser) u).getChannel(), (ChannelUser) u,

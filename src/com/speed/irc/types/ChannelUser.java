@@ -21,25 +21,11 @@ package com.speed.irc.types;
  * @author Shivam Mistry
  */
 public class ChannelUser extends ServerUser {
-	private String nick, modes, user;
-	private String host;
+	private String modes;
 	private Mode channelModes;
 	private final Channel channel;
 	public static final int VOICE_FLAG = 0x1, HALF_OP_FLAG = 0x2,
 			OP_FLAG = 0x4, ADMIN_FLAG = 0x8, OWNER_FLAG = 0x10;
-
-	public String getNick() {// docs from superclass are sufficient
-		return nick;
-	}
-
-	protected void setNick(String nick) {
-		this.nick = nick;
-	}
-
-	/*
-	 * public String getModes() { return modes; } //dont need this any more
-	 * public void setModes(String modes) { this.modes = modes; }
-	 */
 
 	public Channel getChannel() {
 		return channel;
@@ -51,9 +37,6 @@ public class ChannelUser extends ServerUser {
 		this.channel = channel;
 		this.channelModes = new Mode(this.channel.server, "");
 		this.modes = (modes);
-		this.setNick(nick);
-		this.setHost(host);
-		this.setUser(user);
 		if (!modes.isEmpty())
 			sync(modes);
 	}
@@ -72,6 +55,10 @@ public class ChannelUser extends ServerUser {
 
 		modes = modes + mode;
 		sync(modes);
+	}
+
+	public String getModes() {
+		return modes;
 	}
 
 	public void removeExempts() {
@@ -93,22 +80,6 @@ public class ChannelUser extends ServerUser {
 		}
 		modes = builder.toString();
 		sync(modes);
-	}
-
-	public void setHost(String host) {
-		this.host = host;
-	}
-
-	public void setUser(String user) {
-		this.user = user;
-	}
-
-	public String getUser() {
-		return user;
-	}
-
-	public String getHost() {
-		return host;
 	}
 
 	public boolean isOperator() {
@@ -153,6 +124,6 @@ public class ChannelUser extends ServerUser {
 
 	@Override
 	public String toString() {
-		return nick;
+		return getNick();
 	}
 }

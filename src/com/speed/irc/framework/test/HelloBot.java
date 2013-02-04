@@ -1,6 +1,6 @@
 package com.speed.irc.framework.test;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Random;
 
 import com.speed.irc.event.ApiEvent;
@@ -40,7 +40,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 			"Hey", "Yo", "Wassup", "helo", "herro", "hiya", "hai", "heya",
 			"sup" };
 	private static final Random RANDOM_GENERATOR = new Random();
-	private Channel[] channels;
+	private volatile Channel[] channels;
 
 	public HelloBot(final String server, final int port) {
 		super(server, port);
@@ -49,7 +49,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 
 	@Override
 	public String getRealName() {
-		return "Aion's Brother";
+		return "Hello Bot";
 	}
 
 	public static void main(String[] args) {
@@ -90,7 +90,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 		} else if (message.equals("!list") && sender.equals("Speed")) {
 			Channel main = channels[0];
 			if (main.isRunning) {
-				List<ChannelUser> users = main.getUsers();
+				Collection<ChannelUser> users = main.getUsers();
 				for (ChannelUser u : users) {
 					info(u.getMask().toString() + " - "
 							+ Integer.toBinaryString(u.getRights()));

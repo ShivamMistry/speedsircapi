@@ -55,7 +55,7 @@ public class Mask {
 	 */
 	public static boolean verify(final String mask) {
 		return mask
-				.matches("[a-zA-Z\\*][\\-\\\\\\[\\]\\^\\`\\*\\w]*?!~?[\\-\\\\\\[\\]\\^\\`\\*\\w]+?@[\\-\\\\\\[\\]\\^\\`\\*\\w\\.\\:"
+				.matches("[a-zA-Z\\*][\\-\\\\\\[\\]\\^\\`\\*\\w\\|]*?!~?[\\-\\\\\\[\\]\\^\\`\\*\\w\\|]+?@[\\-\\\\\\[\\]\\^\\`\\*\\w\\.\\:"
 						+ ControlCodeFormatter.UNICODE_COLOUR + "]+");
 	}
 

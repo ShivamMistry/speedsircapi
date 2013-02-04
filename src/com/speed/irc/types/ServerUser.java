@@ -57,7 +57,9 @@ public class ServerUser extends Conversable {
 	 * @return the mask of the user
 	 */
 	public Mask getMask() {
-		return new Mask(getNick(), getUser(), getHost());
+		return new Mask(getNick(),
+				getUser() == null || getUser().isEmpty() ? "*" : getUser(),
+				getHost() == null || getHost().isEmpty() ? "*" : getHost());
 	}
 
 	public void sendMessage(final String message) {
