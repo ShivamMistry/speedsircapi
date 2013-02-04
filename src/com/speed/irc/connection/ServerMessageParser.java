@@ -224,9 +224,17 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 			String host = temp[5];
 			String nick = temp[7];
 			String modes = temp[8];
-			modes = modes.replace("*", "").replace("G", "").replace("H", "");
-			channel.userBuffer.add(new ChannelUser(nick, modes, user, host,
-					channel));
+			boolean away = modes.contains("G");
+			boolean oper = modes.contains("*");
+			boolean identified = modes.contains("r");
+			modes = modes.replace("*", "").replace("G", "").replace("H", "")
+					.replace("r", "");
+			modes = modes.replace("r", "");
+			ChannelUser u = new ChannelUser(nick, modes, user, host, channel);
+			u.setIdentified(identified);
+			u.setAway(away);
+			u.setOper(oper);
+			channel.userBuffer.add(u);
 
 		} else if (code.equals(Numerics.WHO_END)) {
 			Channel channel = server.channels.get(raw.split(" ")[3]);
@@ -247,6 +255,15 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 			Channel channel = server.channels.get(raw.split(" ")[3]);
 			if (channel != null && channel.isRunning)
 				channel.isRunning = false;
+		} else if (code.equals("QUIT")) {
+			String nick = raw.split("!")[0];
+			for (Channel c : server.channels.values()) {
+				ChannelUser u = c.getUser(nick);
+				if (u != null) {
+					c.removeChannelUser(u);
+				}
+			}
+			// TODO: quit event.
 		} else if (code.trim().equalsIgnoreCase("nick")) {
 			try {
 				final ServerUser u = server.getUser(message.getSender().split(

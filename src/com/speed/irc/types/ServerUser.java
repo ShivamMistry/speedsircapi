@@ -25,6 +25,7 @@ import com.speed.irc.connection.Server;
 public class ServerUser extends Conversable {
 	private String nick, host, user;
 	private Server server;
+	private boolean identified, away, oper;
 
 	/**
 	 * Initialises a server user.
@@ -108,6 +109,64 @@ public class ServerUser extends Conversable {
 	 */
 	public Server getServer() {
 		return server;
+	}
+
+	/**
+	 * Returns whether the user is identified. Some servers will not send this
+	 * mode for users that are.
+	 * 
+	 * @return whether the user is identified.
+	 */
+	public boolean isIdentified() {
+		return identified;
+	}
+
+	/**
+	 * Sets whether the user is identified.
+	 * 
+	 * @param identified
+	 *            returns true if they are identified, false otherwise.
+	 */
+	public void setIdentified(boolean identified) {
+		this.identified = identified;
+	}
+
+	/**
+	 * Returns whether the user is away.
+	 * 
+	 * @return whether the user is away.
+	 */
+	public boolean isAway() {
+		return away;
+	}
+
+	/**
+	 * Sets whether the user is identified.
+	 * 
+	 * @param identified
+	 *            returns true if they are away, false otherwise.
+	 */
+	public void setAway(boolean away) {
+		this.away = away;
+	}
+
+	/**
+	 * Returns whether the user is a server operator.
+	 * 
+	 * @return whether the user is a server operator.
+	 */
+	public boolean isOper() {
+		return oper;
+	}
+
+	/**
+	 * Sets whether the user is a server operator.
+	 * 
+	 * @param operator
+	 *            returns true if they are an operator, false otherwise.
+	 */
+	public void setOper(boolean oper) {
+		this.oper = oper;
 	}
 
 	public boolean equals(final Object o) {
