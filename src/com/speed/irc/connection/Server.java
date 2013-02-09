@@ -60,7 +60,7 @@ public class Server implements Runnable {
 	private char[] modeSymbols;
 	private char[] modeLetters;
 	private String serverName;
-	private String nick;
+	private String nick, realName, user;
 	private ServerMessageParser parser;
 	protected HashSet<CTCPReply> ctcpReplies = new HashSet<CTCPReply>();
 	protected boolean autoConnect;
@@ -96,6 +96,14 @@ public class Server implements Runnable {
 		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_PING);
 	}
 
+	public String getRealName() {
+		return realName;
+	}
+
+	public String getUser() {
+		return user;
+	}
+
 	/**
 	 * Gets the channel thread executor, used to send WHO requests for channels.
 	 * 
@@ -111,6 +119,49 @@ public class Server implements Runnable {
 	 */
 	public void quit() {
 		quit(null);
+	}
+
+	public void setNick(final String newNick) {
+		sendRaw("NICK " + newNick);
+	}
+
+	protected void putNick(final String nick) {
+		this.nick = nick;
+	}
+
+	public void register(final String nick) {
+		register(nick, null, null, null);
+	}
+
+	public void register(final String nick, final String user) {
+		register(nick, user, null, null);
+	}
+
+	public void register(final String nick, final String user,
+			final String realName) {
+		register(nick, user, realName, null);
+	}
+
+	public void register(final String nick, String user, String realName,
+			final String pass) {
+		if (nick == null || nick.isEmpty()) {
+			quit();
+			throw new IllegalArgumentException("Nickname is null or empty");
+		}
+		if (pass != null && !pass.isEmpty()) {
+			sendRaw("PASS " + pass);
+		}
+		if (user == null || user.isEmpty()) {
+			user = nick;
+		}
+		if (realName == null || realName.isEmpty()) {
+			realName = user;
+		}
+		setNick(nick);
+		sendRaw("USER " + user + " 0 * :" + realName);
+		this.nick = nick;
+		this.realName = realName;
+		this.user = user;
 	}
 
 	/**

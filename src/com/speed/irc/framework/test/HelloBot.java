@@ -41,6 +41,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 			"sup" };
 	private static final Random RANDOM_GENERATOR = new Random();
 	private volatile Channel[] channels;
+	private final static String OWNER = "Speed";
 
 	public HelloBot(final String server, final int port) {
 		super(server, port);
@@ -83,11 +84,11 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	public void messageReceived(PrivateMessageEvent e) {
 		final String message = e.getMessage().getMessage();
 		final String sender = e.getMessage().getSender();
-		if (message.contains("!raw") && sender.equals("Speed")) {
+		if (message.contains("!raw") && sender.equals(OWNER)) {
 			getServer().sendRaw(message.replaceFirst("!raw", "").trim());
-		} else if (message.equals("!quit") && sender.equals("Speed")) {
+		} else if (message.equals("!quit") && sender.equals(OWNER)) {
 			getServer().quit("bai");
-		} else if (message.equals("!list") && sender.equals("Speed")) {
+		} else if (message.equals("!list") && sender.equals(OWNER)) {
 			Channel main = channels[0];
 			if (main.isRunning) {
 				Collection<ChannelUser> users = main.getUsers();
@@ -98,15 +99,17 @@ public class HelloBot extends Bot implements ChannelUserListener,
 			} else {
 				info("Not in channel");
 			}
-		} else if (message.equals("!rejoin") && sender.equals("Speed")) {
+		} else if (message.equals("!rejoin") && sender.equals(OWNER)) {
 			channels[0].setAutoRejoin(!channels[0].isAutoRejoinOn());
 			info(Boolean.toString(channels[0].isAutoRejoinOn()));
-		} else if (message.startsWith("!verify") && sender.equals("Speed")) {
+		} else if (message.startsWith("!verify") && sender.equals(OWNER)) {
 			e.getMessage()
 					.getConversable()
 					.sendMessage(
 							Boolean.toString(Mask.verify(message.replaceFirst(
 									"!verify", "").trim())));
+		} else if (message.equals("!print")) {
+			e.getMessage().getConversable().sendMessage(getServer().getNick());
 		}
 		if (e.getMessage().getConversable() == null
 				|| !(e.getMessage().getConversable() instanceof Channel)) {
@@ -116,7 +119,8 @@ public class HelloBot extends Bot implements ChannelUserListener,
 		final ChannelUser user = channel.getUser(sender);
 		for (String s : HELLO_PHRASES) {
 			if (message.toLowerCase().equals(s.toLowerCase())
-					|| (message.toLowerCase().contains("london") && message
+					|| (message.toLowerCase().contains(
+							getServer().getNick().toLowerCase()) && message
 							.toLowerCase().contains(s.toLowerCase()))) {
 				channel.sendMessage(HELLO_PHRASES[RANDOM_GENERATOR
 						.nextInt(HELLO_PHRASES.length - 1)]

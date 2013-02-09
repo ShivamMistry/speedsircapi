@@ -270,6 +270,10 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 						"!")[0]);
 				final String oldNick = u.getNick();
 				final String newNick = raw.split(" :")[1].trim();
+				if (oldNick.equals(server.getNick())) {
+					server.putNick(newNick);
+				}
+
 				if (u instanceof ChannelUser) {
 					return new ChannelUserEvent(this,
 							((ChannelUser) u).getChannel(), (ChannelUser) u,
