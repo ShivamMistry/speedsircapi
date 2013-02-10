@@ -39,7 +39,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 	protected Server server;
 	public volatile List<ChannelUser> users = new LinkedList<ChannelUser>();
 	public volatile List<ChannelUser> userBuffer = new LinkedList<ChannelUser>();
-	public volatile boolean isRunning = true;
+	public volatile boolean isRunning = false;
 	public long whoDelay = 120000L;
 	public int autoRejoinDelay = 50;
 	protected boolean autoRejoin;
@@ -169,8 +169,6 @@ public class Channel extends Conversable implements ChannelUserListener,
 			server.sendRaw("WHO " + name);
 			future = server.getChanExec().schedule(this, whoDelay,
 					TimeUnit.MILLISECONDS);
-		} else {
-			future.cancel(true);
 		}
 
 	}
@@ -299,6 +297,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 		}
 		server.sendRaw(String.format("KICK %s %s :%s\n", name, user.getNick(),
 				reason));
+
 	}
 
 	/**
@@ -348,6 +347,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 		if (e.getUser().getNick().equals(server.getNick()) && !isRunning()) {
 			setup();
 		}
+		
 	}
 
 	public void channelUserParted(ChannelUserEvent e) {

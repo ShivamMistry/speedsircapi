@@ -104,7 +104,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 		reader = new ServerMessageReader(server);
 		execServ = Executors.newSingleThreadScheduledExecutor();
 		new Thread(reader, "Server message reader").start();
-		future = execServ.scheduleWithFixedDelay(this, 0, 50,
+		future = execServ.scheduleWithFixedDelay(this, 0, 20,
 				TimeUnit.MILLISECONDS);
 
 	}
@@ -147,7 +147,8 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 		String s;
 		if (!reader.isEmpty()) {
 			s = reader.poll();
-			s = s.substring(1);
+			if (s.matches("\\W.+"))
+				s = s.substring(1);
 			try {
 				parse(s);
 			} catch (Exception e) {

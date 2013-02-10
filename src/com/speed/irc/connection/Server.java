@@ -377,6 +377,7 @@ public class Server implements Runnable {
 		if (!raw.endsWith("\r\n"))
 			raw += "\r\n";
 		try {
+			//System.out.println(raw);
 			write.write(raw);
 		} catch (IOException e) {
 			e.printStackTrace();
