@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -387,9 +388,19 @@ public class Server implements Runnable {
 	 * 
 	 * @return the channel map.
 	 */
-	public Map<String, Channel> getChannels() {
+	protected Map<String, Channel> getChannelMap() {
 		return channels;
 	}
+	
+	public Collection<Channel> getChannels() {
+		return channels.values();
+	}
+	
+	public void addChannel(final Channel channel) {
+		channels.put(channel.getName().toLowerCase(), channel);
+	}
+	
+	
 
 	/**
 	 * Gets the buffered writer.
@@ -581,7 +592,7 @@ public class Server implements Runnable {
 	public Channel joinChannel(final String channelName) {
 		if (channels.containsKey(channelName.trim())) {
 			final Channel channel = channels.get(channelName.toLowerCase());
-			if (!channel.isRunning) {
+			if (!channel.isRunning()) {
 				channel.join();
 			}
 			return channel;
@@ -616,5 +627,13 @@ public class Server implements Runnable {
 
 	protected void removeUser(final ServerUser user) {
 		users.remove(user);
+	}
+
+	public boolean hasChannel(final String name) {
+		return channels.containsKey(name.toLowerCase());
+	}
+	
+	public boolean hasChannel(final Channel channel) {
+		return channels.containsValue(channel);
 	}
 }

@@ -42,11 +42,11 @@ public class JoinGenerator implements EventGenerator {
 		if (raw.getRaw().split(" ")[2].startsWith(":")) {
 			chan = chan.substring(1);
 		}
-		Channel channel = raw.getServer().getChannels().get(chan);
+		Channel channel = raw.getServer().getChannel(chan);
 		if (channel == null) {
 			channel = new Channel(chan, raw.getServer());
 			channel.setup();
-		} else if(!channel.isRunning) {
+		} else if(!channel.isRunning()) {
 			channel.setup();
 		}
 		if (channel.getUser(nick) != null) {

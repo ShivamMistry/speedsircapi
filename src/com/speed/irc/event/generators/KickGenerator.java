@@ -33,7 +33,7 @@ public class KickGenerator implements EventGenerator {
 	}
 
 	public IRCEvent generate(RawMessage raw) {
-		final Channel channel = raw.getServer().getChannels().get(raw.getRaw().split(" ")[2]);
+		final Channel channel = raw.getServer().getChannel(raw.getRaw().split(" ")[2]);
 		if (channel == null) {
 			return null;
 		}

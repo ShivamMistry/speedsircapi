@@ -39,10 +39,10 @@ public class ModeGenerator implements EventGenerator {
 		String raw = message.getRaw();
 		Server server = message.getServer();
 		String name = message.getTarget();
-		if (!server.getChannels().containsKey(name)) {
-			return null;
+		Channel channel = server.getChannel(name);
+		if(!channel.isRunning()) {
+			channel.setup();
 		}
-		Channel channel = server.getChannels().get(name);
 		raw = raw.split(name, 2)[1].trim();
 		String[] strings = raw.split(" ");
 		String modes = strings[0];

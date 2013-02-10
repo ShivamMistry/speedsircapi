@@ -200,7 +200,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 				return null;
 			}
 			Channel channel = server.channels.get(chan_name);
-			if (channel.isRunning) {
+			if (channel.isRunning()) {
 				for (String s : users.split(" ")) {
 					if (s.matches("[A-Za-z].*")) {
 						channel.userBuffer.add(new ChannelUser(s, "", "", "",
@@ -253,7 +253,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 		} else if (code.equals(Numerics.BANNED_FROM_CHANNEL)
 				&& message.getTarget().equals(server.getNick())) {
 			Channel channel = server.channels.get(raw.split(" ")[3]);
-			if (channel != null && channel.isRunning)
+			if (channel != null && channel.isRunning())
 				channel.isRunning = false;
 		} else if (code.equals("QUIT")) {
 			String nick = raw.split("!")[0];

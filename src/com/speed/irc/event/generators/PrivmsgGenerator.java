@@ -7,6 +7,7 @@ import com.speed.irc.connection.Server;
 import com.speed.irc.event.EventGenerator;
 import com.speed.irc.event.IRCEvent;
 import com.speed.irc.event.PrivateMessageEvent;
+import com.speed.irc.types.Channel;
 import com.speed.irc.types.Conversable;
 import com.speed.irc.types.Privmsg;
 import com.speed.irc.types.RawMessage;
@@ -49,7 +50,7 @@ public class PrivmsgGenerator implements EventGenerator {
 			final String user = priv_matcher.group(2);
 			final String host = priv_matcher.group(3);
 			final String name = priv_matcher.group(4);
-			if (msg.startsWith("\u0001")) {
+			if (msg.startsWith("\u0001")) {// ctcp messages
 				String request = msg.replace("\u0001", "");
 				String reply = server.getCtcpReply(request);
 				if (reply != null) {
@@ -60,7 +61,11 @@ public class PrivmsgGenerator implements EventGenerator {
 			}
 			Conversable conversable = null;
 			if (raw.getRaw().contains("PRIVMSG #")) {
-				conversable = server.getChannels().get(name);
+				conversable = server.getChannel(name);
+				Channel c = (Channel) conversable;
+				if (!c.isRunning()) {
+					c.setup();
+				}
 			} else {
 				conversable = new ServerUser(sender, host, user, server);
 			}

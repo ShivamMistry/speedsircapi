@@ -43,7 +43,6 @@ public class Channel extends Conversable implements ChannelUserListener,
 	public long whoDelay = 120000L;
 	public int autoRejoinDelay = 50;
 	protected boolean autoRejoin;
-	protected String nick;
 	public Mode chanMode;
 	public List<String> bans = new LinkedList<String>();
 	public List<String> exempts = new LinkedList<String>();
@@ -66,9 +65,8 @@ public class Channel extends Conversable implements ChannelUserListener,
 	public Channel(final String name, final Server server) {
 		this.name = name;
 		this.server = server;
-		this.nick = server.getNick();
 		this.server.getEventManager().addListener(this);
-		this.server.getChannels().put(name.toLowerCase().trim(), this);
+		this.server.addChannel(this);
 		chanMode = new Mode(server, "");
 	}
 
@@ -162,11 +160,18 @@ public class Channel extends Conversable implements ChannelUserListener,
 			server.sendRaw(String.format("PART %s\n", name));
 	}
 
+	public boolean isRunning() {
+		return isRunning;
+	}
+
 	public void run() {
-		if (isRunning)
+		if (isRunning) {
 			server.sendRaw("WHO " + name);
-		else
+			future = server.getChanExec().schedule(this, whoDelay,
+					TimeUnit.MILLISECONDS);
+		} else {
 			future.cancel(true);
+		}
 
 	}
 
@@ -184,17 +189,19 @@ public class Channel extends Conversable implements ChannelUserListener,
 	 */
 	public void join() {
 		server.sendRaw("JOIN :" + name);
-		setup();
 	}
 
 	public void setup() {
 		server.sendRaw("MODE " + name);
 		isRunning = true;
-		if (!server.getChannels().containsValue(this)) {
-			server.getChannels().put(name, this);
-		}
-		future = server.getChanExec().scheduleWithFixedDelay(this, whoDelay,
-				whoDelay, TimeUnit.MILLISECONDS);
+		if (!server.hasChannel(this))
+			server.addChannel(this);
+		future = server.getChanExec().schedule(this, whoDelay,
+				TimeUnit.MILLISECONDS);
+	}
+
+	public boolean isJoined() {
+		return isRunning();
 	}
 
 	/**
@@ -338,6 +345,9 @@ public class Channel extends Conversable implements ChannelUserListener,
 		if (e.getChannel().equals(this)) {
 			addChannelUser(e.getUser());
 		}
+		if (e.getUser().getNick().equals(server.getNick()) && !isRunning()) {
+			setup();
+		}
 	}
 
 	public void channelUserParted(ChannelUserEvent e) {
@@ -357,7 +367,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 		if (e.getChannel().equals(this)) {
 			ChannelUser user = e.getUser();
 			removeChannelUser(user);
-			if (user.getNick().equals(nick) && isAutoRejoinOn()) {
+			if (user.getNick().equals(server.getNick()) && isAutoRejoinOn()) {
 				try {
 					Thread.sleep(autoRejoinDelay);
 				} catch (InterruptedException e1) {
@@ -366,7 +376,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 				isRunning = false;
 				server.getChannels().remove(this);
 				join();
-			} else if (user.getNick().equals(nick)) {
+			} else if (user.getNick().equals(server.getNick())) {
 				isRunning = false;
 				server.getChannels().remove(this);
 			}

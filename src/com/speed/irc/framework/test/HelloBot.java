@@ -90,7 +90,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 			getServer().quit("bai");
 		} else if (message.equals("!list") && sender.equals(OWNER)) {
 			Channel main = channels[0];
-			if (main.isRunning) {
+			if (main.isRunning()) {
 				Collection<ChannelUser> users = main.getUsers();
 				for (ChannelUser u : users) {
 					info(u.getMask().toString() + " - "

@@ -35,10 +35,10 @@ public class PartGenerator implements EventGenerator {
 
 	public IRCEvent generate(RawMessage raw) {
 		final String nick = raw.getSender().split("!")[0];
-		Channel channel = raw.getServer().getChannels()
-				.get(raw.getRaw().split(" ")[2]);
-		if (channel == null) {
-			channel = new Channel(raw.getRaw().split(" ")[2], raw.getServer());
+		Channel channel = raw.getServer()
+				.getChannel(raw.getRaw().split(" ")[2]);
+		if (!channel.isRunning()) {
+			channel.setup();
 		}
 		final ChannelUser user = channel.getUser(nick);
 		return new ChannelUserEvent(this, channel, user,
