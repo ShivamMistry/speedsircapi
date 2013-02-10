@@ -1,6 +1,7 @@
 package com.speed.irc.framework.test;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Random;
 
 import com.speed.irc.event.ApiEvent;
@@ -110,6 +111,14 @@ public class HelloBot extends Bot implements ChannelUserListener,
 									"!verify", "").trim())));
 		} else if (message.equals("!print")) {
 			e.getMessage().getConversable().sendMessage(getServer().getNick());
+		} else if (message.equals("!topic")) {
+			if (e.getMessage().getConversable().isChannel()) {
+				Channel c = e.getMessage().getConversable().getChannel();
+				c.sendMessage("Topic: " + c.getTopic());
+				c.sendMessage("Topic set by: " + c.getTopicSetter());
+				c.sendMessage("Topic set at: "
+						+ new Date(c.getTopicSetTime()).toString());
+			}
 		}
 		if (e.getMessage().getConversable() == null
 				|| !(e.getMessage().getConversable() instanceof Channel)) {

@@ -58,4 +58,20 @@ public abstract class Conversable {
 	 */
 	public abstract Server getServer();
 
+	public boolean isChannel() {
+		return this instanceof Channel;
+	}
+
+	public boolean isUser() {
+		return this instanceof ServerUser;
+	}
+
+	public Channel getChannel() {
+		return isChannel() ? (Channel) this : null;
+	}
+
+	public ServerUser getServerUser() {
+		return isUser() ? (ServerUser) this : null;
+	}
+
 }

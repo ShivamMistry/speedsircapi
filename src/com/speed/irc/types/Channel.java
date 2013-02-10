@@ -41,6 +41,8 @@ public class Channel extends Conversable implements ChannelUserListener,
 	public volatile List<ChannelUser> userBuffer = new LinkedList<ChannelUser>();
 	public volatile boolean isRunning = false;
 	public long whoDelay = 120000L;
+	private long topicSetTime;
+	private String topicSetter;
 	public int autoRejoinDelay = 50;
 	protected boolean autoRejoin;
 	public Mode chanMode;
@@ -347,7 +349,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 		if (e.getUser().getNick().equals(server.getNick()) && !isRunning()) {
 			setup();
 		}
-		
+
 	}
 
 	public void channelUserParted(ChannelUserEvent e) {
@@ -424,5 +426,35 @@ public class Channel extends Conversable implements ChannelUserListener,
 			e.getChannel().removeChannelUser(user);
 			e.getChannel().addChannelUser(replace);
 		}
+	}
+
+	/**
+	 * @return the topic set time
+	 */
+	public long getTopicSetTime() {
+		return topicSetTime;
+	}
+
+	/**
+	 * @param topicSetTime
+	 *            the topic set time
+	 */
+	public void setTopicSetTime(long topicSetTime) {
+		this.topicSetTime = topicSetTime;
+	}
+
+	/**
+	 * @return the topic setter
+	 */
+	public String getTopicSetter() {
+		return topicSetter;
+	}
+
+	/**
+	 * @param topicSetter
+	 *            the topic setter
+	 */
+	public void setTopicSetter(String topicSetter) {
+		this.topicSetter = topicSetter;
 	}
 }

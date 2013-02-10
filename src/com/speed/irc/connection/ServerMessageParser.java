@@ -244,8 +244,16 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 			channel.users.addAll(channel.userBuffer);
 			channel.userBuffer.clear();
 		} else if (code.toLowerCase().equals("topic")) {
-			Channel channel = server.channels.get(raw.split(" ")[2]);
+			Channel channel = server.getChannel(raw.split(" ")[2]);
+			if (!channel.isRunning()) {
+				channel.setup();
+			}
+			String topicSetter = raw.split(" ")[0];
+			long time = System.currentTimeMillis();
+			channel.setTopicSetter(topicSetter);
+			channel.setTopicSetTime(time);
 			String[] temp = raw.split(" :", 2);
+			channel.setTopic(temp[1]);
 			if (temp[0].substring(temp[0].indexOf("TOPIC")).contains(
 					channel.getName())) {
 				return new ChannelEvent(channel, ChannelEvent.TOPIC_CHANGED,
@@ -292,6 +300,38 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 				e.printStackTrace();
 			}
 		}
+		parseNumerics(message);
 		return null;
+	}
+
+	private void parseNumerics(RawMessage message) {
+		String code = message.getCommand();
+		if (code.equals(Numerics.CHANNEL_TOPIC)) {
+			String chanName = message.getRaw().split(" ")[3];
+			String topic = message.getRaw().split(" :", 2)[1].trim();
+			Channel c = server.getChannel(chanName);
+			if (!c.isRunning()) {
+				c.setup();
+			}
+			c.setTopic(topic);
+
+		} else if (code.equals(Numerics.CHANNEL_TOPIC_SET)) {
+			String[] parts = message.getRaw().split(" ");
+			String chanName = parts[3];
+			String setter = parts[4];
+			/*
+			 * if(setter.contains("!")) { setter = setter.split("!")[0]; }
+			 */
+			// would use the above code but we want the api to capture as much
+			// info as possible
+			// some servers send the mask, some just send the nick
+			String timestamp = parts[5];
+			Channel c = server.getChannel(chanName);
+			if (!c.isRunning()) {
+				c.setup();
+			}
+			c.setTopicSetter(setter);
+			c.setTopicSetTime(Long.parseLong(timestamp) * 1000L);
+		}
 	}
 }
