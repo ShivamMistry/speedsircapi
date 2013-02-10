@@ -27,6 +27,7 @@ public interface Numerics {
 	String WHO_RESPONSE = "352";
 	String WHO_END = "315";
 	String CHANNEL_NAMES = "353";
+	String CHANNEL_TOPIC = "332";
 	String CHANNEL_NAMES_END = "366";
 	String SERVER_SUPPORT = "005";
 	String NOT_AN_OPERATOR = "482";

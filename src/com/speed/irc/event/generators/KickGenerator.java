@@ -6,6 +6,7 @@ import com.speed.irc.event.IRCEvent;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
 import com.speed.irc.types.RawMessage;
+
 /**
  * Processes KICK messages sent from the server.
  * <p/>
@@ -33,7 +34,8 @@ public class KickGenerator implements EventGenerator {
 	}
 
 	public IRCEvent generate(RawMessage raw) {
-		final Channel channel = raw.getServer().getChannel(raw.getRaw().split(" ")[2]);
+		final Channel channel = raw.getServer().getChannel(
+				raw.getRaw().split(" ")[2]);
 		if (channel == null) {
 			return null;
 		}
@@ -42,7 +44,8 @@ public class KickGenerator implements EventGenerator {
 			return null;
 		}
 		return new ChannelUserEvent(this, channel, user,
-				ChannelUserEvent.USER_KICKED);
+				ChannelUserEvent.USER_KICKED,
+				raw.getSender().split("!")[0].trim());
 	}
 
 }

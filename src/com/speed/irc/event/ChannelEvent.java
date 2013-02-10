@@ -1,6 +1,7 @@
 package com.speed.irc.event;
 
 import com.speed.irc.types.Channel;
+import com.speed.irc.types.ChannelUser;
 
 /**
  * 
@@ -30,12 +31,20 @@ public class ChannelEvent implements IRCEvent {
 	private final int code;
 	private final Channel channel;
 	private final Object source;
+	private ChannelUser sender;
 
 	public ChannelEvent(final Channel channel, final int code,
-			final Object source) {
+			String senderNick, final Object source) {
 		this.code = code;
 		this.channel = channel;
 		this.source = source;
+		this.sender = channel.getUser(senderNick);
+	}
+
+	public ChannelEvent(Channel channel2, int code2, Object source2) {
+		this.code = code2;
+		this.channel = channel2;
+		this.source = source2;
 	}
 
 	public int getCode() {
@@ -44,6 +53,10 @@ public class ChannelEvent implements IRCEvent {
 
 	public Channel getChannel() {
 		return channel;
+	}
+
+	public ChannelUser getSender() {
+		return sender;
 	}
 
 	public Object getSource() {

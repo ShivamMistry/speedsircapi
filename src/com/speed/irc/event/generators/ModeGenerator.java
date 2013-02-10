@@ -38,17 +38,20 @@ public class ModeGenerator implements EventGenerator {
 	public IRCEvent generate(RawMessage message) {
 		String raw = message.getRaw();
 		Server server = message.getServer();
+		String sender = message.getSender();
 		String name = message.getTarget();
 		Channel channel = server.getChannel(name);
-		if(!channel.isRunning()) {
+		if (!channel.isRunning()) {
 			channel.setup();
 		}
+		String senderNick = sender.split("!")[0].trim();
 		raw = raw.split(name, 2)[1].trim();
 		String[] strings = raw.split(" ");
 		String modes = strings[0];
 		if (strings.length == 1) {
 			channel.chanMode.parse(modes);
-			return new ChannelEvent(channel, ChannelEvent.MODE_CHANGED, this);
+			return new ChannelEvent(channel, ChannelEvent.MODE_CHANGED,
+					senderNick, this);
 		} else {
 			String[] u = new String[strings.length - 1];
 			System.arraycopy(strings, 1, u, 0, u.length);
@@ -69,9 +72,11 @@ public class ModeGenerator implements EventGenerator {
 					} else {
 						channel.bans.remove(u[index]);
 					}
-					server.getEventManager().dispatchEvent(
-							new ChannelEvent(channel,
-									ChannelEvent.MODE_CHANGED, this));
+					server.getEventManager()
+							.dispatchEvent(
+									new ChannelEvent(channel,
+											ChannelEvent.MODE_CHANGED,
+											senderNick, this));
 					continue;
 				} else if (c == 'e') {
 					if (plus) {
@@ -79,9 +84,11 @@ public class ModeGenerator implements EventGenerator {
 					} else {
 						channel.exempts.remove(u[index]);
 					}
-					server.getEventManager().dispatchEvent(
-							new ChannelEvent(channel,
-									ChannelEvent.MODE_CHANGED, this));
+					server.getEventManager()
+							.dispatchEvent(
+									new ChannelEvent(channel,
+											ChannelEvent.MODE_CHANGED,
+											senderNick, this));
 					continue;
 				} else if (c == 'I') {
 					if (plus) {
@@ -89,9 +96,11 @@ public class ModeGenerator implements EventGenerator {
 					} else {
 						channel.invites.remove(u[index]);
 					}
-					server.getEventManager().dispatchEvent(
-							new ChannelEvent(channel,
-									ChannelEvent.MODE_CHANGED, this));
+					server.getEventManager()
+							.dispatchEvent(
+									new ChannelEvent(channel,
+											ChannelEvent.MODE_CHANGED,
+											senderNick, this));
 					continue;
 				}
 				ChannelUser user = channel.getUser(u[index]);
@@ -103,7 +112,8 @@ public class ModeGenerator implements EventGenerator {
 					}
 					server.getEventManager().dispatchEvent(
 							new ChannelUserEvent(this, channel, user,
-									ChannelUserEvent.USER_MODE_CHANGED));
+									ChannelUserEvent.USER_MODE_CHANGED,
+									senderNick));
 
 				}
 			}

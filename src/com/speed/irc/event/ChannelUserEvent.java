@@ -26,8 +26,7 @@ import com.speed.irc.types.ChannelUser;
  * 
  */
 public class ChannelUserEvent extends ChannelEvent {
-	private Object source;
-	private Channel channel;
+
 	private ChannelUser user;
 	private int code;
 	public static final int USER_JOINED = 0, USER_PARTED = 1,
@@ -37,8 +36,13 @@ public class ChannelUserEvent extends ChannelEvent {
 	public ChannelUserEvent(Object source, final Channel channel,
 			final ChannelUser user, final int code) {
 		super(channel, code, source);
-		this.source = source;
-		this.channel = channel;
+		this.user = user;
+		this.code = code;
+	}
+
+	public ChannelUserEvent(Object source, final Channel channel,
+			final ChannelUser user, final int code, final String sender) {
+		super(channel, code, sender, source);
 		this.user = user;
 		this.code = code;
 	}
@@ -51,14 +55,6 @@ public class ChannelUserEvent extends ChannelEvent {
 
 	public int getCode() {
 		return code;
-	}
-
-	public Object getSource() {
-		return source;
-	}
-
-	public Channel getChannel() {
-		return channel;
 	}
 
 	public ChannelUser getUser() {
