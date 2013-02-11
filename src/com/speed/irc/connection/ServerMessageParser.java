@@ -20,6 +20,7 @@ import com.speed.irc.event.generators.ModeGenerator;
 import com.speed.irc.event.generators.NoticeGenerator;
 import com.speed.irc.event.generators.PartGenerator;
 import com.speed.irc.event.generators.PrivmsgGenerator;
+import com.speed.irc.event.generators.WhoisGenerator;
 import com.speed.irc.types.CTCPReply;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
@@ -101,6 +102,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 		generators.add(new NoticeGenerator(server));
 		generators.add(new PartGenerator());
 		generators.add(new PrivmsgGenerator());
+		generators.add(new WhoisGenerator(server));
 		reader = new ServerMessageReader(server);
 		execServ = Executors.newSingleThreadScheduledExecutor();
 		new Thread(reader, "Server message reader").start();

@@ -74,4 +74,5 @@ public abstract class Conversable {
 		return isUser() ? (ServerUser) this : null;
 	}
 
+
 }

@@ -11,6 +11,7 @@ import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -28,6 +29,7 @@ import com.speed.irc.types.CTCPReply;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.Notice;
 import com.speed.irc.types.Privmsg;
+import com.speed.irc.types.RawMessage;
 import com.speed.irc.types.ServerUser;
 
 /**
@@ -64,6 +66,7 @@ public class Server implements Runnable {
 	private String nick, realName, user;
 	private ServerMessageParser parser;
 	protected HashSet<CTCPReply> ctcpReplies = new HashSet<CTCPReply>();
+	public Map<ServerUser, Collection<RawMessage>> whoisWaiting = new HashMap<ServerUser, Collection<RawMessage>>();
 	protected boolean autoConnect;
 	private int port;
 	private ScheduledThreadPoolExecutor chanExec;
@@ -377,7 +380,7 @@ public class Server implements Runnable {
 		if (!raw.endsWith("\r\n"))
 			raw += "\r\n";
 		try {
-			//System.out.println(raw);
+			// System.out.println(raw);
 			write.write(raw);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -392,16 +395,14 @@ public class Server implements Runnable {
 	protected Map<String, Channel> getChannelMap() {
 		return channels;
 	}
-	
+
 	public Collection<Channel> getChannels() {
 		return channels.values();
 	}
-	
+
 	public void addChannel(final Channel channel) {
 		channels.put(channel.getName().toLowerCase(), channel);
 	}
-	
-	
 
 	/**
 	 * Gets the buffered writer.
@@ -633,8 +634,12 @@ public class Server implements Runnable {
 	public boolean hasChannel(final String name) {
 		return channels.containsKey(name.toLowerCase());
 	}
-	
+
 	public boolean hasChannel(final Channel channel) {
 		return channels.containsValue(channel);
+	}
+
+	public void addWhoisWaiting(final ServerUser c) {
+		whoisWaiting.put(c, new LinkedList<RawMessage>());
 	}
 }

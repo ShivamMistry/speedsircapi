@@ -26,6 +26,7 @@ public class ServerUser extends Conversable {
 	private String nick, host, user;
 	private Server server;
 	private boolean identified, away, oper;
+	private String realName;
 
 	/**
 	 * Initialises a server user.
@@ -169,6 +170,14 @@ public class ServerUser extends Conversable {
 		this.oper = oper;
 	}
 
+	public void setRealName(String realName) {
+		this.realName = realName;
+	}
+
+	public String getRealName() {
+		return realName;
+	}
+
 	public boolean equals(final Object o) {
 		if (!(o instanceof ServerUser))
 			return false;
@@ -179,4 +188,16 @@ public class ServerUser extends Conversable {
 					&& other.getUser().equalsIgnoreCase(user);
 		}
 	}
+
+	@Override
+	public int hashCode() {
+		return (getNick().hashCode() | getHost().hashCode() | getUser()
+				.hashCode()) & 0xfffffff;
+	}
+
+	public void requestWhois() {
+		getServer().sendRaw("WHOIS " + getName());
+		getServer().addWhoisWaiting(this);
+	}
+
 }

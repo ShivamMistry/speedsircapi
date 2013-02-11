@@ -1,5 +1,6 @@
 package com.speed.irc.framework.test;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Random;
@@ -9,10 +10,14 @@ import com.speed.irc.event.ChannelUserEvent;
 import com.speed.irc.event.ChannelUserListener;
 import com.speed.irc.event.PrivateMessageEvent;
 import com.speed.irc.event.PrivateMessageListener;
+import com.speed.irc.event.WhoisEvent;
+import com.speed.irc.event.WhoisListener;
 import com.speed.irc.framework.Bot;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
 import com.speed.irc.types.Mask;
+import com.speed.irc.types.ServerUser;
+import com.speed.irc.types.Whois;
 
 /**
  * Greets people as they join the channel or speak a greeting.
@@ -35,7 +40,7 @@ import com.speed.irc.types.Mask;
  * @author Shivam Mistry
  */
 public class HelloBot extends Bot implements ChannelUserListener,
-		PrivateMessageListener {
+		PrivateMessageListener, WhoisListener {
 
 	private static final String[] HELLO_PHRASES = new String[] { "Hello", "Hi",
 			"Hey", "Yo", "Wassup", "helo", "herro", "hiya", "hai", "heya",
@@ -119,6 +124,10 @@ public class HelloBot extends Bot implements ChannelUserListener,
 				c.sendMessage("Topic set at: "
 						+ new Date(c.getTopicSetTime()).toString());
 			}
+		} else if (message.startsWith("!whois") && sender.equals(OWNER)) {
+			String name =  message.replace("!whois", "").trim();
+			ServerUser user = getServer().getUser(name);
+			user.requestWhois();
 		}
 		if (e.getMessage().getConversable() == null
 				|| !(e.getMessage().getConversable() instanceof Channel)) {
@@ -165,6 +174,14 @@ public class HelloBot extends Bot implements ChannelUserListener,
 		e.getChannel().sendMessage(
 				HELLO_PHRASES[RANDOM_GENERATOR
 						.nextInt(HELLO_PHRASES.length - 1)] + " " + newNick);
+	}
+
+
+
+	public void whoisReceived(WhoisEvent e) {
+		Whois is = e.getWhois();
+		channels[0].sendMessage("Whois: " + is.getUser().toString());
+		channels[0].sendMessage("Whois: " + Arrays.toString(is.getChannels()));
 	}
 
 }
