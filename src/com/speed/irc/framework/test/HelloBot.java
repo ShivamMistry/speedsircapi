@@ -49,8 +49,8 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	private volatile Channel[] channels;
 	private final static String OWNER = "Speed";
 
-	public HelloBot(final String server, final int port) {
-		super(server, port);
+	public HelloBot(final String server, final int port, final boolean ssl) {
+		super(server, port, ssl);
 
 	}
 
@@ -60,7 +60,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public static void main(String[] args) {
-		new HelloBot("irc.rizon.net", 6667);
+		new HelloBot("irc.rizon.net", 6697, true);
 	}
 
 	public Channel[] getChannels() {
@@ -125,7 +125,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 						+ new Date(c.getTopicSetTime()).toString());
 			}
 		} else if (message.startsWith("!whois") && sender.equals(OWNER)) {
-			String name =  message.replace("!whois", "").trim();
+			String name = message.replace("!whois", "").trim();
 			ServerUser user = getServer().getUser(name);
 			user.requestWhois();
 		}
@@ -175,8 +175,6 @@ public class HelloBot extends Bot implements ChannelUserListener,
 				HELLO_PHRASES[RANDOM_GENERATOR
 						.nextInt(HELLO_PHRASES.length - 1)] + " " + newNick);
 	}
-
-
 
 	public void whoisReceived(WhoisEvent e) {
 		Whois is = e.getWhois();

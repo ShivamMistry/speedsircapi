@@ -196,7 +196,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 		isRunning = true;
 		if (!server.hasChannel(this))
 			server.addChannel(this);
-		future = server.getChanExec().schedule(this, whoDelay,
+		future = server.getChanExec().schedule(this, 5000L,
 				TimeUnit.MILLISECONDS);
 	}
 

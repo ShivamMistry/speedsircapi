@@ -1,7 +1,6 @@
 package com.speed.irc.framework;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.logging.Logger;
 
@@ -80,11 +79,13 @@ public abstract class Bot implements ApiListener {
 	 *            the server host name to connect to
 	 * @param port
 	 *            the port number
+	 * @param ssl
+	 *            whether to use ssl or not
 	 */
-	public Bot(final String server, final int port) {
+	public Bot(final String server, final int port, boolean ssl) {
 		this.port = port;
 		try {
-			this.server = new Server(new Socket(server, port));
+			this.server = new Server(server, port, ssl);
 			this.server.sendRaw("NICK " + getNick() + "\n");
 			this.server.sendRaw("USER " + getUser() + " 0 * :" + getRealName());
 			if (this instanceof IRCEventListener) {
@@ -101,6 +102,10 @@ public abstract class Bot implements ApiListener {
 			e.printStackTrace();
 		}
 
+	}
+
+	public Bot(final String server, final int port) {
+		this(server, port, false);
 	}
 
 	/**

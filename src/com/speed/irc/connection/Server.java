@@ -8,6 +8,8 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,6 +25,12 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.TrustManager;
+
+import com.speed.irc.connection.ssl.IRCTrustManager;
 import com.speed.irc.event.ApiEvent;
 import com.speed.irc.event.EventManager;
 import com.speed.irc.types.CTCPReply;
@@ -59,6 +67,7 @@ public class Server implements Runnable {
 	protected volatile Socket socket;
 	protected EventManager eventManager = new EventManager();
 	protected Map<String, Channel> channels = new HashMap<String, Channel>();
+	private static SSLContext context;
 	private List<ServerUser> users;
 	private char[] modeSymbols;
 	private char[] modeLetters;
@@ -98,6 +107,35 @@ public class Server implements Runnable {
 		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_VERSION);
 		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_TIME);
 		ctcpReplies.add(ServerMessageParser.CTCP_REPLY_PING);
+	}
+
+	public Server(final String host, final int port) throws IOException {
+		this(new Socket(host, port));
+
+	}
+
+	public Server(final String host, final int port, final boolean ssl)
+			throws IOException {
+		this(context.getSocketFactory().createSocket(host, port));
+	}
+
+	static {
+		try {
+			context = SSLContext.getInstance("SSL");
+			context.init(new KeyManager[0],
+					new TrustManager[] { new IRCTrustManager() },
+					new SecureRandom());
+		} catch (GeneralSecurityException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public boolean isUsingSSL() {
+		return socket instanceof SSLSocket;
+	}
+
+	public SSLSocket getSSLSocket() {
+		return isUsingSSL() ? (SSLSocket) socket : null;
 	}
 
 	public String getRealName() {

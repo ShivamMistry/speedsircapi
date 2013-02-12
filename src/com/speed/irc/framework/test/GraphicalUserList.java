@@ -41,7 +41,7 @@ public class GraphicalUserList extends JFrame implements Runnable {
 	}
 
 	public GraphicalUserList() {
-		new Bot("irc.rizon.net", 6667) {
+		new Bot("irc.rizon.net", 6697, true) {
 
 			public void onStart() {
 				mainChannel = new Channel("#speedsircapi", getServer());
