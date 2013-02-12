@@ -45,7 +45,7 @@ public class GraphicalUserList extends JFrame implements Runnable {
 
 			public void onStart() {
 				mainChannel = new Channel("#speedsircapi", getServer());
-				getServer().setReadDebug(true);
+				//getServer().setReadDebug(true);
 			}
 
 			public Channel[] getChannels() {
@@ -57,7 +57,8 @@ public class GraphicalUserList extends JFrame implements Runnable {
 			}
 
 		};
-		setSize(600, 300);
+		setSize(200, 300);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setTitle("User List");
 		@SuppressWarnings("serial")
 		AbstractListModel<ChannelUser> model = new AbstractListModel<ChannelUser>() {
@@ -66,9 +67,7 @@ public class GraphicalUserList extends JFrame implements Runnable {
 				return mainChannel.getSortedUsers()[i];
 			}
 
-			@Override
 			public int getSize() {
-				// TODO Auto-generated method stub
 				return mainChannel.getUsers().size();
 			}
 
@@ -90,7 +89,6 @@ public class GraphicalUserList extends JFrame implements Runnable {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

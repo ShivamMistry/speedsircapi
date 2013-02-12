@@ -217,8 +217,8 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 			}
 		} else if (code.equals(Numerics.CHANNEL_NAMES_END)) {
 			Channel channel = server.channels.get(raw.split(" ")[3]);
-			channel.users.clear();
-			channel.users.addAll(channel.userBuffer);
+			channel.getUsers().clear();
+			channel.getUsers().addAll(channel.userBuffer);
 			channel.userBuffer.clear();
 		} else if (code.equals(Numerics.WHO_RESPONSE)) {
 			Channel channel = server.channels.get(raw.split(" ")[3]);
@@ -241,7 +241,6 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 
 		} else if (code.equals(Numerics.WHO_END)) {
 			Channel channel = server.channels.get(raw.split(" ")[3]);
-
 			channel.users.clear();
 			channel.users.addAll(channel.userBuffer);
 			channel.userBuffer.clear();

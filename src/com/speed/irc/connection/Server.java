@@ -35,6 +35,7 @@ import com.speed.irc.event.ApiEvent;
 import com.speed.irc.event.EventManager;
 import com.speed.irc.types.CTCPReply;
 import com.speed.irc.types.Channel;
+import com.speed.irc.types.Mode;
 import com.speed.irc.types.Notice;
 import com.speed.irc.types.Privmsg;
 import com.speed.irc.types.RawMessage;
@@ -80,6 +81,7 @@ public class Server implements Runnable {
 	private int port;
 	private ScheduledThreadPoolExecutor chanExec;
 	private ScheduledExecutorService serverExecutor, eventExecutor;
+	private Mode userModes;
 
 	/**
 	 * Initialises a server object. Only blocking IO is supported.
@@ -128,6 +130,14 @@ public class Server implements Runnable {
 		} catch (GeneralSecurityException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void parseUserModes(final String modes) {
+		userModes.parse(modes);
+	}
+
+	public Mode getUserModes() {
+		return userModes;
 	}
 
 	public boolean isUsingSSL() {
@@ -418,7 +428,7 @@ public class Server implements Runnable {
 		if (!raw.endsWith("\r\n"))
 			raw += "\r\n";
 		try {
-			// System.out.println(raw);
+			//System.out.println(raw);
 			write.write(raw);
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -40,15 +40,23 @@ public class ModeGenerator implements EventGenerator {
 		Server server = message.getServer();
 		String sender = message.getSender();
 		String name = message.getTarget();
-		Channel channel = server.getChannel(name);
-		if (!channel.isRunning()) {
-			channel.setup();
+		Channel channel = null;
+		if (name.startsWith("#")) {
+			channel = server.getChannel(name);
+			if (!channel.isRunning()) {
+				channel.setup();
+			}
+		}
+		if(name.equals(server.getNick())) {
+			String modes = raw.split(" :",2)[1].trim();
+			server.parseUserModes(modes);
+			return null;
 		}
 		String senderNick = sender.split("!")[0].trim();
 		raw = raw.split(name, 2)[1].trim();
 		String[] strings = raw.split(" ");
 		String modes = strings[0];
-		if (strings.length == 1) {
+		if (strings.length == 1 && channel != null) {
 			channel.chanMode.parse(modes);
 			return new ChannelEvent(channel, ChannelEvent.MODE_CHANGED,
 					senderNick, this);

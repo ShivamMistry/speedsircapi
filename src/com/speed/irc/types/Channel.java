@@ -216,7 +216,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 	}
 
 	public ChannelUser[] getSortedUsers() {
-		Collection<ChannelUser> users = getUsers();
+		final Collection<ChannelUser> users = getUsers();
 		ChannelUser[] u = users.toArray(new ChannelUser[users.size()]);
 		Arrays.sort(u, new Comparator<ChannelUser>() {
 
@@ -343,18 +343,17 @@ public class Channel extends Conversable implements ChannelUserListener,
 	}
 
 	public void channelUserJoined(ChannelUserEvent e) {
-		if (e.getChannel().equals(this)) {
+		if (e.getChannel().equals(this)
+				&& getUser(e.getUser().getNick()) == null) {
 			addChannelUser(e.getUser());
 		}
 		if (e.getUser().getNick().equals(server.getNick()) && !isRunning()) {
 			setup();
 		}
-
 	}
 
 	public void channelUserParted(ChannelUserEvent e) {
 		if (e.getChannel().equals(this)) {
-
 			ChannelUser user = e.getUser();
 			if (user != null) {
 				removeChannelUser(user);
