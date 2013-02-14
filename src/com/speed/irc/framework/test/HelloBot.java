@@ -72,7 +72,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public void onStart() {
-		channels = new Channel[] { new Channel("#speedsircapi", getServer()) };
+		channels = new Channel[] { new Channel("#rscode", getServer()) };
 		channels[0].setAutoRejoin(true);
 		// identify("password");
 		getServer().setAutoReconnect(true);
@@ -114,6 +114,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
 					.sendMessage(
 							Boolean.toString(Mask.verify(message.replaceFirst(
 									"!verify", "").trim())));
+
 		} else if (message.equals("!print")) {
 			e.getMessage().getConversable().sendMessage(getServer().getNick());
 		} else if (message.equals("!topic")) {
@@ -168,8 +169,8 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public void channelUserNickChanged(ChannelUserEvent e) {
-		final String newNick = e.getArguments()[1];
-		final String oldNick = e.getArguments()[0];
+		final String newNick = e.getArgs()[1];
+		final String oldNick = e.getArgs()[0];
 		info(oldNick + " changed to " + newNick);
 		e.getChannel().sendMessage(
 				HELLO_PHRASES[RANDOM_GENERATOR
@@ -180,6 +181,12 @@ public class HelloBot extends Bot implements ChannelUserListener,
 		Whois is = e.getWhois();
 		channels[0].sendMessage("Whois: " + is.getUser().toString());
 		channels[0].sendMessage("Whois: " + Arrays.toString(is.getChannels()));
+	}
+
+	@Override
+	public void channelUserQuit(ChannelUserEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

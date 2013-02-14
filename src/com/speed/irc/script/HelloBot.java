@@ -120,12 +120,18 @@ public class HelloBot extends Bot implements ChannelUserListener,
 	}
 
 	public void channelUserNickChanged(ChannelUserEvent e) {
-		final String newNick = e.getArguments()[0];
-		final String oldNick = e.getArguments()[1];
+		final String newNick = e.getArgs()[0];
+		final String oldNick = e.getArgs()[1];
 		info(oldNick + " changed to " + newNick);
 		e.getChannel().sendMessage(
 				HELLO_PHRASES[RANDOM_GENERATOR
 						.nextInt(HELLO_PHRASES.length - 1)] + " " + newNick);
+	}
+
+	@Override
+	public void channelUserQuit(ChannelUserEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -28,41 +28,39 @@ import com.speed.irc.types.ChannelUser;
 public class ChannelUserEvent extends ChannelEvent {
 
 	private ChannelUser user;
-	private int code;
 	public static final int USER_JOINED = 0, USER_PARTED = 1,
-			USER_MODE_CHANGED = 2, USER_KICKED = 3, USER_NICK_CHANGED = 4;
-	private String[] args;
+			USER_MODE_CHANGED = 2, USER_KICKED = 3, USER_NICK_CHANGED = 4,
+			USER_QUIT = 5;
 
 	public ChannelUserEvent(Object source, final Channel channel,
 			final ChannelUser user, final int code) {
 		super(channel, code, source);
 		this.user = user;
-		this.code = code;
 	}
 
 	public ChannelUserEvent(Object source, final Channel channel,
-			final ChannelUser user, final int code, final String sender) {
-		super(channel, code, sender, source);
+			final ChannelUser user, final String sender, final int code,
+			final String... args) {
+		super(channel, code, sender, source, args);
 		this.user = user;
-		this.code = code;
 	}
 
 	public ChannelUserEvent(Object source, final Channel channel,
-			final ChannelUser user, final int code, final String[] args) {
-		this(source, channel, user, code);
-		this.args = args;
-	}
-
-	public int getCode() {
-		return code;
+			final ChannelUser user, final int code, final String... args) {
+		super(channel, code, source, args);
+		this.user = user;
 	}
 
 	public ChannelUser getUser() {
 		return user;
 	}
 
+	/**
+	 * @deprecated see {@link #getArgs()} instead
+	 * @return
+	 */
 	public String[] getArguments() {
-		return args;
+		return getArgs();
 	}
 
 }

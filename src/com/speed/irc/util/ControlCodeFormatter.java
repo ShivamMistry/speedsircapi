@@ -26,7 +26,7 @@ public class ControlCodeFormatter {
 	public static final char UNICODE_UNDERLINE = '\u001F';
 
 	private static char format_character = '$';
-	
+
 	private char formatChar;
 
 	public ControlCodeFormatter() {
@@ -46,6 +46,10 @@ public class ControlCodeFormatter {
 		}
 
 		int code;
+
+		public int getCode() {
+			return ordinal();
+		}
 	}
 
 	/**

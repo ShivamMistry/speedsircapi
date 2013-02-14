@@ -215,13 +215,25 @@ public class Channel extends Conversable implements ChannelUserListener,
 		setup();
 	}
 
+	/**
+	 * Returns a sorted array of ChannelUser objects. This array is sorted by
+	 * first descending channel rank and then by descending alphabetical order
+	 * (by nick).
+	 * 
+	 * @return the sorted array of users
+	 */
 	public ChannelUser[] getSortedUsers() {
 		final Collection<ChannelUser> users = getUsers();
 		ChannelUser[] u = users.toArray(new ChannelUser[users.size()]);
 		Arrays.sort(u, new Comparator<ChannelUser>() {
 
 			public int compare(ChannelUser o1, ChannelUser o2) {
-				return o2.getRights() - o1.getRights();
+				int c = o2.getRights() - o1.getRights();
+				if (c == 0) {
+					return o1.getNick().toLowerCase()
+							.compareTo(o2.getNick().toLowerCase());
+				}
+				return c;
 			}
 		});
 		return u;
@@ -339,7 +351,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 	@Override
 	public boolean equals(final Object o) {
 		return o instanceof Channel
-				&& ((Channel) o).getName().equals(getName());
+				&& ((Channel) o).getName().equalsIgnoreCase(getName());
 	}
 
 	public void channelUserJoined(ChannelUserEvent e) {
@@ -357,6 +369,10 @@ public class Channel extends Conversable implements ChannelUserListener,
 			ChannelUser user = e.getUser();
 			if (user != null) {
 				removeChannelUser(user);
+			}
+			if(user.getNick().equals(server.getNick())) {
+				isRunning = false;
+				future.cancel(true);
 			}
 		}
 	}
@@ -416,7 +432,7 @@ public class Channel extends Conversable implements ChannelUserListener,
 	}
 
 	public void channelUserNickChanged(ChannelUserEvent e) {
-		final String newNick = e.getArguments()[1];
+		final String newNick = e.getArgs()[1];
 		if (e.getUser() != null) {
 			final ChannelUser user = e.getUser();
 			final ChannelUser replace = new ChannelUser(newNick,
@@ -455,5 +471,12 @@ public class Channel extends Conversable implements ChannelUserListener,
 	 */
 	public void setTopicSetter(String topicSetter) {
 		this.topicSetter = topicSetter;
+	}
+
+	public void channelUserQuit(ChannelUserEvent e) {
+		if(e.getChannel().equals(this)) {
+			ChannelUser user = e.getUser();
+			removeChannelUser(user);
+		}
 	}
 }

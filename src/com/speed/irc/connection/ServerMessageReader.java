@@ -1,8 +1,8 @@
 package com.speed.irc.connection;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Logger;
 
 import com.speed.irc.event.ApiEvent;
@@ -31,7 +31,7 @@ import com.speed.irc.event.ApiEvent;
  */
 public class ServerMessageReader implements Runnable {
 	private final Server server;
-	private LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<String>();
+	private Queue<String> queue = new LinkedList<String>();
 	private volatile String current;
 	protected volatile boolean running = true;
 	protected Logger logger = Logger.getLogger(Logger.class.getName());

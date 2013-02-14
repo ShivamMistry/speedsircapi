@@ -93,7 +93,7 @@ public class Server implements Runnable {
 	public Server(final Socket sock) throws IOException {
 		socket = sock;
 		port = sock.getPort();
-		setServerName(socket.getInetAddress().getHostAddress());
+		setServerName(socket.getRemoteSocketAddress().toString());
 		write = new BufferedWriter(new OutputStreamWriter(
 				sock.getOutputStream()));
 		read = new BufferedReader(new InputStreamReader(sock.getInputStream()));

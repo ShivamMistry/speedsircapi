@@ -124,13 +124,6 @@ public class ChannelUser extends ServerUser {
 
 	@Override
 	public String toString() {
-		StringBuilder suffixes = new StringBuilder(" ");
-		if (isAway())
-			suffixes.append("away ");
-		if (isOper())
-			suffixes.append("oper ");
-		if (isIdentified())
-			suffixes.append("ident ");
-		return modes + getNick() + suffixes.toString();
+		return modes + getNick();
 	}
 }

@@ -267,13 +267,18 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 				channel.isRunning = false;
 		} else if (code.equals("QUIT")) {
 			String nick = raw.split("!")[0];
-			for (Channel c : server.channels.values()) {
-				ChannelUser u = c.getUser(nick);
-				if (u != null) {
-					c.removeChannelUser(u);
+			String quitMsg = "";
+			String[] parts = raw.split(" :", 2);
+			if (parts.length > 1) {
+				quitMsg = parts[1];
+			}
+			for (Channel c : server.getChannels()) {
+				if (c.isRunning && c.getUser(nick) != null) {
+					server.eventManager.dispatchEvent(new ChannelUserEvent(
+							this, c, c.getUser(nick),
+							ChannelUserEvent.USER_QUIT, quitMsg));
 				}
 			}
-			// TODO: quit event.
 		} else if (code.trim().equalsIgnoreCase("nick")) {
 			try {
 				final ServerUser u = server.getUser(message.getSender().split(

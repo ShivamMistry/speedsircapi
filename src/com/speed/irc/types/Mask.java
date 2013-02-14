@@ -36,7 +36,7 @@ public class Mask {
 	public Mask(final String mask) {
 		this.mask = mask;
 		if (!verify(mask))
-			throw new IllegalArgumentException("Mask doesn't match *!*@*");
+			throw new IllegalArgumentException("Mask doesn't match *!*@*: " + mask);
 	}
 
 	public Mask(final String nick, final String user, final String host) {
@@ -67,7 +67,6 @@ public class Mask {
 	 * @return <tt>true</tt> if they do match, <tt>false</tt> if they don't
 	 */
 	public boolean matches(ServerUser user) {
-		// do the nick
 		String nickMask = mask.substring(0, mask.indexOf('!')).replace("*",
 				".*");
 		String userMask = mask.substring(mask.indexOf('!') + 1,
@@ -80,7 +79,7 @@ public class Mask {
 	}
 
 	public boolean equals(Object o) {
-		return o instanceof Mask && ((Mask) o).mask == mask;
+		return o instanceof Mask && ((Mask) o).mask.equals( mask);
 	}
 
 	public String toString() {

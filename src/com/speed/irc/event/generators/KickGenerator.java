@@ -43,9 +43,12 @@ public class KickGenerator implements EventGenerator {
 		if (user == null) {
 			return null;
 		}
-		return new ChannelUserEvent(this, channel, user,
-				ChannelUserEvent.USER_KICKED,
-				raw.getSender().split("!")[0].trim());
+		String kickMsg = "";
+		String[] parts = raw.getRaw().split(" :", 2);
+		if (parts.length > 1) {
+			kickMsg = parts[1];
+		}
+		return new ChannelUserEvent(this, channel, user, raw.getSender().split(
+				"!")[0].trim(), ChannelUserEvent.USER_KICKED, kickMsg);
 	}
-
 }

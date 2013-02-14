@@ -30,21 +30,25 @@ public class ChannelEvent implements IRCEvent {
 	public static final int TOPIC_CHANGED = 10, MODE_CHANGED = 11;
 	private final int code;
 	private final Channel channel;
+	private String[] args;
 	private final Object source;
 	private ChannelUser sender;
 
 	public ChannelEvent(final Channel channel, final int code,
-			String senderNick, final Object source) {
+			String senderNick, final Object source, final String... args) {
 		this.code = code;
 		this.channel = channel;
 		this.source = source;
 		this.sender = channel.getUser(senderNick);
+		this.args = args;
 	}
 
-	public ChannelEvent(Channel channel2, int code2, Object source2) {
+	public ChannelEvent(Channel channel2, int code2, Object source2,
+			final String... args) {
 		this.code = code2;
 		this.channel = channel2;
 		this.source = source2;
+		this.args = args;
 	}
 
 	public int getCode() {
@@ -84,6 +88,9 @@ public class ChannelEvent implements IRCEvent {
 			case ChannelUserEvent.USER_NICK_CHANGED:
 				l.channelUserNickChanged(event);
 				break;
+			case ChannelUserEvent.USER_QUIT:
+				l.channelUserQuit(event);
+				break;
 			}
 		} else if (listener instanceof ChannelEventListener) {
 			final ChannelEventListener l = (ChannelEventListener) listener;
@@ -99,4 +106,7 @@ public class ChannelEvent implements IRCEvent {
 		}
 	}
 
+	public String[] getArgs() {
+		return args;
+	}
 }

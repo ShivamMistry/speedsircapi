@@ -41,8 +41,13 @@ public class PartGenerator implements EventGenerator {
 			channel.setup();
 		}
 		final ChannelUser user = channel.getUser(nick);
+		String[] parts = raw.getRaw().split(" :", 2);
+		String partMsg = "";
+		if (parts.length > 1) {
+			partMsg = parts[1];
+		}
 		return new ChannelUserEvent(this, channel, user,
-				ChannelUserEvent.USER_PARTED);
+				ChannelUserEvent.USER_PARTED, partMsg);
 	}
 
 }
