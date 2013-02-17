@@ -55,6 +55,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 	protected ServerMessageReader reader;
 	protected ScheduledExecutorService execServ;
 	protected Future<?> future;
+	private ServerSupportParser parser;
 
 	public static final CTCPReply CTCP_REPLY_VERSION = new CTCPReply() {
 
@@ -108,7 +109,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 		new Thread(reader, "Server message reader").start();
 		future = execServ.scheduleWithFixedDelay(this, 0, 20,
 				TimeUnit.MILLISECONDS);
-
+		parser = new ServerSupportParser();
 	}
 
 	private synchronized void parse(final String s) throws Exception {
@@ -131,7 +132,8 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 	 *            generator to add
 	 */
 	public void addGenerator(final EventGenerator generator) {
-		generators.add(generator);
+		if (!generators.contains(generator))
+			generators.add(generator);
 	}
 
 	/**
@@ -172,18 +174,14 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 		if (raw.startsWith("PING")) {
 			server.sendRaw(raw.replaceFirst("PING", "PONG") + "\n");
 		} else if (message.getCommand().equals(Numerics.SERVER_SUPPORT)) {
-			if (raw.contains("PREFIX")) {
-				String temp = raw.substring(0, raw.indexOf(" :"));
-				String[] parts = temp.split(" ");
-				for (String t : parts) {
-					if (t.startsWith("PREFIX=")) {
-						String letters = t.split("\\(", 2)[1].split("\\)")[0];
-						String symbols = t.split("\\)", 2)[1];
-						if (letters.length() == symbols.length()) {
-							server.setModeLetters(letters.toCharArray());
-							server.setModeSymbols(symbols.toCharArray());
-						}
-					}
+			parser.parse(message);
+			if (parser.getSettings().containsKey("PREFIX")) {
+				String t = parser.getSettings().get("PREFIX");
+				String letters = t.split("\\(", 2)[1].split("\\)")[0];
+				String symbols = t.split("\\)", 2)[1];
+				if (letters.length() == symbols.length()) {
+					server.setModeLetters(letters.toCharArray());
+					server.setModeSymbols(symbols.toCharArray());
 				}
 			}
 		} else if (code.equals(Numerics.CHANNEL_MODES)) {
@@ -230,9 +228,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
 			boolean away = modes.contains("G");
 			boolean oper = modes.contains("*");
 			boolean identified = modes.contains("r");
-			modes = modes.replace("*", "").replace("G", "").replace("H", "")
-					.replace("r", "");
-			modes = modes.replace("r", "");
+			modes = modes.replaceAll("[A-Za-z]", "").replace("*", "");
 			ChannelUser u = new ChannelUser(nick, modes, user, host, channel);
 			u.setIdentified(identified);
 			u.setAway(away);

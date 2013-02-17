@@ -308,6 +308,17 @@ public class Server implements Runnable {
 		return parser;
 	}
 
+	public CTCPReply getCtcp(String request) {
+		synchronized (ctcpReplies) {
+			for (CTCPReply reply : ctcpReplies) {
+				if (reply.getRequest().equals(request)) {
+					return reply;
+				}
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Sets whether the api should auto reconnect if the connection is broken.
 	 * Default is <i>off</i>.
@@ -348,6 +359,12 @@ public class Server implements Runnable {
 				}
 
 			});
+		}
+	}
+
+	public void removeCtcpReply(final CTCPReply reply) {
+		synchronized (ctcpReplies) {
+			ctcpReplies.remove(reply);
 		}
 	}
 
@@ -428,7 +445,7 @@ public class Server implements Runnable {
 		if (!raw.endsWith("\r\n"))
 			raw += "\r\n";
 		try {
-			//System.out.println(raw);
+			// System.out.println(raw);
 			write.write(raw);
 		} catch (IOException e) {
 			e.printStackTrace();
