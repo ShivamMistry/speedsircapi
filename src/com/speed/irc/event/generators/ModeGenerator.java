@@ -64,7 +64,6 @@ public class ModeGenerator implements EventGenerator {
 			String[] u = new String[strings.length - 1];
 			System.arraycopy(strings, 1, u, 0, u.length);
 			boolean plus = false;
-			int index = 0;
 			for (int i = 0; i < modes.toCharArray().length; i++) {
 				char c = modes.toCharArray()[i];
 				if (c == '+') {
@@ -76,39 +75,39 @@ public class ModeGenerator implements EventGenerator {
 				}
 				if (c == 'b') {
 					if (plus) {
-						channel.bans.add(u[index]);
+						channel.bans.add(u[i]);
 					} else {
-						channel.bans.remove(u[index]);
+						channel.bans.remove(u[i]);
 					}
 					server.getEventManager().dispatchEvent(
 							new ChannelEvent(channel,
 									ChannelEvent.MODE_CHANGED, senderNick,
-									this, (plus ? "+" : "-") + "b", u[index]));
+									this, (plus ? "+" : "-") + "b", u[i]));
 					continue;
 				} else if (c == 'e') {
 					if (plus) {
-						channel.exempts.add(u[index]);
+						channel.exempts.add(u[i]);
 					} else {
-						channel.exempts.remove(u[index]);
+						channel.exempts.remove(u[i]);
 					}
 					server.getEventManager().dispatchEvent(
 							new ChannelEvent(channel,
 									ChannelEvent.MODE_CHANGED, senderNick,
-									this, (plus ? "+" : "-") + "e", u[index]));
+									this, (plus ? "+" : "-") + "e", u[i]));
 					continue;
 				} else if (c == 'I') {
 					if (plus) {
-						channel.invites.add(u[index]);
+						channel.invites.add(u[i]);
 					} else {
-						channel.invites.remove(u[index]);
+						channel.invites.remove(u[i]);
 					}
 					server.getEventManager().dispatchEvent(
 							new ChannelEvent(channel,
 									ChannelEvent.MODE_CHANGED, senderNick,
-									this, (plus ? "+" : "-") + "I", u[index]));
+									this, (plus ? "+" : "-") + "I", u[i]));
 					continue;
 				}
-				ChannelUser user = channel.getUser(u[index]);
+				ChannelUser user = channel.getUser(u[i]);
 				if (user != null) {
 					if (plus) {
 						user.addMode(c);
@@ -123,7 +122,6 @@ public class ModeGenerator implements EventGenerator {
 
 				}
 			}
-			index++;
 
 		}
 		return null;
