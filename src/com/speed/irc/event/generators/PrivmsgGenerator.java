@@ -1,17 +1,13 @@
 package com.speed.irc.event.generators;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.speed.irc.connection.Server;
 import com.speed.irc.event.EventGenerator;
 import com.speed.irc.event.IRCEvent;
-import com.speed.irc.event.PrivateMessageEvent;
-import com.speed.irc.types.Channel;
-import com.speed.irc.types.Conversable;
-import com.speed.irc.types.Privmsg;
-import com.speed.irc.types.RawMessage;
-import com.speed.irc.types.ServerUser;
+import com.speed.irc.event.message.PrivateMessageEvent;
+import com.speed.irc.types.*;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Processes PRIVMSG messages sent from the server.
@@ -30,49 +26,49 @@ import com.speed.irc.types.ServerUser;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Shivam Mistry
  */
 public class PrivmsgGenerator implements EventGenerator {
-	private static final Pattern PATTERN_PRIVMSG = Pattern
-			.compile("(.+?)!(.+?)@(.+?) PRIVMSG (#?.+?) :(.*)");
+    private static final Pattern PATTERN_PRIVMSG = Pattern
+            .compile("(.+?)!(.+?)@(.+?) PRIVMSG (#?.+?) :(.*)");
 
-	public boolean accept(RawMessage raw) {
-		return PATTERN_PRIVMSG.matcher(raw.getRaw()).matches();
-	}
+    public boolean accept(RawMessage raw) {
+        return PATTERN_PRIVMSG.matcher(raw.getRaw()).matches();
+    }
 
-	public IRCEvent generate(RawMessage raw) {
-		final Matcher priv_matcher = PATTERN_PRIVMSG.matcher(raw.getRaw());
-		final Server server = raw.getServer();
-		if (priv_matcher.matches()) {
-			final String msg = priv_matcher.group(5);
-			final String sender = priv_matcher.group(1);
-			final String user = priv_matcher.group(2);
-			final String host = priv_matcher.group(3);
-			final String name = priv_matcher.group(4);
-			if (msg.startsWith("\u0001")) {// ctcp messages
-				String request = msg.replace("\u0001", "");
-				String reply = server.getCtcpReply(request);
-				if (reply != null) {
-					server.sendRaw(String.format(
-							"NOTICE %s :\u0001%s %s\u0001\n", sender, request,
-							reply));
-				}
-			}
-			Conversable conversable = null;
-			if (raw.getRaw().contains("PRIVMSG #")) {
-				conversable = server.getChannel(name);
-				Channel c = (Channel) conversable;
-				if (!c.isRunning()) {
-					c.setup();
-				}
-			} else {
-				conversable = new ServerUser(sender, host, user, server);
-			}
-			return new PrivateMessageEvent(
-					new Privmsg(msg, sender, conversable), this);
-		}
-		return null;
-	}
+    public IRCEvent generate(RawMessage raw) {
+        final Matcher priv_matcher = PATTERN_PRIVMSG.matcher(raw.getRaw());
+        final Server server = raw.getServer();
+        if (priv_matcher.matches()) {
+            final String msg = priv_matcher.group(5);
+            final String sender = priv_matcher.group(1);
+            final String user = priv_matcher.group(2);
+            final String host = priv_matcher.group(3);
+            final String name = priv_matcher.group(4);
+            if (msg.startsWith("\u0001")) {// ctcp messages
+                String request = msg.replace("\u0001", "");
+                String reply = server.getCtcpReply(request);
+                if (reply != null) {
+                    server.sendRaw(String.format(
+                            "NOTICE %s :\u0001%s %s\u0001\n", sender, request,
+                            reply));
+                }
+            }
+            Conversable conversable = null;
+            if (raw.getRaw().contains("PRIVMSG #")) {
+                conversable = server.getChannel(name);
+                Channel c = (Channel) conversable;
+                if (!c.isRunning()) {
+                    c.setup();
+                }
+            } else {
+                conversable = new ServerUser(sender, host, user, server);
+            }
+            return new PrivateMessageEvent(
+                    new Privmsg(msg, sender, conversable), this);
+        }
+        return null;
+    }
 
 }

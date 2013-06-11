@@ -1,10 +1,11 @@
-package com.speed.irc.event;
+package com.speed.irc.event.channel;
 
-import com.speed.irc.connection.Server;
-import com.speed.irc.event.api.ApiEvent;
+import com.speed.irc.event.IRCEventListener;
+import com.speed.irc.event.ListenerProperties;
 
 /**
- * Wraps an exception into an event
+ * Implement this interface and register to the event manager to receive channel
+ * events.
  * <p/>
  * This file is part of Speed's IRC API.
  * <p/>
@@ -22,19 +23,10 @@ import com.speed.irc.event.api.ApiEvent;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Shivam Mistry
- * @deprecated
  */
-public class ExceptionEvent extends ApiEvent {
-    private final Exception exception;
+@ListenerProperties(events = {ChannelEvent.class})
+public interface ChannelEventListener extends IRCEventListener {
+    public void channelTopicChanged(ChannelEvent e);
 
-    public ExceptionEvent(final Exception e, final Object source,
-                          final Server server) {
-        super(ApiEvent.EXCEPTION_RECEIVED, server, source);
-        exception = e;
-    }
-
-    public Exception getException() {
-        return exception;
-    }
-
+    public void channelModeChanged(ChannelEvent e);
 }

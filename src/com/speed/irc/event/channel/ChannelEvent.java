@@ -1,5 +1,7 @@
-package com.speed.irc.event;
+package com.speed.irc.event.channel;
 
+import com.speed.irc.event.IRCEvent;
+import com.speed.irc.event.IRCEventListener;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ServerUser;
 
@@ -22,7 +24,6 @@ import com.speed.irc.types.ServerUser;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Shivam Mistry
- * @deprecated
  */
 public class ChannelEvent implements IRCEvent {
 

@@ -19,32 +19,33 @@ import com.speed.irc.types.Whois;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Shivam Mistry
+ * @deprecated
  */
 public class WhoisEvent implements IRCEvent {
 
-	private final Whois whois;
-	private final Object source;
+    private final Whois whois;
+    private final Object source;
 
-	public WhoisEvent(final Whois whois, final Object source) {
-		this.whois = whois;
-		this.source = source;
-	}
+    public WhoisEvent(final Whois whois, final Object source) {
+        this.whois = whois;
+        this.source = source;
+    }
 
-	public Whois getWhois() {
-		return whois;
-	}
+    public Whois getWhois() {
+        return whois;
+    }
 
-	public Object getSource() {
-		return source;
-	}
+    public Object getSource() {
+        return source;
+    }
 
-	@Override
-	public void callListener(IRCEventListener listener) {
-		if (listener instanceof WhoisListener) {
-			((WhoisListener) listener).whoisReceived(this);
-		}
-	}
+    @Override
+    public void callListener(IRCEventListener listener) {
+        if (listener instanceof WhoisListener) {
+            ((WhoisListener) listener).whoisReceived(this);
+        }
+    }
 
 }

@@ -1,10 +1,11 @@
-package com.speed.irc.event;
+package com.speed.irc.event.api;
 
-import com.speed.irc.connection.Server;
-import com.speed.irc.event.api.ApiEvent;
+import com.speed.irc.event.IRCEvent;
+import com.speed.irc.event.IRCEventListener;
+import com.speed.irc.types.Whois;
 
 /**
- * Wraps an exception into an event
+ * Represents a WHOIS event.
  * <p/>
  * This file is part of Speed's IRC API.
  * <p/>
@@ -22,19 +23,30 @@ import com.speed.irc.event.api.ApiEvent;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Shivam Mistry
- * @deprecated
  */
-public class ExceptionEvent extends ApiEvent {
-    private final Exception exception;
+public class WhoisEvent implements IRCEvent {
 
-    public ExceptionEvent(final Exception e, final Object source,
-                          final Server server) {
-        super(ApiEvent.EXCEPTION_RECEIVED, server, source);
-        exception = e;
+    private final Whois whois;
+    private final Object source;
+
+    public WhoisEvent(final Whois whois, final Object source) {
+        this.whois = whois;
+        this.source = source;
     }
 
-    public Exception getException() {
-        return exception;
+    public Whois getWhois() {
+        return whois;
+    }
+
+    public Object getSource() {
+        return source;
+    }
+
+    @Override
+    public void callListener(IRCEventListener listener) {
+        if (listener instanceof WhoisListener) {
+            ((WhoisListener) listener).whoisReceived(this);
+        }
     }
 
 }

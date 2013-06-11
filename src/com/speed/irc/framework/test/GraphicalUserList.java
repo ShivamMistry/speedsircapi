@@ -1,13 +1,10 @@
 package com.speed.irc.framework.test;
 
-import javax.swing.AbstractListModel;
-import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.JScrollPane;
-
 import com.speed.irc.framework.Bot;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
+
+import javax.swing.*;
 
 /**
  * Displays a visual list of all the users in the channel, and associated
@@ -27,71 +24,70 @@ import com.speed.irc.types.ChannelUser;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Shivam Mistry
  */
 public class GraphicalUserList extends JFrame implements Runnable {
 
-	private static final long serialVersionUID = -5395939612572800357L;
-	private Channel mainChannel;
-	private JList<ChannelUser> list;
+    private static final long serialVersionUID = -5395939612572800357L;
+    private Channel mainChannel;
+    private JList<ChannelUser> list;
 
-	public static void main(String[] args) {
-		new GraphicalUserList();
-	}
+    public static void main(String[] args) {
+        new GraphicalUserList();
+    }
 
-	public GraphicalUserList() {
-		new Bot("irc.rizon.net", 6697, true) {
+    public GraphicalUserList() {
+        new Bot("irc.rizon.net", 6697, true) {
 
-			public void onStart() {
-				mainChannel = new Channel("#rscode", getServer());
-				getServer().setReadDebug(true);
-			}
+            public void onStart() {
+                mainChannel = new Channel("#rscode", getServer());
+                getServer().setReadDebug(true);
+            }
 
-			public Channel[] getChannels() {
-				return new Channel[] { mainChannel };
-			}
+            public Channel[] getChannels() {
+                return new Channel[]{mainChannel};
+            }
 
-			public String getNick() {
-				return "UserLister";
-			}
+            public String getNick() {
+                return "UserLister";
+            }
 
-		};
-		setSize(200, 300);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setTitle("User List");
-		@SuppressWarnings("serial")
-		AbstractListModel<ChannelUser> model = new AbstractListModel<ChannelUser>() {
+        };
+        setSize(200, 300);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setTitle("User List");
+        @SuppressWarnings("serial")
+        AbstractListModel<ChannelUser> model = new AbstractListModel<ChannelUser>() {
 
-			public ChannelUser getElementAt(int i) {
-				return mainChannel.getSortedUsers()[i];
-			}
+            public ChannelUser getElementAt(int i) {
+                return mainChannel.getSortedUsers()[i];
+            }
 
-			public int getSize() {
-				return mainChannel.getUsers().size();
-			}
+            public int getSize() {
+                return mainChannel.getUsers().size();
+            }
 
-		};
+        };
+        list = new JList<ChannelUser>(model);
+        list.setFixedCellHeight(15);
+        JScrollPane pane = new JScrollPane(list,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        add(pane);
+        setVisible(true);
+        new Thread(this).start();
+    }
 
-		list = new JList<ChannelUser>(model);
-		list.setFixedCellHeight(15);
-		JScrollPane pane = new JScrollPane(list,
-				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		add(pane);
-		setVisible(true);
-		new Thread(this).start();
-	}
-
-	public void run() {
-		while (isVisible()) {
-			repaint();
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+    public void run() {
+        while (isVisible()) {
+            repaint();
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 }

@@ -1,8 +1,8 @@
 package com.speed.irc.event.generators;
 
-import com.speed.irc.event.ChannelUserEvent;
 import com.speed.irc.event.EventGenerator;
 import com.speed.irc.event.IRCEvent;
+import com.speed.irc.event.channel.ChannelUserEvent;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
 import com.speed.irc.types.RawMessage;
@@ -24,30 +24,30 @@ import com.speed.irc.types.RawMessage;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Shivam Mistry
  */
 public class PartGenerator implements EventGenerator {
 
-	public boolean accept(RawMessage raw) {
-		return raw.getCommand().equals("PART");
-	}
+    public boolean accept(RawMessage raw) {
+        return raw.getCommand().equals("PART");
+    }
 
-	public IRCEvent generate(RawMessage raw) {
-		final String nick = raw.getSender().split("!")[0];
-		Channel channel = raw.getServer()
-				.getChannel(raw.getRaw().split(" ")[2]);
-		if (!channel.isRunning()) {
-			channel.setup();
-		}
-		final ChannelUser user = channel.getUser(nick);
-		String[] parts = raw.getRaw().split(" :", 2);
-		String partMsg = "";
-		if (parts.length > 1) {
-			partMsg = parts[1];
-		}
-		return new ChannelUserEvent(this, channel, user,
-				ChannelUserEvent.USER_PARTED, partMsg);
-	}
+    public IRCEvent generate(RawMessage raw) {
+        final String nick = raw.getSender().split("!")[0];
+        Channel channel = raw.getServer()
+                .getChannel(raw.getRaw().split(" ")[2]);
+        if (!channel.isRunning()) {
+            channel.setup();
+        }
+        final ChannelUser user = channel.getUser(nick);
+        String[] parts = raw.getRaw().split(" :", 2);
+        String partMsg = "";
+        if (parts.length > 1) {
+            partMsg = parts[1];
+        }
+        return new ChannelUserEvent(this, channel, user,
+                ChannelUserEvent.USER_PARTED, partMsg);
+    }
 
 }
