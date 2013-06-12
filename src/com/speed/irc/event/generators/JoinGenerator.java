@@ -1,8 +1,8 @@
 package com.speed.irc.event.generators;
 
-import com.speed.irc.event.ChannelUserEvent;
 import com.speed.irc.event.EventGenerator;
 import com.speed.irc.event.IRCEvent;
+import com.speed.irc.event.channel.ChannelUserEvent;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
 import com.speed.irc.types.RawMessage;
@@ -24,37 +24,37 @@ import com.speed.irc.types.RawMessage;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Shivam Mistry
  */
 public class JoinGenerator implements EventGenerator {
 
-	public boolean accept(RawMessage raw) {
-		return raw.getCommand().equals("JOIN");
-	}
+    public boolean accept(RawMessage raw) {
+        return raw.getCommand().equals("JOIN");
+    }
 
-	public IRCEvent generate(RawMessage raw) {
-		final String[] parts = raw.getRaw().split("!");
-		final String nick = parts[0];
-		final String user = parts[1].split("@")[0];
-		final String host = parts[1].split("@")[1].split(" ")[0];
-		String chan = raw.getRaw().split(" ")[2];
-		if (raw.getRaw().split(" ")[2].startsWith(":")) {
-			chan = chan.substring(1);
-		}
-		Channel channel = raw.getServer().getChannel(chan);
-		if (channel == null) {
-			channel = new Channel(chan, raw.getServer());
-			channel.setup();
-		} else if(!channel.isRunning()) {
-			channel.setup();
-		}
-		if (channel.getUser(nick) != null) {
-			channel.removeChannelUser(channel.getUser(nick));
-		}
-		final ChannelUser u = new ChannelUser(nick, "", user, host, channel);
-		return new ChannelUserEvent(this, channel, u,
-				ChannelUserEvent.USER_JOINED);
-	}
+    public IRCEvent generate(RawMessage raw) {
+        final String[] parts = raw.getRaw().split("!");
+        final String nick = parts[0];
+        final String user = parts[1].split("@")[0];
+        final String host = parts[1].split("@")[1].split(" ")[0];
+        String chan = raw.getRaw().split(" ")[2];
+        if (raw.getRaw().split(" ")[2].startsWith(":")) {
+            chan = chan.substring(1);
+        }
+        Channel channel = raw.getServer().getChannel(chan);
+        if (channel == null) {
+            channel = new Channel(chan, raw.getServer());
+            channel.setup();
+        } else if (!channel.isRunning()) {
+            channel.setup();
+        }
+        if (channel.getUser(nick) != null) {
+            channel.removeChannelUser(channel.getUser(nick));
+        }
+        final ChannelUser u = new ChannelUser(nick, "", user, host, channel);
+        return new ChannelUserEvent(this, channel, u,
+                ChannelUserEvent.USER_JOINED);
+    }
 
 }

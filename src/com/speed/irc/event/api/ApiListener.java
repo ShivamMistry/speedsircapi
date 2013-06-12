@@ -1,10 +1,9 @@
-package com.speed.irc.event;
+package com.speed.irc.event.api;
 
-import com.speed.irc.connection.Server;
-import com.speed.irc.event.api.ApiEvent;
+import com.speed.irc.event.IRCEventListener;
+import com.speed.irc.event.ListenerProperties;
 
 /**
- * Wraps an exception into an event
  * <p/>
  * This file is part of Speed's IRC API.
  * <p/>
@@ -22,19 +21,8 @@ import com.speed.irc.event.api.ApiEvent;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Shivam Mistry
- * @deprecated
  */
-public class ExceptionEvent extends ApiEvent {
-    private final Exception exception;
-
-    public ExceptionEvent(final Exception e, final Object source,
-                          final Server server) {
-        super(ApiEvent.EXCEPTION_RECEIVED, server, source);
-        exception = e;
-    }
-
-    public Exception getException() {
-        return exception;
-    }
-
+@ListenerProperties(events = ApiEvent.class)
+public interface ApiListener extends IRCEventListener {
+    public void apiEventReceived(ApiEvent e);
 }

@@ -1,12 +1,9 @@
 package com.speed.irc.types;
 
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-
 import com.speed.irc.connection.Server;
 
 /**
- * A class representing user and channel modes.
+ * A class representing a single user and channel mode.
  * <p/>
  * This file is part of Speed's IRC API.
  * <p/>
@@ -22,60 +19,33 @@ import com.speed.irc.connection.Server;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Shivam Mistry
  */
 public class Mode {
-	private Set<Character> modes = new CopyOnWriteArraySet<Character>();
-	private final Server server;
 
-	public Mode(final Server server, final String modes) {
-		this.server = server;
-		if (!modes.isEmpty())
-			parse(modes);
-	}
+    private final char mode;
+    private final boolean plus;
 
-	protected void clear() {
-		modes.clear();
-	}
+    public Mode(final String s) {
+        if (!s.matches("[\\+-][A-Za-z]")) {
+            throw new IllegalArgumentException("Incorrect mode format");
+        }
+        this.mode = s.charAt(1);
+        this.plus = s.charAt(0) == '+';
+    }
 
-	public char channelModeLetterToSymbol(char letter) {
-		for (int i = 0; i < server.getModeLetters().length; i++) {
-			if (server.getModeLetters()[i] == letter) {
-				return server.getModeSymbols()[i];
-			}
-		}
-		return '0';
-	}
+    public Mode(final boolean plus, final char mode) {
+        this.plus = plus;
+        this.mode = mode;
+    }
 
-	public char channelModeSymbolToLetter(char symbol) {
-		for (int i = 0; i < server.getModeSymbols().length; i++) {
-			if (server.getModeSymbols()[i] == symbol) {
-				return server.getModeLetters()[i];
-			}
-		}
-		return '0';
-	}
+    public ModeList newModeList(final Server server) {
+        return new ModeList(server, toString());
+    }
 
-	public void parse(String modes) {
-		boolean plus = false;
-		for (int i = 0; i < modes.toCharArray().length; i++) {
-			char c = modes.toCharArray()[i];
-			if (c == '+') {
-				plus = true;
-				continue;
-			} else if (c == '-') {
-				plus = false;
-				continue;
-			}
-			if (plus) {
 
-				this.modes.add(c);
-			} else {
-				if (this.modes.contains(c))
-					this.modes.remove(c);
-
-			}
-		}
-	}
+    public String toString() {
+        return String.valueOf(plus ? '+' : '-') + mode;
+    }
 }

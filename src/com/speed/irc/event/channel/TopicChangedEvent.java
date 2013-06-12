@@ -1,10 +1,9 @@
-package com.speed.irc.event;
+package com.speed.irc.event.channel;
 
-import com.speed.irc.connection.Server;
-import com.speed.irc.event.api.ApiEvent;
+import com.speed.irc.types.Channel;
 
 /**
- * Wraps an exception into an event
+ * Represents a topic changed event.
  * <p/>
  * This file is part of Speed's IRC API.
  * <p/>
@@ -22,19 +21,17 @@ import com.speed.irc.event.api.ApiEvent;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Shivam Mistry
- * @deprecated
  */
-public class ExceptionEvent extends ApiEvent {
-    private final Exception exception;
-
-    public ExceptionEvent(final Exception e, final Object source,
-                          final Server server) {
-        super(ApiEvent.EXCEPTION_RECEIVED, server, source);
-        exception = e;
+public class TopicChangedEvent extends ChannelEvent {
+    public TopicChangedEvent(Channel channel, String changerNick, Object source, String... args) {
+        super(channel, ChannelEvent.TOPIC_CHANGED, changerNick, source, args);
     }
 
-    public Exception getException() {
-        return exception;
+    public String getOldTopic() {
+        return getArgs()[0];
     }
 
+    public String getNewTopic() {
+        return getArgs()[1];
+    }
 }

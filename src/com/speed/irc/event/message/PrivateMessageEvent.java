@@ -1,8 +1,12 @@
-package com.speed.irc.event;
+package com.speed.irc.event.message;
 
-import com.speed.irc.types.Notice;
+import com.speed.irc.event.IRCEvent;
+import com.speed.irc.event.IRCEventListener;
+import com.speed.irc.types.Privmsg;
 
 /**
+ * The wrapper class for an PRIVMSG event.
+ * <p/>
  * This file is part of Speed's IRC API.
  * <p/>
  * Speed's IRC API is free software: you can redistribute it and/or modify it
@@ -19,28 +23,30 @@ import com.speed.irc.types.Notice;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Shivam Mistry
- * @deprecated
  */
-public class NoticeEvent implements IRCEvent {
-    protected Notice notice;
+public class PrivateMessageEvent implements IRCEvent {
+
     protected Object source;
+    protected Privmsg message;
 
-    public NoticeEvent(final Notice notice, final Object source) {
-        this.notice = notice;
+    public PrivateMessageEvent(final Privmsg message, final Object source) {
         this.source = source;
-    }
-
-    public Notice getNotice() {
-        return notice;
+        this.message = message;
     }
 
     public Object getSource() {
         return source;
     }
 
+    public Privmsg getMessage() {
+        return message;
+    }
+
     public void callListener(IRCEventListener listener) {
-        if (listener instanceof NoticeListener) {
-            ((NoticeListener) listener).noticeReceived(this);
+        if (listener instanceof PrivateMessageListener) {
+            ((PrivateMessageListener) listener)
+                    .messageReceived(this);
         }
     }
+
 }

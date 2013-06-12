@@ -1,6 +1,8 @@
-package com.speed.irc.event;
+package com.speed.irc.event.api;
 
 import com.speed.irc.connection.Server;
+import com.speed.irc.event.IRCEvent;
+import com.speed.irc.event.IRCEventListener;
 
 /**
  * Provides events for many API features.
@@ -21,7 +23,6 @@ import com.speed.irc.connection.Server;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Shivam Mistry
- * @deprecated
  */
 public class ApiEvent implements IRCEvent {
     public static final int SERVER_DISCONNECTED = 1, EXCEPTION_RECEIVED = 2;
@@ -42,8 +43,8 @@ public class ApiEvent implements IRCEvent {
      * Gets the opcode of the event.
      *
      * @return the opcode of this event
-     * @see {@link com.speed.irc.event.ApiEvent#SERVER_DISCONNECTED},
-     *      {@link com.speed.irc.event.ApiEvent#EXCEPTION_RECEIVED}, {@link com.speed.irc.event.ApiEvent#SERVER_QUIT}
+     * @see {@link ApiEvent#SERVER_DISCONNECTED},
+     *      {@link ApiEvent#EXCEPTION_RECEIVED}, {@link ApiEvent#SERVER_QUIT}
      */
     public int getOpcode() {
         return opcode;

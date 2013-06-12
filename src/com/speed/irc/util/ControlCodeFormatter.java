@@ -1,5 +1,7 @@
 package com.speed.irc.util;
 
+import java.awt.Color;
+
 /**
  * Formats messages with control codes, using a specified 'format' character.
  * <p/>
@@ -41,6 +43,13 @@ public class ControlCodeFormatter {
 		WHITE(0), BLACK(1), NAVY_BLUE(2), GREEN(3), RED(4), CRIMSON_RED(5), MAGENTA(
 				6), BROWN(7), YELLOW(8), LIME(9), TEAL(10), AQUA(11), ROYAL_BLUE(
 				12), PINK(13), DARK_GREY(14), LIGHT_GREY(15);
+		public static final Color[] COLORS = new Color[] { Color.WHITE,
+				Color.BLACK, new Color(0x000080), Color.GREEN, Color.RED,
+				new Color(0xE8000D), Color.MAGENTA, new Color(0x8b4513),
+				Color.YELLOW, new Color(0x32cd32), new Color(0x008080),
+				new Color(0x00FFFF), new Color(0x4169e1), Color.PINK,
+				Color.DARK_GRAY, Color.LIGHT_GRAY };
+
 		Colour(int code) {
 			this.code = code;
 		}

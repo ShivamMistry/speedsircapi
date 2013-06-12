@@ -1,7 +1,6 @@
-package com.speed.irc.event;
+package com.speed.irc.event.api;
 
 import com.speed.irc.connection.Server;
-import com.speed.irc.event.api.ApiEvent;
 
 /**
  * Wraps an exception into an event
@@ -22,7 +21,6 @@ import com.speed.irc.event.api.ApiEvent;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Shivam Mistry
- * @deprecated
  */
 public class ExceptionEvent extends ApiEvent {
     private final Exception exception;
