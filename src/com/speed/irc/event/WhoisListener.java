@@ -17,12 +17,13 @@ package com.speed.irc.event;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Shivam Mistry
+ * @deprecated
  */
 @ListenerProperties(events = WhoisEvent.class)
 public interface WhoisListener extends IRCEventListener {
 
-	public void whoisReceived(WhoisEvent e);
+    public void whoisReceived(WhoisEvent e);
 
 }

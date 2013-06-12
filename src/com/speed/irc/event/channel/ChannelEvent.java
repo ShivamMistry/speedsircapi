@@ -1,5 +1,7 @@
-package com.speed.irc.event;
+package com.speed.irc.event.channel;
 
+import com.speed.irc.event.IRCEvent;
+import com.speed.irc.event.IRCEventListener;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ServerUser;
 
@@ -22,7 +24,6 @@ import com.speed.irc.types.ServerUser;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Shivam Mistry
- * @deprecated
  */
 public class ChannelEvent implements IRCEvent {
 
@@ -81,9 +82,6 @@ public class ChannelEvent implements IRCEvent {
                 case ChannelUserEvent.USER_KICKED:
                     l.channelUserKicked(event);
                     break;
-                case ChannelUserEvent.USER_MODE_CHANGED:
-                    l.channelUserModeChanged(event);
-                    break;
                 case ChannelUserEvent.USER_PARTED:
                     l.channelUserParted(event);
                     break;
@@ -94,15 +92,22 @@ public class ChannelEvent implements IRCEvent {
                     l.channelUserQuit(event);
                     break;
             }
+        } else if (listener instanceof ChannelUserListener && this instanceof ModeChangedEvent) {
+            final ChannelEvent event = this;
+            final ChannelUserListener l = (ChannelUserListener) listener;
+            final ModeChangedEvent mce = (ModeChangedEvent) this;
+            if (event.getCode() == ChannelEvent.MODE_CHANGED && mce.getAffectedUser() != null) {
+                l.channelUserModeChanged(mce);
+            }
         } else if (listener instanceof ChannelEventListener) {
             final ChannelEventListener l = (ChannelEventListener) listener;
             final ChannelEvent event = this;
             switch (event.getCode()) {
                 case ChannelEvent.MODE_CHANGED:
-                    l.channelModeChanged(event);
+                    l.channelModeChanged((ModeChangedEvent) event);
                     break;
                 case ChannelEvent.TOPIC_CHANGED:
-                    l.channelTopicChanged(event);
+                    l.channelTopicChanged((TopicChangedEvent) event);
                     break;
             }
         }

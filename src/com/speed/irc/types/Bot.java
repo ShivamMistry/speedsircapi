@@ -1,15 +1,15 @@
 package com.speed.irc.types;
 
+import com.speed.irc.connection.Server;
+import com.speed.irc.event.ExceptionEvent;
+import com.speed.irc.event.IRCEventListener;
+import com.speed.irc.event.api.ApiEvent;
+import com.speed.irc.event.api.ApiListener;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.logging.Logger;
-
-import com.speed.irc.connection.Server;
-import com.speed.irc.event.ApiEvent;
-import com.speed.irc.event.ApiListener;
-import com.speed.irc.event.ExceptionEvent;
-import com.speed.irc.event.IRCEventListener;
 
 /**
  * The abstract class for making robots. To create a robot, you can extend this
@@ -29,89 +29,88 @@ import com.speed.irc.event.IRCEventListener;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Shivam Mistry
  * @deprecated use {@link com.speed.irc.framework.Bot} instead
  */
 public abstract class Bot implements ApiListener {
 
-	protected Server server;
-	protected final int port;
-	protected Logger logger = Logger.getLogger(Bot.class.getName());
-	protected int modes;
+    protected Server server;
+    protected final int port;
+    protected Logger logger = Logger.getLogger(Bot.class.getName());
+    protected int modes;
 
-	public int getPort() {
-		return port;
-	}
+    public int getPort() {
+        return port;
+    }
 
-	public final void info(final String message) {
-		logger.info(message);
-	}
+    public final void info(final String message) {
+        logger.info(message);
+    }
 
-	public final Server getServer() {
-		return server;
-	}
+    public final Server getServer() {
+        return server;
+    }
 
-	public abstract void onStart();
+    public abstract void onStart();
 
-	public Bot(final String server, final int port) {
-		this.port = port;
-		try {
-			this.server = new Server(new Socket(server, port));
-			this.server.sendRaw("NICK " + getNick() + "\n");
-			this.server.sendRaw("USER " + getUser() + " 0 * :" + getRealName());
-			if (this instanceof IRCEventListener) {
-				this.server.getEventManager().addListener(
-						(IRCEventListener) this);
-			}
-			onStart();
-			for (Channel s : getChannels()) {
-				s.join();
-			}
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+    public Bot(final String server, final int port) {
+        this.port = port;
+        try {
+            this.server = new Server(new Socket(server, port));
+            this.server.sendRaw("NICK " + getNick() + "\n");
+            this.server.sendRaw("USER " + getUser() + " 0 * :" + getRealName());
+            if (this instanceof IRCEventListener) {
+                this.server.getEventManager().addListener(
+                        (IRCEventListener) this);
+            }
+            onStart();
+            for (Channel s : getChannels()) {
+                s.join();
+            }
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-	}
+    }
 
-	public abstract Channel[] getChannels();
+    public abstract Channel[] getChannels();
 
-	public abstract String getNick();
+    public abstract String getNick();
 
-	public String getRealName() {
-		return "SpeedsIrcApi";
-	}
+    public String getRealName() {
+        return "SpeedsIrcApi";
+    }
 
-	public String getUser() {
-		return "Speed";
-	}
+    public String getUser() {
+        return "Speed";
+    }
 
-	private void connect() {
-		this.server.sendRaw("NICK " + getNick() + "\n");
-		this.server.sendRaw("USER " + getUser() + " " + modes + " * :"
-				+ getRealName() + "\n");
-		for (Channel s : getChannels()) {
-			s.join();
-		}
-	}
+    private void connect() {
+        this.server.sendRaw("NICK " + getNick() + "\n");
+        this.server.sendRaw("USER " + getUser() + " " + modes + " * :"
+                + getRealName() + "\n");
+        for (Channel s : getChannels()) {
+            s.join();
+        }
+    }
 
-	/**
-	 * Used to identify to NickServ.
-	 * 
-	 * @param password
-	 *            The password assigned to your nick
-	 */
-	public void identify(final String password) {
-		server.sendRaw("PRIVMSG NickServ :identify " + password + "\n");
-	}
+    /**
+     * Used to identify to NickServ.
+     *
+     * @param password The password assigned to your nick
+     */
+    public void identify(final String password) {
+        server.sendRaw("PRIVMSG NickServ :identify " + password + "\n");
+    }
 
-	public void apiEventReceived(ApiEvent e) {
-		if (e.getOpcode() == ApiEvent.SERVER_DISCONNECTED) {
-			connect();
-		} else if (e.getOpcode() == ApiEvent.EXCEPTION_RECEIVED) {
-			((ExceptionEvent) e).getException().printStackTrace();
-		}
-	}
+    public void apiEventReceived(ApiEvent e) {
+        if (e.getOpcode() == ApiEvent.SERVER_DISCONNECTED) {
+            connect();
+        } else if (e.getOpcode() == ApiEvent.EXCEPTION_RECEIVED) {
+            ((ExceptionEvent) e).getException().printStackTrace();
+        }
+    }
 }

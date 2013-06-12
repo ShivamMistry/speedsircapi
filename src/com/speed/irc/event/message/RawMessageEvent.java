@@ -1,11 +1,10 @@
-package com.speed.irc.event;
+package com.speed.irc.event.message;
 
-import com.speed.irc.connection.Server;
-import com.speed.irc.event.api.ApiEvent;
+import com.speed.irc.event.IRCEvent;
+import com.speed.irc.event.IRCEventListener;
+import com.speed.irc.types.RawMessage;
 
 /**
- * Wraps an exception into an event
- * <p/>
  * This file is part of Speed's IRC API.
  * <p/>
  * Speed's IRC API is free software: you can redistribute it and/or modify it
@@ -22,19 +21,29 @@ import com.speed.irc.event.api.ApiEvent;
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
  *
  * @author Shivam Mistry
- * @deprecated
  */
-public class ExceptionEvent extends ApiEvent {
-    private final Exception exception;
+public class RawMessageEvent implements IRCEvent {
 
-    public ExceptionEvent(final Exception e, final Object source,
-                          final Server server) {
-        super(ApiEvent.EXCEPTION_RECEIVED, server, source);
-        exception = e;
+    private RawMessage message;
+    protected Object source;
+
+    public RawMessageEvent(final RawMessage message, final Object source) {
+        this.message = message;
+        this.source = source;
     }
 
-    public Exception getException() {
-        return exception;
+    public RawMessage getMessage() {
+        return message;
+    }
+
+    public Object getSource() {
+        return source;
+    }
+
+    public void callListener(IRCEventListener listener) {
+        if (listener instanceof RawMessageListener) {
+            ((RawMessageListener) listener).rawMessageReceived(this);
+        }
     }
 
 }

@@ -16,10 +16,11 @@ package com.speed.irc.event;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Shivam Mistry
+ * @deprecated
  */
 @ListenerProperties(events = ApiEvent.class)
 public interface ApiListener extends IRCEventListener {
-	public void apiEventReceived(ApiEvent e);
+    public void apiEventReceived(ApiEvent e);
 }

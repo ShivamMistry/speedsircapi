@@ -183,9 +183,8 @@ public class ServerUser extends Conversable {
 			return false;
 		else {
 			ServerUser other = (ServerUser) o;
-			return other.getNick().equalsIgnoreCase(nick)
-					&& other.getHost().equalsIgnoreCase(getHost())
-					&& other.getUser().equalsIgnoreCase(user);
+
+			return other != null && other.getNick().equalsIgnoreCase(nick);
 		}
 	}
 
