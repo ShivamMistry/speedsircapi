@@ -3,8 +3,7 @@ package com.speed.irc.event.generators;
 import com.speed.irc.connection.Server;
 import com.speed.irc.event.EventGenerator;
 import com.speed.irc.event.IRCEvent;
-import com.speed.irc.event.channel.ChannelEvent;
-import com.speed.irc.event.channel.ChannelUserEvent;
+import com.speed.irc.event.channel.ModeChangedEvent;
 import com.speed.irc.types.Channel;
 import com.speed.irc.types.ChannelUser;
 import com.speed.irc.types.RawMessage;
@@ -57,8 +56,8 @@ public class ModeGenerator implements EventGenerator {
         String[] strings = raw.split(" ");
         String modes = strings[0];
         if (strings.length == 1 && channel != null) {
-            channel.chanMode.parse(modes);
-            return new ChannelEvent(channel, ChannelEvent.MODE_CHANGED, senderNick, this, modes);
+            channel.chanModeList.parse(modes);
+            return new ModeChangedEvent(channel, senderNick, this, modes);
         } else {
             String[] u = new String[strings.length - 1];
             System.arraycopy(strings, 1, u, 0, u.length);
@@ -80,7 +79,7 @@ public class ModeGenerator implements EventGenerator {
                         channel.bans.remove(u[index]);
                     }
                     server.getEventManager().dispatchEvent(
-                            new ChannelEvent(channel, ChannelEvent.MODE_CHANGED, senderNick, this, (plus ? "+" : "-")
+                            new ModeChangedEvent(channel, senderNick, this, (plus ? "+" : "-")
                                     + "b", u[index]));
                     index++;
 
@@ -92,7 +91,7 @@ public class ModeGenerator implements EventGenerator {
                         channel.exempts.remove(u[index]);
                     }
                     server.getEventManager().dispatchEvent(
-                            new ChannelEvent(channel, ChannelEvent.MODE_CHANGED, senderNick, this, (plus ? "+" : "-")
+                            new ModeChangedEvent(channel, senderNick, this, (plus ? "+" : "-")
                                     + "e", u[index]));
                     index++;
 
@@ -104,7 +103,7 @@ public class ModeGenerator implements EventGenerator {
                         channel.invites.remove(u[index]);
                     }
                     server.getEventManager().dispatchEvent(
-                            new ChannelEvent(channel, ChannelEvent.MODE_CHANGED, senderNick, this, (plus ? "+" : "-")
+                            new ModeChangedEvent(channel, senderNick, this, (plus ? "+" : "-")
                                     + "I", u[index]));
                     index++;
 
@@ -118,7 +117,7 @@ public class ModeGenerator implements EventGenerator {
                         user.removeMode(c);
                     }
                     server.getEventManager().dispatchEvent(
-                            new ChannelUserEvent(this, channel, user, senderNick, ChannelUserEvent.USER_MODE_CHANGED,
+                            new ModeChangedEvent(channel, user, senderNick, this,
                                     (plus ? "+" : "-") + c));
 
                 }

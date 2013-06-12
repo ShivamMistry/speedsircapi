@@ -3,6 +3,7 @@ package com.speed.irc.types;
 import com.speed.irc.connection.Server;
 import com.speed.irc.event.channel.ChannelUserEvent;
 import com.speed.irc.event.channel.ChannelUserListener;
+import com.speed.irc.event.channel.ModeChangedEvent;
 
 import java.util.*;
 import java.util.concurrent.Future;
@@ -41,7 +42,7 @@ public class Channel extends Conversable implements ChannelUserListener,
     private String topicSetter;
     public int autoRejoinDelay = 50;
     protected boolean autoRejoin;
-    public Mode chanMode;
+    public ModeList chanModeList;
     public List<String> bans = new LinkedList<String>();
     public List<String> exempts = new LinkedList<String>();
     public List<String> invites = new LinkedList<String>();
@@ -63,7 +64,7 @@ public class Channel extends Conversable implements ChannelUserListener,
         this.server = server;
         this.server.getEventManager().addListener(this);
         this.server.addChannel(this);
-        chanMode = new Mode(server, "");
+        chanModeList = new ModeList(server, "");
     }
 
     /**
@@ -331,6 +332,16 @@ public class Channel extends Conversable implements ChannelUserListener,
                 && ((Channel) o).getName().equalsIgnoreCase(getName());
     }
 
+    public Collection<ChannelUser> getChannelUsers(final Mask mask) {
+        final List<ChannelUser> users = new LinkedList<ChannelUser>();
+        for (ChannelUser user : users) {
+            if (mask.matches(user)) {
+                users.add(user);
+            }
+        }
+        return users;
+    }
+
     public void channelUserJoined(ChannelUserEvent e) {
         if (e.getChannel().equals(this)
                 && getUser(e.getUser().getNick()) == null) {
@@ -355,7 +366,7 @@ public class Channel extends Conversable implements ChannelUserListener,
         }
     }
 
-    public void channelUserModeChanged(ChannelUserEvent e) {
+    public void channelUserModeChanged(ModeChangedEvent e) {
     }
 
     public void channelUserKicked(ChannelUserEvent e) {

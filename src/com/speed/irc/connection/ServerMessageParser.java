@@ -1,10 +1,9 @@
 package com.speed.irc.connection;
 
 import com.speed.irc.event.EventGenerator;
-import com.speed.irc.event.ExceptionEvent;
 import com.speed.irc.event.IRCEvent;
-import com.speed.irc.event.channel.ChannelEvent;
 import com.speed.irc.event.channel.ChannelUserEvent;
+import com.speed.irc.event.channel.TopicChangedEvent;
 import com.speed.irc.event.generators.*;
 import com.speed.irc.event.message.RawMessageEvent;
 import com.speed.irc.types.*;
@@ -140,7 +139,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
                 parse(s);
             } catch (Exception e) {
                 server.eventManager
-                        .dispatchEvent(new ExceptionEvent(new ParsingException(
+                        .dispatchEvent(new com.speed.irc.event.api.ExceptionEvent(new ParsingException(
                                 "Parsing error", e), this, server));
             }
         }
@@ -174,7 +173,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
                 return null;
             }
             Channel channel = server.channels.get(chan_name);
-            channel.chanMode.parse(modez);
+            channel.chanModeList.parse(modez);
         } else if (code.equals(Numerics.CHANNEL_NAMES)) {
             String[] parts = message.getRaw().split(" ");
             // String secret = parts[3];
@@ -230,14 +229,14 @@ public class ServerMessageParser implements Runnable, EventGenerator {
             }
             String topicSetter = raw.split(" ")[0];
             long time = System.currentTimeMillis();
+            String oldTopic = channel.getTopic();
             channel.setTopicSetter(topicSetter);
             channel.setTopicSetTime(time);
             String[] temp = raw.split(" :", 2);
             channel.setTopic(temp[1]);
             if (temp[0].substring(temp[0].indexOf("TOPIC")).contains(
                     channel.getName())) {
-                return new ChannelEvent(channel, ChannelEvent.TOPIC_CHANGED,
-                        this);
+                return new TopicChangedEvent(channel, topicSetter, this, new String[]{oldTopic, temp[1]});
             }
         } else if (code.equals(Numerics.BANNED_FROM_CHANNEL)
                 && message.getTarget().equals(server.getNick())) {

@@ -5,6 +5,7 @@ import com.speed.irc.event.api.WhoisEvent;
 import com.speed.irc.event.api.WhoisListener;
 import com.speed.irc.event.channel.ChannelUserEvent;
 import com.speed.irc.event.channel.ChannelUserListener;
+import com.speed.irc.event.channel.ModeChangedEvent;
 import com.speed.irc.event.message.PrivateMessageEvent;
 import com.speed.irc.event.message.PrivateMessageListener;
 import com.speed.irc.framework.Bot;
@@ -68,7 +69,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
     }
 
     public void onStart() {
-        channels = new Channel[]{new Channel("#rscode", getServer())};
+        channels = new Channel[]{new Channel("#freecode", getServer())};
         channels[0].setAutoRejoin(true);
         // identify("password");
         getServer().setAutoReconnect(true);
@@ -158,8 +159,9 @@ public class HelloBot extends Bot implements ChannelUserListener,
     public void channelUserParted(ChannelUserEvent e) {
     }
 
-    public void channelUserModeChanged(ChannelUserEvent e) {
+    public void channelUserModeChanged(ModeChangedEvent e) {
     }
+
 
     public void channelUserKicked(ChannelUserEvent e) {
     }

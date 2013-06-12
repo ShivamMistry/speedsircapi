@@ -61,7 +61,7 @@ public class Server implements Runnable {
     private int port;
     private ScheduledThreadPoolExecutor chanExec;
     private ScheduledExecutorService serverExecutor, eventExecutor;
-    private Mode userModes;
+    private ModeList userModes;
 
     /**
      * Initialises a server object. Only blocking IO is supported.
@@ -115,7 +115,7 @@ public class Server implements Runnable {
         userModes.parse(modes);
     }
 
-    public Mode getUserModes() {
+    public ModeList getUserModes() {
         return userModes;
     }
 

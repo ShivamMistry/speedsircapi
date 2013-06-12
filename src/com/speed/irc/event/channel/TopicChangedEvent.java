@@ -1,11 +1,9 @@
 package com.speed.irc.event.channel;
 
-import com.speed.irc.event.IRCEventListener;
-import com.speed.irc.event.ListenerProperties;
+import com.speed.irc.types.Channel;
 
 /**
- * Implement this interface and register to the event manager to receive channel
- * user events.
+ * Represents a topic changed event.
  * <p/>
  * This file is part of Speed's IRC API.
  * <p/>
@@ -24,17 +22,16 @@ import com.speed.irc.event.ListenerProperties;
  *
  * @author Shivam Mistry
  */
-@ListenerProperties(events = {ChannelUserEvent.class, ModeChangedEvent.class})
-public interface ChannelUserListener extends IRCEventListener {
-    void channelUserJoined(ChannelUserEvent e);
+public class TopicChangedEvent extends ChannelEvent {
+    public TopicChangedEvent(Channel channel, String changerNick, Object source, String... args) {
+        super(channel, ChannelEvent.TOPIC_CHANGED, changerNick, source, args);
+    }
 
-    void channelUserParted(ChannelUserEvent e);
+    public String getOldTopic() {
+        return getArgs()[0];
+    }
 
-    void channelUserModeChanged(ModeChangedEvent e);
-
-    void channelUserKicked(ChannelUserEvent e);
-
-    void channelUserNickChanged(ChannelUserEvent e);
-
-    void channelUserQuit(ChannelUserEvent e);
+    public String getNewTopic() {
+        return getArgs()[1];
+    }
 }

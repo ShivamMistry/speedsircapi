@@ -24,9 +24,9 @@ import com.speed.irc.event.ListenerProperties;
  *
  * @author Shivam Mistry
  */
-@ListenerProperties(events = {ChannelEvent.class})
+@ListenerProperties(events = {ChannelEvent.class, TopicChangedEvent.class, ModeChangedEvent.class})
 public interface ChannelEventListener extends IRCEventListener {
-    public void channelTopicChanged(ChannelEvent e);
+    public void channelTopicChanged(TopicChangedEvent e);
 
-    public void channelModeChanged(ChannelEvent e);
+    public void channelModeChanged(ModeChangedEvent e);
 }
