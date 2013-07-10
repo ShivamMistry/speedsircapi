@@ -34,13 +34,13 @@ public class Mask {
 	 *            the mask to use
 	 */
 	public Mask(final String mask) {
-		this.mask = mask;
+		this.mask = mask.toLowerCase();
 		if (!verify(mask))
 			throw new IllegalArgumentException("Mask doesn't match *!*@*: " + mask);
 	}
 
 	public Mask(final String nick, final String user, final String host) {
-		this.mask = nick + '!' + user + '@' + host;
+		this.mask = (nick + '!' + user + '@' + host).toLowerCase();
 		if (!verify(mask))
 			throw new IllegalArgumentException("Arguments are not valid: "
 					+ mask);
@@ -73,9 +73,9 @@ public class Mask {
 				mask.indexOf('@')).replace("*", ".*");
 		String hostMask = mask.substring(mask.indexOf('@') + 1)
 				.replace(".", "\\.").replace("*", ".*");
-		return user.getNick().matches(nickMask)
-				&& user.getUser().matches(userMask)
-				&& user.getHost().matches(hostMask);
+		return user.getNick().toLowerCase().matches(nickMask)
+				&& user.getUser().toLowerCase().matches(userMask)
+				&& user.getHost().toLowerCase().matches(hostMask);
 	}
 
 	public boolean equals(Object o) {
