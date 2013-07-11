@@ -44,7 +44,7 @@ public class EventManager implements Runnable {
      * @param event the event to be processed by the event queue.
      */
     public synchronized void dispatchEvent(final IRCEvent event) {
-        eventQueue.add(event);
+        eventQueue.offer(event);
     }
 
     /**

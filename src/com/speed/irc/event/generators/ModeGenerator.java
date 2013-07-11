@@ -110,6 +110,10 @@ public class ModeGenerator implements EventGenerator {
                     continue;
                 }
                 ChannelUser user = channel.getUser(u[index]);
+                if (user == null) {
+                    user = new ChannelUser(u[index], "", null, null, channel);
+                    channel.addChannelUser(user);
+                }
                 if (user != null) {
                     if (plus) {
                         user.addMode(c);

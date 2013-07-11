@@ -343,12 +343,17 @@ public class Channel extends Conversable implements ChannelUserListener,
     }
 
     public void channelUserJoined(ChannelUserEvent e) {
-        if (e.getChannel().equals(this)
-                && getUser(e.getUser().getNick()) == null) {
-            addChannelUser(e.getUser());
-        }
-        if (e.getUser().getNick().equals(server.getNick()) && !isRunning()) {
-            setup();
+        if (e.getChannel().equals(this)) {
+            if (getUser(e.getUser().getNick()) == null) {
+                addChannelUser(e.getUser());
+            } else {
+                ChannelUser user = e.getChannel().getUser(e.getUser().getNick());
+                user.user = e.getUser().getUser();
+                user.host = e.getUser().getHost();
+            }
+            if (e.getUser().getNick().equals(server.getNick()) && !isRunning()) {
+                setup();
+            }
         }
     }
 

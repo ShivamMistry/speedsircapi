@@ -26,6 +26,7 @@ public class ChannelUser extends ServerUser {
     private final Channel channel;
     public static final int VOICE_FLAG = 0x1, HALF_OP_FLAG = 0x2,
             OP_FLAG = 0x4, ADMIN_FLAG = 0x8, OWNER_FLAG = 0x10;
+    private int rights;
 
     public Channel getChannel() {
         return channel;
@@ -48,6 +49,40 @@ public class ChannelUser extends ServerUser {
             builder.append(channelModes.channelModeSymbolToLetter(c));
         }
         channelModes.parse(builder.toString());
+        char[] modeSymbols = channel.getServer().getModeSymbols();
+        if (modeSymbols.length == 5) {
+            if (modes.indexOf(modeSymbols[0]) != -1)
+                rights = rights | OWNER_FLAG;
+            if (modes.indexOf(modeSymbols[1]) != -1)
+                rights = rights | ADMIN_FLAG;
+            if (modes.indexOf(modeSymbols[2]) != -1)
+                rights = rights | OP_FLAG;
+            if (modes.indexOf(modeSymbols[3]) != -1)
+                rights = rights | HALF_OP_FLAG;
+            if (modes.indexOf(modeSymbols[4]) != -1)
+                rights = rights | VOICE_FLAG;
+        } else if (modeSymbols.length == 2) {
+            if (modes.indexOf(modeSymbols[0]) != -1)
+                rights = rights | OP_FLAG;
+            if (modes.indexOf(modeSymbols[1]) != -1)
+                rights = rights | VOICE_FLAG;
+        } else if (modeSymbols.length == 3) {
+            if (modes.indexOf(modeSymbols[0]) != -1)
+                rights = rights | OP_FLAG;
+            if (modes.indexOf(modeSymbols[1]) != -1)
+                rights = rights | HALF_OP_FLAG;
+            if (modes.indexOf(modeSymbols[2]) != -1)
+                rights = rights | VOICE_FLAG;
+        } else if (modeSymbols.length == 4) {
+            if (modes.indexOf(modeSymbols[0]) != -1)
+                rights = rights | ADMIN_FLAG;
+            if (modes.indexOf(modeSymbols[1]) != -1)
+                rights = rights | OP_FLAG;
+            if (modes.indexOf(modeSymbols[2]) != -1)
+                rights = rights | HALF_OP_FLAG;
+            if (modes.indexOf(modeSymbols[3]) != -1)
+                rights = rights | VOICE_FLAG;
+        }
     }
 
     public void addMode(char mode) {
@@ -108,42 +143,6 @@ public class ChannelUser extends ServerUser {
      * @returns the bitmask of the user's flags
      */
     public int getRights() {
-        int rights = 0;
-        char[] modeSymbols = channel.getServer().getModeSymbols();
-        if (modeSymbols.length == 5) {
-            if (modes.indexOf(modeSymbols[0]) != -1)
-                rights = rights | OWNER_FLAG;
-            if (modes.indexOf(modeSymbols[1]) != -1)
-                rights = rights | ADMIN_FLAG;
-            if (modes.indexOf(modeSymbols[2]) != -1)
-                rights = rights | OP_FLAG;
-            if (modes.indexOf(modeSymbols[3]) != -1)
-                rights = rights | HALF_OP_FLAG;
-            if (modes.indexOf(modeSymbols[4]) != -1)
-                rights = rights | VOICE_FLAG;
-        } else if (modeSymbols.length == 2) {
-            if (modes.indexOf(modeSymbols[0]) != -1)
-                rights = rights | OP_FLAG;
-            if (modes.indexOf(modeSymbols[1]) != -1)
-                rights = rights | VOICE_FLAG;
-        } else if (modeSymbols.length == 3) {
-            if (modes.indexOf(modeSymbols[0]) != -1)
-                rights = rights | OP_FLAG;
-            if (modes.indexOf(modeSymbols[1]) != -1)
-                rights = rights | HALF_OP_FLAG;
-            if (modes.indexOf(modeSymbols[2]) != -1)
-                rights = rights | VOICE_FLAG;
-        } else if (modeSymbols.length == 4) {
-            if (modes.indexOf(modeSymbols[0]) != -1)
-                rights = rights | ADMIN_FLAG;
-            if (modes.indexOf(modeSymbols[1]) != -1)
-                rights = rights | OP_FLAG;
-            if (modes.indexOf(modeSymbols[2]) != -1)
-                rights = rights | HALF_OP_FLAG;
-            if (modes.indexOf(modeSymbols[3]) != -1)
-                rights = rights | VOICE_FLAG;
-        }
-
         return rights;
     }
 

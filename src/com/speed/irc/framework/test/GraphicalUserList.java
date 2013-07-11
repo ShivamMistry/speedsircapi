@@ -29,19 +29,19 @@ import javax.swing.*;
  */
 public class GraphicalUserList extends JFrame implements Runnable {
 
-    private static final long serialVersionUID = -5395939612572800357L;
     private Channel mainChannel;
     private JList<ChannelUser> list;
+    private DefaultListModel<ChannelUser> model;
 
     public static void main(String[] args) {
         new GraphicalUserList();
     }
 
     public GraphicalUserList() {
-        new Bot("irc.rizon.net", 6697, true) {
+        Bot bot = new Bot("irc.rizon.net", 6697, true) {
 
             public void onStart() {
-                mainChannel = new Channel("#rscode", getServer());
+                mainChannel = new Channel("#freecode", getServer());
                 getServer().setReadDebug(true);
             }
 
@@ -57,18 +57,7 @@ public class GraphicalUserList extends JFrame implements Runnable {
         setSize(200, 300);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setTitle("User List");
-        @SuppressWarnings("serial")
-        AbstractListModel<ChannelUser> model = new AbstractListModel<ChannelUser>() {
-
-            public ChannelUser getElementAt(int i) {
-                return mainChannel.getSortedUsers()[i];
-            }
-
-            public int getSize() {
-                return mainChannel.getUsers().size();
-            }
-
-        };
+        model = new DefaultListModel<ChannelUser>();
         list = new JList<ChannelUser>(model);
         list.setFixedCellHeight(15);
         JScrollPane pane = new JScrollPane(list,
@@ -81,7 +70,11 @@ public class GraphicalUserList extends JFrame implements Runnable {
 
     public void run() {
         while (isVisible()) {
-            repaint();
+            //okay we should REALLY be using API listeners for this but w.e
+            model.clear();
+            for (ChannelUser user : mainChannel.getSortedUsers()) {
+                model.addElement(user);
+            }
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
