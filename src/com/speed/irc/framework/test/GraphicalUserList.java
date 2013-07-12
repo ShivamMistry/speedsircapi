@@ -29,58 +29,67 @@ import javax.swing.*;
  */
 public class GraphicalUserList extends JFrame implements Runnable {
 
-    private Channel mainChannel;
-    private JList<ChannelUser> list;
-    private DefaultListModel<ChannelUser> model;
+	private Channel mainChannel;
+	private JList<ChannelUser> list;
+	private ListModel<ChannelUser> model;
 
-    public static void main(String[] args) {
-        new GraphicalUserList();
-    }
+	public static void main(String[] args) {
+		new GraphicalUserList();
+	}
 
-    public GraphicalUserList() {
-        Bot bot = new Bot("irc.rizon.net", 6697, true) {
+	public GraphicalUserList() {
+		Bot bot = new Bot("irc.rizon.net", 6697, true) {
 
-            public void onStart() {
-                mainChannel = new Channel("#freecode", getServer());
-                getServer().setReadDebug(true);
-            }
+			public void onStart() {
+				mainChannel = new Channel("#freecode", getServer());
+				getServer().setReadDebug(true);
+			}
 
-            public Channel[] getChannels() {
-                return new Channel[]{mainChannel};
-            }
+			public Channel[] getChannels() {
+				return new Channel[]{mainChannel};
+			}
 
-            public String getNick() {
-                return "UserLister";
-            }
+			public String getNick() {
+				return "UserLister";
+			}
 
-        };
-        setSize(200, 300);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setTitle("User List");
-        model = new DefaultListModel<ChannelUser>();
-        list = new JList<ChannelUser>(model);
-        list.setFixedCellHeight(15);
-        JScrollPane pane = new JScrollPane(list,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        add(pane);
-        setVisible(true);
-        new Thread(this).start();
-    }
+		};
+		setSize(200, 300);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setTitle("User List");
+		model = new AbstractListModel<ChannelUser>() {
 
-    public void run() {
-        while (isVisible()) {
-            //okay we should REALLY be using API listeners for this but w.e
-            model.clear();
-            for (ChannelUser user : mainChannel.getSortedUsers()) {
-                model.addElement(user);
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+			@Override
+			public int getSize() {
+				return mainChannel.getUsers().size();
+			}
+
+			@Override
+			public ChannelUser getElementAt(int index) {
+				return mainChannel.getSortedUsers()[index];
+			}
+		};
+		list = new JList<ChannelUser>(model);
+		list.setFixedCellHeight(15);
+		JScrollPane pane = new JScrollPane(list,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		add(pane);
+		setVisible(true);
+		new Thread(this).start();
+	}
+
+	public void run() {
+		while (isVisible()) {
+			//okay we should REALLY be using API listeners for this but w.e
+			setTitle("User Lister " + mainChannel.getName() + " " + mainChannel.getModeList().parse());
+			repaint(100);
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 }

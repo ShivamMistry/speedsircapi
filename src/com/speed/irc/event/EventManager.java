@@ -27,75 +27,67 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class EventManager implements Runnable {
 
-    private List<IRCEventListener> listeners = new CopyOnWriteArrayList<IRCEventListener>();
-    private BlockingQueue<IRCEvent> eventQueue = new LinkedBlockingQueue<IRCEvent>();
+	private List<IRCEventListener> listeners = new CopyOnWriteArrayList<IRCEventListener>();
+	private BlockingQueue<IRCEvent> eventQueue = new LinkedBlockingQueue<IRCEvent>();
 
-    /**
-     * @param e
-     * @deprecated see {@link #dispatchEvent(IRCEvent)} instead
-     */
-    public synchronized void fireEvent(IRCEvent e) {
-        dispatchEvent(e);
-    }
+	/**
+	 * Adds an event to the event queue.
+	 *
+	 * @param event the event to be processed by the event queue.
+	 */
+	public synchronized void dispatchEvent(final IRCEvent event) {
+		eventQueue.offer(event);
+	}
 
-    /**
-     * Adds an event to the event queue.
-     *
-     * @param event the event to be processed by the event queue.
-     */
-    public synchronized void dispatchEvent(final IRCEvent event) {
-        eventQueue.offer(event);
-    }
+	/**
+	 * Adds an event listener to this event manager.
+	 *
+	 * @param listener the listener to be added to this event manager
+	 */
+	public synchronized void addListener(final IRCEventListener listener) {
+		listeners.add(listener);
+	}
 
-    /**
-     * Adds an event listener to this event manager.
-     *
-     * @param listener the listener to be added to this event manager
-     */
-    public synchronized void addListener(final IRCEventListener listener) {
-        listeners.add(listener);
-    }
+	/**
+	 * Removes an event listener from this event manager.
+	 *
+	 * @param listener the listener to be removed
+	 * @return <tt>true</tt> if the listener was successfully removed,
+	 *         <tt>false<//t> if it wasn't
+	 */
+	public synchronized boolean removeListener(final IRCEventListener listener) {
+		return listeners.remove(listener);
+	}
 
-    /**
-     * Removes an event listener from this event manager.
-     *
-     * @param listener the listener to be removed
-     * @return <tt>true</tt> if the listener was successfully removed,
-     *         <tt>false<//t> if it wasn't
-     */
-    public synchronized boolean removeListener(final IRCEventListener listener) {
-        return listeners.remove(listener);
-    }
+	public void run() {
+		IRCEvent e = eventQueue.poll();
+		if (e != null) {
+			for (IRCEventListener listener : listeners) {
+				for (Class<?> clz : listener.getClass().getInterfaces()) {
+					if (clz.getAnnotation(ListenerProperties.class) != null) {
+						try {
+							ListenerProperties properties = clz.getAnnotation(ListenerProperties.class);
+							for (Class<? extends IRCEvent> clazz : properties.events()) {
+								if (e.getClass().isAssignableFrom(clazz)) {
+									e.callListener(listener);
+								}
+							}
+						} catch (Exception e1) {
+							this.dispatchEvent(new com.speed.irc.event.api.ExceptionEvent(e1, this, null));
+							e1.printStackTrace();
+						}
+					}
+				}
+			}
+		}
+	}
 
-    public void run() {
-        IRCEvent e = eventQueue.poll();
-        if (e != null) {
-            for (IRCEventListener listener : listeners) {
-                for (Class<?> clz : listener.getClass().getInterfaces()) {
-                    if (clz.getAnnotation(ListenerProperties.class) != null) {
-                        try {
-                            ListenerProperties properties = clz.getAnnotation(ListenerProperties.class);
-                            for (Class<? extends IRCEvent> clazz : properties.events()) {
-                                if (e.getClass().isAssignableFrom(clazz)) {
-                                    e.callListener(listener);
-                                }
-                            }
-                        } catch (Exception e1) {
-                            this.dispatchEvent(new com.speed.irc.event.api.ExceptionEvent(e1, this, null));
-                            e1.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
-    }
+	/**
+	 * Clears the queue of events to be processed.
+	 */
+	public void clearQueue() {
+		eventQueue.clear();
 
-    /**
-     * Clears the queue of events to be processed.
-     */
-    public void clearQueue() {
-        eventQueue.clear();
-
-    }
+	}
 
 }

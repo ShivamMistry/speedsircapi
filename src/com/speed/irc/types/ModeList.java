@@ -26,61 +26,69 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * @author Shivam Mistry
  */
 public class ModeList {
-    private Set<Character> modes = new CopyOnWriteArraySet<Character>();
-    private final Server server;
+	private Set<Character> modes = new CopyOnWriteArraySet<Character>();
+	private final Server server;
 
-    public ModeList(final Server server, final String modes) {
-        this.server = server;
-        if (!modes.isEmpty())
-            parse(modes);
-    }
+	public ModeList(final Server server, final String modes) {
+		this.server = server;
+		if (!modes.isEmpty())
+			parse(modes);
+	}
 
 
-    protected void clear() {
-        modes.clear();
-    }
+	protected void clear() {
+		modes.clear();
+	}
 
-    public char channelModeLetterToSymbol(char letter) {
-        for (int i = 0; i < server.getModeLetters().length; i++) {
-            if (server.getModeLetters()[i] == letter) {
-                return server.getModeSymbols()[i];
-            }
-        }
-        return '0';
-    }
+	public char channelModeLetterToSymbol(char letter) {
+		for (int i = 0; i < server.getModeLetters().length; i++) {
+			if (server.getModeLetters()[i] == letter) {
+				return server.getModeSymbols()[i];
+			}
+		}
+		return '0';
+	}
 
-    public char channelModeSymbolToLetter(char symbol) {
-        for (int i = 0; i < server.getModeSymbols().length; i++) {
-            if (server.getModeSymbols()[i] == symbol) {
-                return server.getModeLetters()[i];
-            }
-        }
-        return '0';
-    }
+	public char channelModeSymbolToLetter(char symbol) {
+		for (int i = 0; i < server.getModeSymbols().length; i++) {
+			if (server.getModeSymbols()[i] == symbol) {
+				return server.getModeLetters()[i];
+			}
+		}
+		return '0';
+	}
 
-    public String parse() {
-        return '+' + String.valueOf(modes.toArray(new Character[modes.size()]));
-    }
+	public String parse() {
+		if (modes.size() > 0) {
+			StringBuilder builder = new StringBuilder(modes.size());
+			for (char c : modes) {
+				builder.append(c);
+			}
+			return '+' + builder.toString();
+		} else {
+			return "";
+		}
+	}
 
-    public void parse(String modes) {
-        boolean plus = false;
-        for (int i = 0; i < modes.toCharArray().length; i++) {
-            char c = modes.toCharArray()[i];
-            if (c == '+') {
-                plus = true;
-                continue;
-            } else if (c == '-') {
-                plus = false;
-                continue;
-            }
-            if (plus) {
+	public void parse(String modes) {
+		boolean plus = false;
+		for (int i = 0; i < modes.toCharArray().length; i++) {
+			char c = modes.toCharArray()[i];
+			if (c == '+') {
+				plus = true;
+				continue;
+			} else if (c == '-') {
+				plus = false;
+				continue;
+			}
+			if (plus) {
 
-                this.modes.add(c);
-            } else {
-                if (this.modes.contains(c))
-                    this.modes.remove(c);
+				this.modes.add(c);
+			} else {
+				if (this.modes.contains(c))
+					this.modes.remove(c);
 
-            }
-        }
-    }
+			}
+		}
+	}
 }
