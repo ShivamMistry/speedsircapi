@@ -81,8 +81,7 @@ public abstract class Bot implements ApiListener {
         this.port = port;
         try {
             this.server = new Server(server, port, ssl);
-            this.server.sendRaw("NICK " + getNick() + "\n");
-            this.server.sendRaw("USER " + getUser() + " 0 * :" + getRealName());
+            this.server.register(getNick(), getUser(), getRealName());
             this.server.getEventManager().addListener(this);
             onStart();
             for (Channel s : getChannels()) {
@@ -126,7 +125,7 @@ public abstract class Bot implements ApiListener {
     /**
      * Gets the real name of the bot
      *
-     * @return the real nameof bot
+     * @return the real name of bot
      */
     public String getRealName() {
         return "SpeedsIrcApi";
@@ -142,9 +141,7 @@ public abstract class Bot implements ApiListener {
     }
 
     private void connect() {
-        this.server.sendRaw("NICK " + getNick() + "\n");
-        this.server.sendRaw("USER " + getUser() + " " + modes + " * :"
-                + getRealName() + "\n");
+        server.register(getNick(), getUser(), getRealName());
         for (Channel s : getChannels()) {
             s.join();
         }

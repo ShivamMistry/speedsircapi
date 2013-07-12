@@ -29,65 +29,67 @@ import javax.swing.*;
  */
 public class GraphicalUserList extends JFrame implements Runnable {
 
-    private static final long serialVersionUID = -5395939612572800357L;
-    private Channel mainChannel;
-    private JList<ChannelUser> list;
+	private Channel mainChannel;
+	private JList<ChannelUser> list;
+	private ListModel<ChannelUser> model;
 
-    public static void main(String[] args) {
-        new GraphicalUserList();
-    }
+	public static void main(String[] args) {
+		new GraphicalUserList();
+	}
 
-    public GraphicalUserList() {
-        new Bot("irc.rizon.net", 6697, true) {
+	public GraphicalUserList() {
+		Bot bot = new Bot("irc.rizon.net", 6697, true) {
 
-            public void onStart() {
-                mainChannel = new Channel("#rscode", getServer());
-                getServer().setReadDebug(true);
-            }
+			public void onStart() {
+				mainChannel = new Channel("#freecode", getServer());
+				getServer().setReadDebug(true);
+			}
 
-            public Channel[] getChannels() {
-                return new Channel[]{mainChannel};
-            }
+			public Channel[] getChannels() {
+				return new Channel[]{mainChannel};
+			}
 
-            public String getNick() {
-                return "UserLister";
-            }
+			public String getNick() {
+				return "UserLister";
+			}
 
-        };
-        setSize(200, 300);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setTitle("User List");
-        @SuppressWarnings("serial")
-        AbstractListModel<ChannelUser> model = new AbstractListModel<ChannelUser>() {
+		};
+		setSize(200, 300);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setTitle("User List");
+		model = new AbstractListModel<ChannelUser>() {
 
-            public ChannelUser getElementAt(int i) {
-                return mainChannel.getSortedUsers()[i];
-            }
+			@Override
+			public int getSize() {
+				return mainChannel.getUsers().size();
+			}
 
-            public int getSize() {
-                return mainChannel.getUsers().size();
-            }
+			@Override
+			public ChannelUser getElementAt(int index) {
+				return mainChannel.getSortedUsers()[index];
+			}
+		};
+		list = new JList<ChannelUser>(model);
+		list.setFixedCellHeight(15);
+		JScrollPane pane = new JScrollPane(list,
+				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		add(pane);
+		setVisible(true);
+		new Thread(this).start();
+	}
 
-        };
-        list = new JList<ChannelUser>(model);
-        list.setFixedCellHeight(15);
-        JScrollPane pane = new JScrollPane(list,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        add(pane);
-        setVisible(true);
-        new Thread(this).start();
-    }
-
-    public void run() {
-        while (isVisible()) {
-            repaint();
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
+	public void run() {
+		while (isVisible()) {
+			//okay we should REALLY be using API listeners for this but w.e
+			setTitle("User Lister " + mainChannel.getName() + " " + mainChannel.getModeList().parse());
+			repaint(100);
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
 }
