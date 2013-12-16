@@ -19,13 +19,13 @@ import com.speed.irc.types.RawMessage;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Shivam Mistry
  */
 public interface EventGenerator {
 
-	public boolean accept(final RawMessage raw);
+    public boolean accept(final RawMessage raw);
 
-	public IRCEvent generate(final RawMessage raw);
+    public IRCEvent generate(final RawMessage raw);
 
 }

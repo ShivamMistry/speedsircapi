@@ -158,7 +158,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
         } else if (message.getCommand().equals(Numerics.SERVER_SUPPORT)) {
             parser.parse(message);
             if (parser.getSettings().containsKey("PREFIX")) {
-                String t = parser.getSettings().get("PREFIX");
+                String t = parser.getSettings().getProperty("PREFIX");
                 String letters = t.split("\\(", 2)[1].split("\\)")[0];
                 String symbols = t.split("\\)", 2)[1];
                 if (letters.length() == symbols.length()) {

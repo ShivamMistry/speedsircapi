@@ -17,44 +17,42 @@ package com.speed.irc.types;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Shivam Mistry
  */
 public class ParsingException extends Exception {
 
-	private static final long serialVersionUID = 2238835287734082797L;
-	private final String msg;
-	private final Exception e;
+    private static final long serialVersionUID = 2238835287734082797L;
+    private final String msg;
+    private final Exception e;
 
-	/**
-	 * Initialises a ParsingException.
-	 * 
-	 * @param msg
-	 *            the message
-	 * @param e
-	 *            the exception
-	 */
-	public ParsingException(final String msg, final Exception e) {
-		this.msg = msg;
-		this.e = e;
+    /**
+     * Initialises a ParsingException.
+     *
+     * @param msg the message
+     * @param e   the exception
+     */
+    public ParsingException(final String msg, final Exception e) {
+        this.msg = msg;
+        this.e = e;
 
-	}
+    }
 
-	public void printStackTrace() {
-		e.printStackTrace();
-	}
+    public void printStackTrace() {
+        e.printStackTrace();
+    }
 
-	public String getMessage() {
-		return msg;
-	}
+    public String getMessage() {
+        return msg;
+    }
 
-	/**
-	 * Gets the exception
-	 * 
-	 * @return the exception.
-	 */
-	public Exception getException() {
-		return e;
-	}
+    /**
+     * Gets the exception
+     *
+     * @return the exception.
+     */
+    public Exception getException() {
+        return e;
+    }
 
 }

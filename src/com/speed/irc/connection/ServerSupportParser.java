@@ -1,9 +1,9 @@
 package com.speed.irc.connection;
 
-import java.util.HashMap;
-
 import com.speed.irc.types.RawMessage;
 import com.speed.irc.util.Numerics;
+
+import java.util.Properties;
 
 /**
  * Parses the server support message (numeric 005)
@@ -22,57 +22,75 @@ import com.speed.irc.util.Numerics;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Shivam Mistry
  */
 public class ServerSupportParser {
 
-	private RawMessage[] messages;
-	private int index;
-	private HashMap<String, String> settings = new HashMap<String, String>();
+    private RawMessage[] messages;
+    private int index;
+    private Properties settings = new Properties();
 
-	public ServerSupportParser() {
-		this.messages = new RawMessage[0];
-		index = 0;
-	}
+    private static final String CHANTYPES = "CHANTYPES";
 
-	private void addMessage(RawMessage message) {
-		if (!message.getCommand().equals(Numerics.SERVER_SUPPORT))
-			throw new IllegalArgumentException("Wrong numeric: "
-					+ message.getCommand());
-		RawMessage[] msgs = new RawMessage[index + 1];
-		msgs[index] = message;
-		for (int i = 0; i < index; i++) {
-			msgs[i] = messages[i];
-		}
-		index++;
-		messages = msgs;
-	}
+    public ServerSupportParser() {
+        this.messages = new RawMessage[0];
+        index = 0;
+    }
 
-	public void parse(RawMessage msg) {
-		addMessage(msg);
-		String message = msg.getRaw();
-		if (msg.getRaw().contains(" :are supported by this server")) {
-			message = msg.getRaw()
-					.replace(" :are supported by this server", "").trim();
+    private void addMessage(RawMessage message) {
+        if (!message.getCommand().equals(Numerics.SERVER_SUPPORT))
+            throw new IllegalArgumentException("Wrong numeric: "
+                    + message.getCommand());
+        RawMessage[] msgs = new RawMessage[index + 1];
+        msgs[index] = message;
+        for (int i = 0; i < index; i++) {
+            msgs[i] = messages[i];
+        }
+        index++;
+        messages = msgs;
+    }
 
-		}
-		String[] parts = message.split(" ");
-		for (String s : parts) {
-			String key = null;
-			String value = null;
-			if (s.contains("=")) {
-				key = s.split("=", 2)[0];
-				value = s.split("=", 2)[1];
-			} else {
-				key = s;
-				value = s;
-			}
-			settings.put(key, value);
-		}
-	}
+    public void parse(RawMessage msg) {
+        addMessage(msg);
+        String message = msg.getRaw();
+        if (msg.getRaw().contains(" :are supported by this server")) {
+            message = msg.getRaw()
+                    .replace(" :are supported by this server", "").trim();
 
-	public HashMap<String, String> getSettings() {
-		return settings;
-	}
+        }
+        String[] parts = message.split(" ");
+        for (String s : parts) {
+            String key = null;
+            String value = null;
+            if (s.contains("=")) {
+                String[] t = s.split("=", 2);
+                key = t[0];
+                value = t[1];
+            } else {
+                key = s;
+                value = s;
+            }
+            settings.put(key, value);
+        }
+    }
+
+    public Properties getSettings() {
+        return settings;
+    }
+
+    public char[] getChanTypes() {
+        if (!getSettings().containsKey(CHANTYPES)) {
+            return new char[]{'@'};
+        } else {
+            return settings.getProperty(CHANTYPES).toCharArray();
+        }
+    }
+
+    public char[][] getChanModes() {
+        String s = getSettings().getProperty("CHANMODES");
+        String[] modes = s.split(",", 4);
+        return new char[][]{modes[0].toCharArray(), modes[1].toCharArray(),
+                modes[2].toCharArray(), modes[3].toCharArray()};
+    }
 }

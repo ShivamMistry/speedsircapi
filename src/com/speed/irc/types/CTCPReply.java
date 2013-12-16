@@ -23,31 +23,31 @@ package com.speed.irc.types;
  * @author Shivam Mistry
  */
 public abstract class CTCPReply {
-	/**
-	 * Gets the reply message
-	 *
-	 * @return the reply message
-	 */
-	public abstract String getReply();
+    /**
+     * Gets the reply message
+     *
+     * @return the reply message
+     */
+    public abstract String getReply();
 
-	/**
-	 * Gets the request message
-	 *
-	 * @return the request message
-	 */
-	public abstract String getRequest();
+    /**
+     * Gets the request message
+     *
+     * @return the request message
+     */
+    public abstract String getRequest();
 
-	@Override
-	public boolean equals(Object o) {
-		if (o instanceof CTCPReply) {
-			return getReply().equals(((CTCPReply) o).getReply())
-					&& getRequest().equals(((CTCPReply) o).getRequest());
-		}
-		return false;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof CTCPReply) {
+            return getReply().equals(((CTCPReply) o).getReply())
+                    && getRequest().equals(((CTCPReply) o).getRequest());
+        }
+        return false;
+    }
 
-	@Override
-	public int hashCode() {
-		return (getReply().hashCode() | getRequest().hashCode()) & 0xffffff;
-	}
+    @Override
+    public int hashCode() {
+        return (getReply().hashCode() | getRequest().hashCode()) & 0xffffff;
+    }
 }

@@ -1,10 +1,10 @@
 package com.speed.irc.types;
 
 import com.speed.irc.connection.Server;
-import com.speed.irc.event.ExceptionEvent;
 import com.speed.irc.event.IRCEventListener;
 import com.speed.irc.event.api.ApiEvent;
 import com.speed.irc.event.api.ApiListener;
+import com.speed.irc.event.api.ExceptionEvent;
 
 import java.io.IOException;
 import java.net.Socket;

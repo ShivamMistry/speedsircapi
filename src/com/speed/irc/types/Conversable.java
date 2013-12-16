@@ -19,60 +19,58 @@ import com.speed.irc.connection.Server;
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
  * along with Speed's IRC API. If not, see <http://www.gnu.org/licenses/>.
- * 
+ *
  * @author Shivam Mistry
  */
 public abstract class Conversable {
-	/**
-	 * Sends a PRIVMSG message to the entity.
-	 * 
-	 * @param message
-	 *            the message that is to be sent.
-	 */
-	public void sendMessage(final String message) {
-		getServer().sendMessage(new Privmsg(message, null, this));
-	}
+    /**
+     * Sends a PRIVMSG message to the entity.
+     *
+     * @param message the message that is to be sent.
+     */
+    public void sendMessage(final String message) {
+        getServer().sendMessage(new Privmsg(message, null, this));
+    }
 
-	/**
-	 * Sends a NOTICE message to the entity.
-	 * 
-	 * @param notice
-	 *            the notice that is to be sent.
-	 */
-	public void sendNotice(final String notice) {
-		getServer()
-				.sendNotice(new Notice(notice, null, getName(), getServer()));
-	}
+    /**
+     * Sends a NOTICE message to the entity.
+     *
+     * @param notice the notice that is to be sent.
+     */
+    public void sendNotice(final String notice) {
+        getServer()
+                .sendNotice(new Notice(notice, null, getName(), getServer()));
+    }
 
-	/**
-	 * Gets the name of the entity.
-	 * 
-	 * @return the name of the channel or user.
-	 */
-	public abstract String getName();
+    /**
+     * Gets the name of the entity.
+     *
+     * @return the name of the channel or user.
+     */
+    public abstract String getName();
 
-	/**
-	 * Gets the server this entity is on.
-	 * 
-	 * @return the server.
-	 */
-	public abstract Server getServer();
+    /**
+     * Gets the server this entity is on.
+     *
+     * @return the server.
+     */
+    public abstract Server getServer();
 
-	public boolean isChannel() {
-		return this instanceof Channel;
-	}
+    public boolean isChannel() {
+        return this instanceof Channel;
+    }
 
-	public boolean isUser() {
-		return this instanceof ServerUser;
-	}
+    public boolean isUser() {
+        return this instanceof ServerUser;
+    }
 
-	public Channel getChannel() {
-		return isChannel() ? (Channel) this : null;
-	}
+    public Channel getChannel() {
+        return isChannel() ? (Channel) this : null;
+    }
 
-	public ServerUser getServerUser() {
-		return isUser() ? (ServerUser) this : null;
-	}
+    public ServerUser getServerUser() {
+        return isUser() ? (ServerUser) this : null;
+    }
 
 
 }
