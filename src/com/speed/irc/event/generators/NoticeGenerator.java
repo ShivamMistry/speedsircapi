@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  */
 public class NoticeGenerator implements EventGenerator {
     private static final Pattern PATTERN_NOTICE = Pattern
-            .compile("(.+?)!(.+?)@(.+?) NOTICE (#?.+?) :(.*)");
+            .compile("(.+?)!(.+?)@(.+?) NOTICE (.+?) :(.*)");
     private final Server server;
 
     public NoticeGenerator(Server server) {

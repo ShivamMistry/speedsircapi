@@ -1,5 +1,7 @@
 package com.speed.irc.types;
 
+import java.util.Arrays;
+
 /**
  * A wrapper class for PRIVMSGs.
  * <p/>
@@ -80,7 +82,7 @@ public class Privmsg {
      * <tt>false</tt> otherwise
      */
     public boolean isChannelMessage() {
-        return conversable.getName().contains("#");
+        return Arrays.binarySearch(getConversable().getServer().getChannelPrefix(), getConversable().getName().charAt(0)) >= 0;
     }
 
     /**

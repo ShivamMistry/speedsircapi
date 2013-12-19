@@ -51,6 +51,7 @@ public class Server implements Runnable {
     private static SSLContext context;
     private List<ServerUser> users;
     private char[] modeSymbols;
+    private char[] channelPrefix;
     private char[] modeLetters;
     private String serverName;
     private String nick, realName, user;
@@ -648,5 +649,9 @@ public class Server implements Runnable {
 
     public void addWhoisWaiting(final ServerUser c) {
         whoisWaiting.put(c, new LinkedList<RawMessage>());
+    }
+
+    public char[] getChannelPrefix() {
+        return parser.getServerSupport().getChanTypes();
     }
 }

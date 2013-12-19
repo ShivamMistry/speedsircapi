@@ -43,7 +43,7 @@ public class ModeGenerator implements EventGenerator {
         String sender = message.getSender();
         String name = message.getTarget();
         Channel channel = null;
-        if (name.startsWith("#")) {
+        if (Arrays.binarySearch(server.getChannelPrefix(), name.charAt(0)) >= 0) {
             channel = server.getChannel(name);
             if (!channel.isRunning()) {
                 channel.setup();

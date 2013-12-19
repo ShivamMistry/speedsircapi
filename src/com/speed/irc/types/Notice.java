@@ -2,6 +2,8 @@ package com.speed.irc.types;
 
 import com.speed.irc.connection.Server;
 
+import java.util.Arrays;
+
 /**
  * A wrapper class for NOTICE messages.
  * <p/>
@@ -74,7 +76,7 @@ public class Notice {
      * @return the target of the notice.
      */
     public Conversable getTarget() {
-        return target.startsWith("#") ? server.getChannel(target) : server
+        return Arrays.binarySearch(server.getChannelPrefix(), target.charAt(0)) >= 0 ? server.getChannel(target) : server
                 .getUser(target.toLowerCase());
     }
 

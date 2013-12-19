@@ -39,7 +39,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
     protected ServerMessageReader reader;
     protected ScheduledExecutorService execServ;
     protected Future<?> future;
-    private ServerSupportParser parser;
+    private ServerSupportParser serverSupport;
 
     public static final CTCPReply CTCP_REPLY_VERSION = new CTCPReply() {
 
@@ -93,7 +93,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
         new Thread(reader, "Server message reader").start();
         future = execServ.scheduleWithFixedDelay(this, 0, 20,
                 TimeUnit.MILLISECONDS);
-        parser = new ServerSupportParser();
+        serverSupport = new ServerSupportParser();
     }
 
     private synchronized void parse(final String s) throws Exception {
@@ -120,7 +120,7 @@ public class ServerMessageParser implements Runnable, EventGenerator {
     }
 
     /**
-     * Removes a generator from this parser
+     * Removes a generator from this serverSupport
      *
      * @param generator the generator to remove
      * @return true if it was removed, false if it failed to be removed
@@ -156,9 +156,9 @@ public class ServerMessageParser implements Runnable, EventGenerator {
         if (raw.startsWith("PING")) {
             server.sendRaw(raw.replaceFirst("PING", "PONG") + "\n");
         } else if (message.getCommand().equals(Numerics.SERVER_SUPPORT)) {
-            parser.parse(message);
-            if (parser.getSettings().containsKey("PREFIX")) {
-                String t = parser.getSettings().getProperty("PREFIX");
+            serverSupport.parse(message);
+            if (serverSupport.getSettings().containsKey("PREFIX")) {
+                String t = serverSupport.getSettings().getProperty("PREFIX");
                 String letters = t.split("\\(", 2)[1].split("\\)")[0];
                 String symbols = t.split("\\)", 2)[1];
                 if (letters.length() == symbols.length()) {
@@ -316,5 +316,9 @@ public class ServerMessageParser implements Runnable, EventGenerator {
             c.setTopicSetter(setter);
             c.setTopicSetTime(Long.parseLong(timestamp) * 1000L);
         }
+    }
+
+    public ServerSupportParser getServerSupport() {
+        return serverSupport;
     }
 }

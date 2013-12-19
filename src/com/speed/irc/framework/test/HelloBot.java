@@ -65,7 +65,7 @@ public class HelloBot extends Bot implements ChannelUserListener,
     }
 
     public String getNick() {
-        return "London";
+        return "HelloBot";
     }
 
     public void onStart() {

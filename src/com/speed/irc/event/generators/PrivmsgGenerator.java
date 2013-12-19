@@ -6,6 +6,7 @@ import com.speed.irc.event.IRCEvent;
 import com.speed.irc.event.message.PrivateMessageEvent;
 import com.speed.irc.types.*;
 
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,7 +32,7 @@ import java.util.regex.Pattern;
  */
 public class PrivmsgGenerator implements EventGenerator {
     private static final Pattern PATTERN_PRIVMSG = Pattern
-            .compile("(.+?)!(.+?)@(.+?) PRIVMSG (#?.+?) :(.*)");
+            .compile("(.+?)!(.+?)@(.+?) PRIVMSG (.+?) :(.*)");
 
     public boolean accept(RawMessage raw) {
         return PATTERN_PRIVMSG.matcher(raw.getRaw()).matches();
@@ -56,7 +57,7 @@ public class PrivmsgGenerator implements EventGenerator {
                 }
             }
             Conversable conversable = null;
-            if (raw.getRaw().contains("PRIVMSG #")) {
+            if (Arrays.binarySearch(server.getChannelPrefix(), name.charAt(0)) >= 0) {
                 conversable = server.getChannel(name);
                 Channel c = (Channel) conversable;
                 if (!c.isRunning()) {
