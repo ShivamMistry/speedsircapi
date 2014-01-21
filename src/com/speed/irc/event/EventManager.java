@@ -6,7 +6,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Manages events.
+ * Manages events in a queue, and sends them to the appropriate listener.
+ * Also manages a list of listeners.
+ * 
  * <p/>
  * This file is part of Speed's IRC API.
  * <p/>
@@ -35,7 +37,7 @@ public class EventManager implements Runnable {
      *
      * @param event the event to be processed by the event queue.
      */
-    public synchronized void dispatchEvent(final IRCEvent event) {
+    public void dispatchEvent(final IRCEvent event) {
         eventQueue.offer(event);
     }
 
@@ -44,7 +46,7 @@ public class EventManager implements Runnable {
      *
      * @param listener the listener to be added to this event manager
      */
-    public synchronized void addListener(final IRCEventListener listener) {
+    public void addListener(final IRCEventListener listener) {
         listeners.add(listener);
     }
 
@@ -55,7 +57,7 @@ public class EventManager implements Runnable {
      * @return <tt>true</tt> if the listener was successfully removed,
      * <tt>false<//t> if it wasn't
      */
-    public synchronized boolean removeListener(final IRCEventListener listener) {
+    public boolean removeListener(final IRCEventListener listener) {
         return listeners.remove(listener);
     }
 
