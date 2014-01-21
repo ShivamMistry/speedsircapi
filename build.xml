@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="speedsircapi" default="all">
+  
+  
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <property name="skip.tests" value="true"/>
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="128m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/SCCS/**"/>
+    <exclude name="**/RCS/**"/>
+    <exclude name="**/rcs/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/.pyc/**"/>
+    <exclude name="**/.pyo/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/*.lib/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/.bundle/**"/>
+    <exclude name="**/*.rbc/**"/>
+    <exclude name="**/vssver.scc/**"/>
+    <exclude name="**/vssver2.scc/**"/>
+    <exclude name="**/*.o/**"/>
+    <exclude name="**/*.obj/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.war"/>
+    <include name="*.ear"/>
+    <include name="*.apk"/>
+    <include name="*.zip"/>
+    <include name="*.swc"/>
+    <include name="*.ane"/>
+    <include name="*.egg"/>
+    <include name="*.jar"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+  </patternset>
+  
+  
+  <!-- Global Libraries -->
+  
+  <!-- Modules -->
+  
+  
+  <!-- Module speedsircapi -->
+  
+  <dirname property="module.speedsircapi.basedir" file="${ant.file}"/>
+  
+  
+  
+  <property name="compiler.args.speedsircapi" value="${compiler.args}"/>
+  
+  <property name="speedsircapi.output.dir" value="${module.speedsircapi.basedir}/out/production/speedsircapi"/>
+  <property name="speedsircapi.testoutput.dir" value="${module.speedsircapi.basedir}/out/test/speedsircapi"/>
+  
+  <path id="speedsircapi.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="speedsircapi.module.production.classpath"/>
+  
+  <path id="speedsircapi.runtime.production.module.classpath">
+    <pathelement location="${speedsircapi.output.dir}"/>
+  </path>
+  
+  <path id="speedsircapi.module.classpath">
+    <pathelement location="${speedsircapi.output.dir}"/>
+  </path>
+  
+  <path id="speedsircapi.runtime.module.classpath">
+    <pathelement location="${speedsircapi.testoutput.dir}"/>
+    <pathelement location="${speedsircapi.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.speedsircapi">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.speedsircapi">
+    <patternset refid="excluded.from.module.speedsircapi"/>
+  </patternset>
+  
+  <path id="speedsircapi.module.sourcepath">
+    <dirset dir="${module.speedsircapi.basedir}">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.speedsircapi" depends="compile.module.speedsircapi.production,compile.module.speedsircapi.tests" description="Compile module speedsircapi"/>
+  
+  <target name="compile.module.speedsircapi.production" description="Compile module speedsircapi; production classes">
+    <mkdir dir="${speedsircapi.output.dir}"/>
+    <javac destdir="${speedsircapi.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true">
+      <compilerarg line="${compiler.args.speedsircapi}"/>
+      <bootclasspath refid="speedsircapi.module.bootclasspath"/>
+      <classpath refid="speedsircapi.module.production.classpath"/>
+      <src refid="speedsircapi.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.speedsircapi"/>
+    </javac>
+    
+    <copy todir="${speedsircapi.output.dir}">
+      <fileset dir="${module.speedsircapi.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.speedsircapi.tests" depends="compile.module.speedsircapi.production" description="compile module speedsircapi; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.speedsircapi" description="cleanup module">
+    <delete dir="${speedsircapi.output.dir}"/>
+    <delete dir="${speedsircapi.testoutput.dir}"/>
+  </target>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.speedsircapi" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.speedsircapi" description="build all modules"/>
+  
+  <target name="all" depends="build.modules" description="build all"/>
+</project>
