@@ -23,14 +23,19 @@ import com.speed.irc.types.Notice;
  * @author Shivam Mistry
  */
 public class NoticeEvent implements IRCEvent {
-    protected Notice notice;
-    protected Object source;
+    protected final Notice notice;
+    protected final Object source;
 
     public NoticeEvent(final Notice notice, final Object source) {
         this.notice = notice;
         this.source = source;
     }
 
+    /**
+     * Gets the notice object represented by this event
+     *
+     * @return the notice object represented by this event
+     */
     public Notice getNotice() {
         return notice;
     }

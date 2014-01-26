@@ -26,5 +26,5 @@ import com.speed.irc.event.ListenerProperties;
  */
 @ListenerProperties(events = PrivateMessageEvent.class)
 public interface PrivateMessageListener extends IRCEventListener {
-    void messageReceived(PrivateMessageEvent e);
+    public void messageReceived(PrivateMessageEvent e);
 }

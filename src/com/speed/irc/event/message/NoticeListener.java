@@ -26,6 +26,6 @@ import com.speed.irc.event.ListenerProperties;
  */
 @ListenerProperties(events = NoticeEvent.class)
 public interface NoticeListener extends IRCEventListener {
-    void noticeReceived(NoticeEvent e);
+    public void noticeReceived(NoticeEvent e);
 
 }

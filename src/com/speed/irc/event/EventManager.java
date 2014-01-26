@@ -8,7 +8,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Manages events in a queue, and sends them to the appropriate listener.
  * Also manages a list of listeners.
- * 
+ * <p/>
  * <p/>
  * This file is part of Speed's IRC API.
  * <p/>
@@ -44,7 +44,7 @@ public class EventManager implements Runnable {
     /**
      * Adds an event listener to this event manager.
      *
-     * @param listener the listener to be added to this event manager
+     * @param listener the listener to be added to this event manager.
      */
     public void addListener(final IRCEventListener listener) {
         listeners.add(listener);
@@ -55,7 +55,7 @@ public class EventManager implements Runnable {
      *
      * @param listener the listener to be removed
      * @return <tt>true</tt> if the listener was successfully removed,
-     * <tt>false<//t> if it wasn't
+     * <tt>false</tt> if it wasn't
      */
     public boolean removeListener(final IRCEventListener listener) {
         return listeners.remove(listener);

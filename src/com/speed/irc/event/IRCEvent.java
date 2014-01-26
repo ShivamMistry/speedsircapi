@@ -2,7 +2,7 @@ package com.speed.irc.event;
 
 /**
  * Allows identification as an event. All events must implement this class to be
- * fired by the event manager.
+ * dispatched by the event manager.
  * <p/>
  * This file is part of Speed's IRC API.
  * <p/>
@@ -22,7 +22,17 @@ package com.speed.irc.event;
  * @author Shivam Mistry
  */
 public interface IRCEvent {
+    /**
+     * Gets the object that dispatched this event
+     *
+     * @return the object that dispatched the event
+     */
     public Object getSource();
 
+    /**
+     * Invokes the correct method(s) from the listener for this event.
+     *
+     * @param listener a listener object that accepts this event
+     */
     public void callListener(IRCEventListener listener);
 }

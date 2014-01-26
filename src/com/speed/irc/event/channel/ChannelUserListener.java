@@ -26,15 +26,15 @@ import com.speed.irc.event.ListenerProperties;
  */
 @ListenerProperties(events = {ChannelUserEvent.class, ModeChangedEvent.class})
 public interface ChannelUserListener extends IRCEventListener {
-    void channelUserJoined(ChannelUserEvent e);
+    public void channelUserJoined(ChannelUserEvent e);
 
-    void channelUserParted(ChannelUserEvent e);
+    public void channelUserParted(ChannelUserEvent e);
 
-    void channelUserModeChanged(ModeChangedEvent e);
+    public void channelUserModeChanged(ModeChangedEvent e);
 
-    void channelUserKicked(ChannelUserEvent e);
+    public void channelUserKicked(ChannelUserEvent e);
 
-    void channelUserNickChanged(ChannelUserEvent e);
+    public void channelUserNickChanged(ChannelUserEvent e);
 
-    void channelUserQuit(ChannelUserEvent e);
+    public void channelUserQuit(ChannelUserEvent e);
 }

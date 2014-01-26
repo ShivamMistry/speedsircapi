@@ -32,6 +32,11 @@ public class RawMessageEvent implements IRCEvent {
         this.source = source;
     }
 
+    /**
+     * Gets the raw message associated with this event
+     *
+     * @return the raw message associated with this event.
+     */
     public RawMessage getMessage() {
         return message;
     }

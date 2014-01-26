@@ -34,6 +34,11 @@ public class WhoisEvent implements IRCEvent {
         this.source = source;
     }
 
+    /**
+     * Gets the WHOIS object that this event represents, not guaranteed to be non-null.
+     *
+     * @return the event represented by this object, may be null
+     */
     public Whois getWhois() {
         return whois;
     }

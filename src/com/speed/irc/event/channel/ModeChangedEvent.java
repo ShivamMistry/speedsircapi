@@ -25,33 +25,61 @@ import com.speed.irc.types.ModeList;
  * @author Shivam Mistry
  */
 public class ModeChangedEvent extends ChannelEvent {
-    private ChannelUser affectedUser;
-    private ModeList modes;
-    private String affectedMask;
+    private final ChannelUser affectedUser;
+    private final ModeList modes;
+    private final String affectedMask;
+    private final String rawModes;
 
     public ModeChangedEvent(Channel channel, String senderNick, Object source, String... args) {
         super(channel, ChannelEvent.MODE_CHANGED, senderNick, source, args);
         modes = new ModeList(channel.getServer(), args[0]);
         affectedMask = args.length == 1 ? channel.getName() : args[1];
+        affectedUser = null;
+        rawModes = args[0];
     }
 
     public ModeChangedEvent(Channel channel, ChannelUser affectedUser, String senderNick, Object source, String... args) {
         super(channel, ChannelEvent.MODE_CHANGED, senderNick, source, args);
         this.affectedUser = affectedUser;
         this.modes = new ModeList(channel.getServer(), args[0]);
+        affectedMask = null;
+        rawModes = args[0];
     }
 
+    /**
+     * Gets the modes added to the channel
+     *
+     * @return the modes added to the channel
+     */
     public ModeList getNewModes() {
         return modes;
     }
 
+    /**
+     * Gets the user affected by this mode change.
+     *
+     * @return the user affected by this change if appropriate, else null.
+     */
     public ChannelUser getAffectedUser() {
         return affectedUser;
     }
 
+    /**
+     * Gets the mask affected by this mode change.
+     *
+     * @return the mask affected by this change if appropriate, else null.
+     */
     public String getAffectedMask() {
         return affectedMask;
     }
 
+    /**
+     * Gets the raw mode affected by this mode change
+     *
+     * @return the mode affected by this change
+     */
+    public String getRowMode() {
+        return rawModes;
+    }
 
 }

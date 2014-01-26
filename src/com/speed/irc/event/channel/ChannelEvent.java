@@ -25,9 +25,15 @@ import com.speed.irc.types.ServerUser;
  *
  * @author Shivam Mistry
  */
-public class ChannelEvent implements IRCEvent {
+public abstract class ChannelEvent implements IRCEvent {
 
-    public static final int TOPIC_CHANGED = 10, MODE_CHANGED = 11;
+    /**
+     * Constants for the ChannelEvent#getCode() method,
+     * #TOPIC_CHANGED means the event was dispatched because the topic changed
+     * #MODE_CHANGED means the event was dispatched because a channel mode was changed
+     */
+    public static final int TOPIC_CHANGED = 10,
+            MODE_CHANGED = 11;
     private final int code;
     private final Channel channel;
     private String[] args;
@@ -54,14 +60,33 @@ public class ChannelEvent implements IRCEvent {
         this.args = args;
     }
 
+    /**
+     * Gets the code of this event
+     * See #TOPIC_CHANGED and #MODE_CHANGED
+     *
+     * @return the numeric code for this event
+     * @see #TOPIC_CHANGED and #MODE_CHANGED
+     */
     public int getCode() {
         return code;
     }
 
+    /**
+     * Gets the channel that this event was dispatched for
+     *
+     * @return The channel object that represents the channel this event was
+     * dispatched for.
+     */
     public Channel getChannel() {
         return channel;
     }
 
+    /**
+     * Gets the user that caused this event
+     *
+     * @return The {@link ServerUser} (usually {@link com.speed.irc.types.ChannelUser})
+     * that caused this event to be dispatched.
+     */
     public ServerUser getSender() {
         return sender;
     }
@@ -113,6 +138,24 @@ public class ChannelEvent implements IRCEvent {
         }
     }
 
+    /**
+     * Get the arguments of this event, usually used internally to parse meaningful
+     * data.
+     * <p/>
+     * For {@link ModeChangedEvent} this should be the contents of this array:
+     * <p/>
+     * [0]: the mode including whether its + or -.
+     * <p/>
+     * [1]: the mask that was affected by this mode, if there was one at all
+     * <p/>
+     * For {@link TopicChangedEvent} this should be the contents of this array:
+     * <p/>
+     * [0]: the old topic
+     * <p/>
+     * [1]: the new topic
+     *
+     * @return the arguments of the event
+     */
     public String[] getArgs() {
         return args;
     }

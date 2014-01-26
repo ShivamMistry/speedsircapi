@@ -26,8 +26,8 @@ import com.speed.irc.types.Privmsg;
  */
 public class PrivateMessageEvent implements IRCEvent {
 
-    protected Object source;
-    protected Privmsg message;
+    protected final Object source;
+    protected final Privmsg message;
 
     public PrivateMessageEvent(final Privmsg message, final Object source) {
         this.source = source;
@@ -38,6 +38,11 @@ public class PrivateMessageEvent implements IRCEvent {
         return source;
     }
 
+    /**
+     * Gets the message associated with this event.
+     *
+     * @return the message associated with this event.
+     */
     public Privmsg getMessage() {
         return message;
     }
