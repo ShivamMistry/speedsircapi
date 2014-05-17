@@ -20,82 +20,104 @@ import java.util.Arrays;
  * for more details.
  * <p/>
  * You should have received a copy of the GNU Lesser General Public License
- * along with Speed's IRC API. If not, see {@link http://www.gnu.org/licenses/}.
+ * along with Speed's IRC API. If not, see {@linkplain http://www.gnu.org/licenses/}.
  *
  * @author Shivam Mistry
  */
 public class Notice {
-    private final String message, sender, target;
-    private final Server server;
+	private final String message, sender, target;
+	private final Server server;
+	private Conversable conversableTarget;
 
-    /**
-     * @param message The actual message.
-     * @param sender  The nick of the person who the notice was sent to/from.
-     * @param target  The channel the notice was sent to/from.
-     * @param server  The server the notice should be sent on.
-     */
-    public Notice(final String message, final String sender,
-                  final String target, final Server server) {
-        this.message = message;
-        this.target = target;
-        this.sender = sender;
-        this.server = server;
-    }
+	/**
+	 * @param message The actual message.
+	 * @param sender  The nick of the person who the notice was sent to/from.
+	 * @param target  The channel the notice was sent to/from.
+	 * @param server  The server the notice should be sent on.
+	 */
+	public Notice(final String message, final String sender,
+				  final String target, final Server server) {
+		this.message = message;
+		this.target = target;
+		this.sender = sender;
+		this.server = server;
+	}
 
-    /**
-     * Gets the message parsed from the raw command.
-     *
-     * @return the message
-     */
-    public String getMessage() {
-        return message;
-    }
+	/**
+	 * Construct a notice
+	 *
+	 * @param message the message to send or receive
+	 * @param sender  the sender of the message, may be null if sending a message
+	 * @param target  the target of the message
+	 */
+	public Notice(final String message, final String sender, final Conversable target) {
+		this.message = message;
+		this.sender = sender;
+		this.conversableTarget = target;
+		this.target = target.getName();
+		this.server = target.getServer();
+	}
 
-    /**
-     * Get the sender of the notice.
-     *
-     * @return the nick of the notice sender
-     * @deprecated see {@link #getSenderNick()} instead
-     */
-    public String getSender() {
-        return sender;
-    }
+	/**
+	 * Gets the message parsed from the raw command.
+	 *
+	 * @return the message
+	 */
+	public String getMessage() {
+		return message;
+	}
 
-    /**
-     * Gets the nick of the sender
-     *
-     * @return the senders nick
-     */
-    public String getSenderNick() {
-        return sender;
-    }
+	/**
+	 * Get the sender of the notice.
+	 *
+	 * @return the nick of the notice sender
+	 * @deprecated see {@link #getSenderNick()} instead
+	 */
+	public String getSender() {
+		return sender;
+	}
 
-    /**
-     * Gets the target of the notice.
-     *
-     * @return the target of the notice.
-     */
-    public Conversable getTarget() {
-        return Arrays.binarySearch(server.getChannelPrefix(), target.charAt(0)) >= 0 ? server.getChannel(target) : server
-                .getUser(target.toLowerCase());
-    }
+	/**
+	 * Gets the nick of the sender
+	 *
+	 * @return the senders nick
+	 */
+	public String getSenderNick() {
+		return sender;
+	}
 
-    /**
-     * Gets the channel the notice was sent to or from
-     *
-     * @return the channel the notice was sent to or from
-     * @deprecated see {@link #getTarget()} instead
-     */
-    public String getChannel() {
-        return target;
-    }
+	/**
+	 * Gets the target of the notice.
+	 *
+	 * @return the target of the notice.
+	 */
+	public Conversable getTarget() {
+		if (conversableTarget != null) {
+			return conversableTarget;
+		} else {
+			conversableTarget = Arrays.binarySearch(server.getChannelPrefix(),
+					target.charAt(0)) >= 0 ? server.getChannel(target) : server
+					.getUser(target.toLowerCase());
+			return conversableTarget;
+		}
+	}
 
-    /**
-     * Gets the server this notice was sent on.
-     *
-     * @return the server this notice was sent on.
-     */
-    public Server getServer() {
-        return server;
-    }
+	/**
+	 * Gets the channel the notice was sent to or from
+	 *
+	 * @return the channel the notice was sent to or from
+	 * @deprecated see {@link #getTarget()} instead
+	 */
+	public String getChannel() {
+		return target;
+	}
+
+	/**
+	 * Gets the server this notice was sent on.
+	 *
+	 * @return the server this notice was sent on.
+	 */
+	public Server getServer() {
+		return server;
+	}
 }
