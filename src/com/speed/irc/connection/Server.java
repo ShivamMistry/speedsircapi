@@ -47,7 +47,7 @@ public class Server implements Runnable {
 	private volatile BufferedReader read;
 	protected volatile Socket socket;
 	protected EventManager eventManager = new EventManager();
-	protected Map<String, Channel> channels = new HashMap<String, Channel>();
+	private Map<String, Channel> channels = new HashMap<String, Channel>();
 	private static SSLContext context;
 	private List<ServerUser> users;
 	private char[] modeSymbols;
@@ -128,6 +128,10 @@ public class Server implements Runnable {
 
 	public String getUser() {
 		return user;
+	}
+
+	public void removeChannel(Channel channel) {
+		channels.remove(channel.getName().toLowerCase());
 	}
 
 	/**
@@ -451,7 +455,7 @@ public class Server implements Runnable {
 	 *
 	 * @return the channel map.
 	 */
-	protected Map<String, Channel> getChannelMap() {
+	private Map<String, Channel> getChannelMap() {
 		return channels;
 	}
 
@@ -665,7 +669,7 @@ public class Server implements Runnable {
 	 * @return a channel object.
 	 */
 	public Channel getChannel(final String channelName) {
-		return channels.containsKey(channelName.toLowerCase().trim()) ? channels.get(channelName) : new Channel(
+		return channels.containsKey(channelName.toLowerCase().trim()) ? channels.get(channelName.toLowerCase()) : new Channel(
 				channelName, this);
 	}
 
@@ -716,6 +720,7 @@ public class Server implements Runnable {
 
 	/**
 	 * Gets the allowed channel prefixes
+	 *
 	 * @return the channel prefix e.g. #
 	 */
 	public char[] getChannelPrefix() {

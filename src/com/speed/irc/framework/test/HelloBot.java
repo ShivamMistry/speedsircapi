@@ -87,7 +87,8 @@ public class HelloBot extends Bot implements ChannelUserListener,
     public void messageReceived(PrivateMessageEvent e) {
         final String message = e.getMessage().getMessage();
         final String sender = e.getMessage().getSender();
-        if (message.contains("!raw") && sender.equals(OWNER)) {
+		System.out.println(e.getMessage().getConversable());
+		if (message.contains("!raw") && sender.equals(OWNER)) {
             getServer().sendRaw(message.replaceFirst("!raw", "").trim());
         } else if (message.equals("!quit") && sender.equals(OWNER)) {
             getServer().quit("bai");
@@ -164,7 +165,8 @@ public class HelloBot extends Bot implements ChannelUserListener,
 
 
     public void channelUserKicked(ChannelUserEvent e) {
-    }
+		e.getChannel().sendMessage(e.getUser().getNick() + " was kicked!");
+	}
 
     public void channelUserNickChanged(ChannelUserEvent e) {
         final String newNick = e.getArgs()[1];

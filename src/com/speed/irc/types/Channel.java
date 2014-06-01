@@ -89,7 +89,8 @@ public class Channel extends Conversable implements ChannelUserListener,
         return users;
     }
 
-    /**
+
+	/**
      * Gets a user from the channel.
      *
      * @param nick The nick of the ChannelUser to get.
@@ -389,12 +390,12 @@ public class Channel extends Conversable implements ChannelUserListener,
                     e1.printStackTrace();
                 }
                 isRunning = false;
-                server.getChannels().remove(this);
-                join();
+				server.removeChannel(this);
+				join();
             } else if (user.getNick().equals(server.getNick())) {
                 isRunning = false;
-                server.getChannels().remove(this);
-            }
+				server.removeChannel(this);
+			}
         }
     }
 

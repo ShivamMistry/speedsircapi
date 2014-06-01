@@ -29,26 +29,29 @@ import com.speed.irc.types.RawMessage;
  */
 public class KickGenerator implements EventGenerator {
 
-    public boolean accept(RawMessage raw) {
-        return raw.getCommand().equals("KICK");
-    }
+	public boolean accept(RawMessage raw) {
+		return raw.getCommand().equals("KICK");
+	}
 
-    public IRCEvent generate(RawMessage raw) {
-        final Channel channel = raw.getServer().getChannel(
-                raw.getRaw().split(" ")[2]);
-        if (channel == null) {
-            return null;
-        }
-        final ChannelUser user = channel.getUser(raw.getRaw().split(" ")[3]);
-        if (user == null) {
-            return null;
-        }
-        String kickMsg = "";
-        String[] parts = raw.getRaw().split(" :", 2);
-        if (parts.length > 1) {
-            kickMsg = parts[1];
-        }
-        return new ChannelUserEvent(this, channel, user, raw.getSender().split(
-                "!")[0].trim(), ChannelUserEvent.USER_KICKED, kickMsg);
-    }
+	public IRCEvent generate(RawMessage raw) {
+		Channel channel = raw.getServer().getChannel(
+				raw.getRaw().split(" ")[2]);
+		if (channel == null) {
+			channel = new Channel(raw.getTarget(), raw.getServer());
+			channel.setup();
+		}
+		ChannelUser user = channel.getUser(raw.getRaw().split(" ")[3]);
+		if (user == null) {
+			user = new ChannelUser(raw.getRaw().split(" ")[3], null, null, null, channel);
+			channel.addChannelUser(user);
+		}
+		String kickMsg = "";
+		String[] parts = raw.getRaw().split(" :", 2);
+		if (parts.length > 1) {
+			kickMsg = parts[1];
+		}
+		System.out.println(user);
+		return new ChannelUserEvent(this, channel, user, raw.getSender().split(
+				"!")[0].trim(), ChannelUserEvent.USER_KICKED, kickMsg);
+	}
 }

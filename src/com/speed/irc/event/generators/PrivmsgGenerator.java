@@ -31,45 +31,50 @@ import java.util.regex.Pattern;
  * @author Shivam Mistry
  */
 public class PrivmsgGenerator implements EventGenerator {
-    private static final Pattern PATTERN_PRIVMSG = Pattern
-            .compile("(.+?)!(.+?)@(.+?) PRIVMSG (.+?) :(.*)");
+	private static final Pattern PATTERN_PRIVMSG = Pattern
+			.compile("(.+?)!(.+?)@(.+?) PRIVMSG (.+?) :(.*)");
 
-    public boolean accept(RawMessage raw) {
-        return PATTERN_PRIVMSG.matcher(raw.getRaw()).matches();
-    }
+	public boolean accept(RawMessage raw) {
+		return PATTERN_PRIVMSG.matcher(raw.getRaw()).matches();
+	}
 
-    public IRCEvent generate(RawMessage raw) {
-        final Matcher priv_matcher = PATTERN_PRIVMSG.matcher(raw.getRaw());
-        final Server server = raw.getServer();
-        if (priv_matcher.matches()) {
-            final String msg = priv_matcher.group(5);
-            final String sender = priv_matcher.group(1);
-            final String user = priv_matcher.group(2);
-            final String host = priv_matcher.group(3);
-            final String name = priv_matcher.group(4);
-            if (msg.startsWith("\u0001")) {// ctcp messages
-                String request = msg.replace("\u0001", "");
-                String reply = server.getCtcpReply(request);
-                if (reply != null) {
-                    server.sendRaw(String.format(
-                            "NOTICE %s :\u0001%s %s\u0001\n", sender, request,
-                            reply));
-                }
-            }
-            Conversable conversable = null;
-            if (Arrays.binarySearch(server.getChannelPrefix(), name.charAt(0)) >= 0) {
-                conversable = server.getChannel(name);
-                Channel c = (Channel) conversable;
-                if (!c.isRunning()) {
-                    c.setup();
-                }
-            } else {
-                conversable = new ServerUser(sender, host, user, server);
-            }
-            return new PrivateMessageEvent(
-                    new Privmsg(msg, sender, conversable), this);
-        }
-        return null;
-    }
+	public IRCEvent generate(RawMessage raw) {
+		final Matcher priv_matcher = PATTERN_PRIVMSG.matcher(raw.getRaw());
+		final Server server = raw.getServer();
+		if (priv_matcher.matches()) {
+			final String msg = priv_matcher.group(5);
+			final String sender = priv_matcher.group(1);
+			final String user = priv_matcher.group(2);
+			final String host = priv_matcher.group(3);
+			final String name = priv_matcher.group(4);
+			if (msg.startsWith("\u0001")) {// ctcp messages
+				String request = msg.replace("\u0001", "");
+				String reply = server.getCtcpReply(request);
+				if (reply != null) {
+					server.sendRaw(String.format(
+							"NOTICE %s :\u0001%s %s\u0001\n", sender, request,
+							reply));
+				}
+			}
+			Conversable conversable = null;
+			if (Arrays.binarySearch(server.getChannelPrefix(), name.charAt(0)) >= 0) {
+				conversable = server.getChannel(name);
+				if (conversable == null) {
+					conversable = new Channel(name, server);
+				}
+				Channel c = (Channel) conversable;
+				if (!c.isRunning()) {
+					c.setup();
+				}
+			} else {
+				conversable = new ServerUser(sender, host, user, server);
+			}
+
+			PrivateMessageEvent event = new PrivateMessageEvent(
+					new Privmsg(msg, sender, conversable), this);
+			return event;
+		}
+		return null;
+	}
 
 }
