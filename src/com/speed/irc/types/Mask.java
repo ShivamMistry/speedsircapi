@@ -35,7 +35,7 @@ public class Mask {
 	public Mask(final String mask) {
 		this.mask = mask.toLowerCase();
 		if (!verify(mask))
-			throw new IllegalArgumentException("Mask doesn't match *!*@*: " + mask);
+			throw new IllegalArgumentException("Mask doesn't match format \"*!*@*\": " + mask);
 	}
 
 	public Mask(final String nick, final String user, final String host) {
@@ -53,7 +53,7 @@ public class Mask {
 	 */
 	public static boolean verify(final String mask) {
 		return mask
-				.matches("[_a-zA-Z\\*][\\-\\\\\\[\\]\\^\\`\\*\\w\\|]*?!~?[\\-\\\\\\[\\]\\^\\`\\*\\w\\|]+?@[\\-\\\\\\[\\]\\^\\`\\*\\w\\.\\:"
+				.matches("[_a-zA-Z*][-\\[\\]^`*\\w|]*?!~?[-\\[\\]^`*\\w|]+?@[-\\[\\]^`*\\w.:"
 						+ ControlCodeFormatter.UNICODE_COLOUR + "]+");
 	}
 
